@@ -284,3 +284,9 @@ tar:
 	(cd /tmp; tar cf - xv6) | gzip >xv6-rev10.tar.gz  # the next one will be 10 (9/17)
 
 .PHONY: dist-test dist
+
+# Object file system related files
+# TODO integrate with the rest of xv6 sources - would be done in later part.
+run-objfs-tests:
+	$(CC) $(CLAGS) obj_disk.c obj_fs_tests.c -DSTORAGE_DEVICE_SIZE=67108864 -DOBJECTS_TABLE_SIZE=200 -o tests
+	./tests
