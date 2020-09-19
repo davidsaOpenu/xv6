@@ -1,3 +1,8 @@
+#pragma once
+
+#include "obj_disk.h"  // for object name length
+#include "sleeplock.h"
+
 struct file {
   enum { FD_NONE, FD_PIPE, FD_INODE } type;
   int ref; // reference count
@@ -21,8 +26,7 @@ struct inode {
   short major;
   short minor;
   short nlink;
-  uint size;
-  uint addrs[NDIRECT+1];
+  char data_object_name[MAX_OBJECT_NAME_LENGTH];
 };
 
 // table mapping major device number to

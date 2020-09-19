@@ -108,6 +108,9 @@ typedef struct {
     uint objects_table_offset;
     uint objects_table_size;
 
+    // the last inode added
+    uint last_inode;
+
     // variables to trace the file-system state
     uint bytes_occupied;
     uint occupied_objects;
@@ -224,6 +227,9 @@ uint check_add_object_validality(uint size, const char* name);
 uint check_rewrite_object_validality(uint size, const char* name);
 uint check_delete_object_validality(const char* name);
 //@}
+
+
+uint new_inode_number();
 
 
 

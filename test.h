@@ -40,16 +40,24 @@ void print_error(const char* name, unsigned long int x, unsigned long int y,
  */
 
 #define ASSERT_UINT_EQ(x,y) \
-    if ((x) != (y)) { \
-        print_error(name, x, y, __FILE__, __LINE__);\
+    {\
+    uint evaluated_x = (x); \
+    uint evaluated_y = (y); \
+    if (evaluated_x != evaluated_y) { \
+        print_error(name, evaluated_x, evaluated_y, __FILE__, __LINE__);\
         failed = 1; \
         return; \
+    }\
     }
 
 #define EXPECT_UINT_EQ(x,y) \
-    if ((x) != (y)) { \
-        print_error(name, x, y, __FILE__, __LINE__);\
+    {\
+    uint evaluated_x = (x); \
+    uint evaluated_y = (y); \
+    if (evaluated_x != evaluated_y) { \
+        print_error(name, evaluated_x, evaluated_y, __FILE__, __LINE__);\
         failed = 1; \
+    }\
     }
 
 

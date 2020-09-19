@@ -1,9 +1,9 @@
-#include <string.h>
+#include "string.h"
 
 #include "obj_cache.h"
 #include "obj_disk.h"
 
-#ifndef KERNEL_TESTS
+#ifdef CPU_ENABLED
 #include "defs.h"  // import `panic`
 #else
 #include "obj_fs_tests_utilities.h"  // impot mock `panic`
@@ -93,8 +93,8 @@ uint cache_add_object(const void* object, uint size, const char* name) {
     struct obj_cache_entry* e = obj_cache.head.prev;
     move_to_front(e);
     e->size = size;
-    memcpy(e->data, object, size);
-    memcpy(e->object_id, name, obj_id_bytes(name));
+    memmove(e->data, object, size);
+    memmove(e->object_id, name, obj_id_bytes(name));
     misses++;
     return NO_ERR;
 }
@@ -123,8 +123,8 @@ uint cache_rewrite_object(const void* object, uint size, const char* name) {
     }
     move_to_front(e);
     e->size = size;
-    memcpy(e->data, object, size);
-    memcpy(e->object_id, name, obj_id_bytes(name));
+    memmove(e->data, object, size);
+    memmove(e->object_id, name, obj_id_bytes(name));
     return NO_ERR;
 }
 
@@ -168,7 +168,7 @@ uint cache_get_object(const char* name, void* output) {
         e = e->prev)
     {
         if (obj_id_cmp(name, e->object_id) == 0) {
-            memcpy(output, e->data, e->size);
+            memmove(output, e->data, e->size);
             move_to_front(e);
             hits++;
             return NO_ERR;
@@ -192,7 +192,7 @@ uint cache_get_object(const char* name, void* output) {
     if (get_object(name, e->data)) {
         panic("cache get object failed to get object data");
     }
-    memcpy(e->object_id, name, obj_id_bytes(name));
+    memmove(e->object_id, name, obj_id_bytes(name));
     return NO_ERR;
 }
 

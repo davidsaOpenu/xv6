@@ -9,12 +9,18 @@
 #include "proc.h"
 #include "spinlock.h"
 
+#ifndef CPU_ENABLED
+#include "obj_fs_tests_utilities.h"
+#endif
+
 void
 initlock(struct spinlock *lk, char *name)
 {
   lk->name = name;
   lk->locked = 0;
+#ifdef CPU_ENABLED
   lk->cpu = 0;
+#endif
 }
 
 // Acquire the lock.
@@ -24,7 +30,9 @@ initlock(struct spinlock *lk, char *name)
 void
 acquire(struct spinlock *lk)
 {
+#ifdef CPU_ENABLED
   pushcli(); // disable interrupts to avoid deadlock.
+#endif
   if(holding(lk))
     panic("acquire");
 
@@ -37,9 +45,11 @@ acquire(struct spinlock *lk)
   // references happen after the lock is acquired.
   __sync_synchronize();
 
+#ifdef CPU_ENABLED
   // Record info about lock acquisition for debugging.
   lk->cpu = mycpu();
   getcallerpcs(&lk, lk->pcs);
+#endif
 }
 
 // Release the lock.
@@ -49,8 +59,10 @@ release(struct spinlock *lk)
   if(!holding(lk))
     panic("release");
 
+#ifdef CPU_ENABLED
   lk->pcs[0] = 0;
   lk->cpu = 0;
+#endif
 
   // Tell the C compiler and the processor to not move loads or stores
   // past this point, to ensure that all the stores in the critical
@@ -64,9 +76,12 @@ release(struct spinlock *lk)
   // not be atomic. A real OS would use C atomics here.
   asm volatile("movl $0, %0" : "+m" (lk->locked) : );
 
+#ifdef CPU_ENABLED
   popcli();
+#endif
 }
 
+#ifdef CPU_ENABLED
 // Record the current call stack in pcs[] by following the %ebp chain.
 void
 getcallerpcs(void *v, uint pcs[])
@@ -84,15 +99,24 @@ getcallerpcs(void *v, uint pcs[])
   for(; i < 10; i++)
     pcs[i] = 0;
 }
+#endif
 
 // Check whether this cpu is holding the lock.
 int
 holding(struct spinlock *lock)
 {
   int r;
+#ifdef CPU_ENABLED
   pushcli();
-  r = lock->locked && lock->cpu == mycpu();
+#endif
+  r = (lock->locked
+#ifdef CPU_ENABLED
+    && lock->cpu == mycpu()
+#endif
+  );
+#ifdef CPU_ENABLED
   popcli();
+#endif
   return r;
 }
 
@@ -100,7 +124,7 @@ holding(struct spinlock *lock)
 // Pushcli/popcli are like cli/sti except that they are matched:
 // it takes two popcli to undo two pushcli.  Also, if interrupts
 // are off, then pushcli, popcli leaves them off.
-
+#ifdef CPU_ENABLED
 void
 pushcli(void)
 {
@@ -112,7 +136,10 @@ pushcli(void)
     mycpu()->intena = eflags & FL_IF;
   mycpu()->ncli += 1;
 }
+#endif
 
+
+#ifdef CPU_ENABLED
 void
 popcli(void)
 {
@@ -123,4 +150,5 @@ popcli(void)
   if(mycpu()->ncli == 0 && mycpu()->intena)
     sti();
 }
+#endif
 

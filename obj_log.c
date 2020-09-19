@@ -4,7 +4,7 @@
 
 #include "obj_cache.h"
 #include "obj_disk.h"
-#ifndef KERNEL_TESTS
+#ifdef CPU_ENABLED
 #include "defs.h"  // import `panic`
 #else
 #include "obj_fs_tests_utilities.h"  // impot mock `panic`
@@ -89,7 +89,7 @@ static void finish_rewrite_event() {
         }
     }
     // change the new object id inside the table
-    memcpy(
+    memmove(
         objects_table_entry(logbook.rewrite_event.new_object_table_index)->object_id,
         logbook.rewrite_event.old_object_id,
         obj_id_bytes(logbook.rewrite_event.old_object_id)
@@ -157,7 +157,7 @@ uint log_add_object(const void* object, uint size, const char* name) {
         return err;
     }
     logbook.type = ADD_EVENT;
-    memcpy(logbook.add_event.object_id, name, obj_id_bytes(name));
+    memmove(logbook.add_event.object_id, name, obj_id_bytes(name));
     logbook.add_event.total_objects_before = occupied_objects();
     logbook.add_event.total_objects_after = occupied_objects() + 1;
     if (cache_add_object(&logbook, sizeof(logbook), LOGBOOK_OBJECT_ID) != NO_ERR) {
@@ -181,8 +181,8 @@ uint log_rewrite_object(const void* object, uint size, const char* name) {
     }
     // write the event to the disk
     logbook.type = REWRITE_EVENT;
-    memcpy(logbook.rewrite_event.old_object_id, name, obj_id_bytes(name));
-    memcpy(logbook.rewrite_event.new_object_id, name, obj_id_bytes(name));
+    memmove(logbook.rewrite_event.old_object_id, name, obj_id_bytes(name));
+    memmove(logbook.rewrite_event.new_object_id, name, obj_id_bytes(name));
     logbook.rewrite_event.new_object_id[0] ^= 0xff;
     err = get_objects_table_index(
         name,
@@ -213,7 +213,7 @@ uint log_delete_object(const char* name) {
         return err;
     }
     logbook.type = DELETE_EVENT;
-    memcpy(logbook.delete_event.object_id, name, obj_id_bytes(name));
+    memmove(logbook.delete_event.object_id, name, obj_id_bytes(name));
     logbook.delete_event.total_objects_before = occupied_objects();
     logbook.delete_event.total_objects_after = occupied_objects() - 1;
     if (cache_add_object(&logbook, sizeof(logbook), LOGBOOK_OBJECT_ID) != NO_ERR) {

@@ -1,10 +1,18 @@
-#include <stdlib.h>
-#include <string.h>
+#include "string.h"  // xv6 version
 
+//xv6 includes
 #include "obj_disk.h"
 #include "obj_cache.h"
 #include "obj_log.h"
+#include "fs.h"
+#include "sleeplock.h"  // initsleeplock for inode tests
+
+//tests includes
+#include "obj_fs_tests_utilities.h"
 #include "test.h"
+
+
+#define TESTS_DEVICE 3
 
 
 /**
@@ -217,7 +225,7 @@ TEST(add_to_full_table) {
     ObjectsTableEntry original[OBJECTS_TABLE_SIZE];
     ObjectsTableEntry table[OBJECTS_TABLE_SIZE];
     ASSERT_NO_ERR(get_object(OBJECT_TABLE_ID, &table));
-    memcpy(original, table, sizeof(table));
+    memmove(original, table, sizeof(table));
     for (uint i = 0; i < OBJECTS_TABLE_SIZE; ++i) {
         table[i].occupied = 1;
     }
@@ -444,6 +452,420 @@ TEST(logbook_delete_object_regular_flow) {
 }
 
 
+/**
+ * Inodes layer tests
+ */
+
+
+/// Tests only that the function doesn't fail in segfault/deadlock
+TEST(initialize_icache) {
+    iinit(TESTS_DEVICE);
+}
+
+
+TEST(correct_inode_name) {
+    uint inode_number = 123456;
+    const char* expected = "inode\x8c\xd3\x87\x80\x80";
+    char actual[INODE_NAME_LENGTH];
+    inode_name(actual, inode_number);
+    ASSERT_UINT_EQ(0, strcmp(expected, actual));
+}
+
+
+/// checking the `type` correctness is done by `ilock` in next tests.
+TEST(ialloc_data_correctness) {
+    struct inode* id = ialloc(0x12, 0x34);
+    ASSERT_UINT_EQ(0x12, id->dev);
+    ASSERT_UINT_EQ(0, id->valid);  // not loaded from the disk
+    ASSERT_UINT_EQ(1, id->ref);
+    ASSERT_UINT_EQ(0, id->data_object_name[0]);
+    ilock(id);
+}
+
+
+TEST(ialloc_advancing_inodes_counter) {
+    struct inode* id1 = ialloc(0, 0);
+    struct inode* id2 = ialloc(0, 0);
+    ASSERT_UINT_EQ(id1->inum + 1, id2->inum);
+}
+
+
+TEST(ialloc_store_in_disk) {
+    struct inode* id = ialloc(0x12, 0x34);
+    char iname[INODE_NAME_LENGTH];
+    inode_name(iname, id->inum);
+    struct inode loaded;
+    ASSERT_NO_ERR(cache_get_object(iname, &loaded));
+    iput(id);
+}
+
+
+TEST(iget_from_cache) {
+    uint inum = 123;
+    struct inode* id = iget(12, inum);
+    ASSERT_UINT_EQ(12, id->dev);
+    ASSERT_UINT_EQ(inum, id->inum);
+    ASSERT_UINT_EQ(0, id->valid);
+    ASSERT_UINT_EQ(1, id->ref);
+    iput(id);
+}
+
+
+TEST(iget_add_new_inode_to_cache) {
+    uint inum = 124;
+    struct inode* id1 = iget(0, inum);
+    struct inode* id2 = iget(0, inum);
+    ASSERT_UINT_EQ(inum, id1->inum);
+    ASSERT_UINT_EQ(inum, id2->inum);
+    ASSERT_UINT_EQ(2, id1->ref);
+    ASSERT_UINT_EQ(2, id2->ref);
+    ASSERT_UINT_EQ(0, id1->valid);
+    ASSERT_UINT_EQ(0, id2->valid);
+    iput(id1);
+    iput(id2);
+}
+
+
+TEST(iupdate_correctness) {
+    struct inode* id = ialloc(0x12, 0);
+    //`iupdate` save the inode to the disk, hence we check the `dinode` object.
+    struct dinode read_inode;
+    char iname[INODE_NAME_LENGTH];
+    inode_name(iname, id->inum);
+
+    id->type = 0x13;
+    memmove(
+        id->data_object_name,
+        "some object",
+        strlen("some object") + 1
+    );
+    iupdate(id);
+    ASSERT_NO_ERR(cache_get_object(iname, &read_inode));
+    ASSERT_UINT_EQ(0x13, read_inode.type);
+    ASSERT_UINT_EQ(0, strcmp(read_inode.data_object_name, "some object"));
+
+    id->type = 0x14;
+    iupdate(id);
+    ASSERT_NO_ERR(cache_get_object(iname, &read_inode));
+    ASSERT_UINT_EQ(0x14, read_inode.type);
+    iput(id);
+}
+
+
+TEST(idup_correctness) {
+    uint inum = 125;
+    struct inode* id1 = iget(0, inum);
+    struct inode* id2 = idup(id1);
+    ASSERT_UINT_EQ(inum, id1->inum);
+    ASSERT_UINT_EQ(inum, id2->inum);
+    ASSERT_UINT_EQ(2, id1->ref);
+    ASSERT_UINT_EQ(2, id2->ref);
+    ASSERT_UINT_EQ(0, id1->valid);
+    ASSERT_UINT_EQ(0, id2->valid);
+    iput(id1);
+    iput(id2);
+}
+
+
+TEST(ilock_read_from_disk) {
+    struct inode* id = ialloc(0x12, 0x34);
+    ASSERT_UINT_EQ(0, id->valid);
+    ilock(id);
+    ASSERT_UINT_EQ(1, id->valid);
+    ASSERT_UINT_EQ(0x34, id->type);
+    iunlockput(id);
+}
+
+
+int ilock_read_from_disk_invalid_inum_panic = 0;
+void ilock_read_from_disk_invalid_inum_panic_handler(void) {
+    ilock_read_from_disk_invalid_inum_panic = 1;
+}
+/**
+ * In regular flow, this would cause `panic`. In the tests, we validate that
+ * this edge case is covered by verifing that the flow stopped in `return`.
+ */
+TEST(ilock_read_from_disk_invalid_inum) {
+    set_panic_handler(ilock_read_from_disk_invalid_inum_panic_handler);
+    struct inode id;
+    id.valid = 0;
+    id.inum = (uint)-1;
+    initsleeplock(&id.lock, "inode");
+    ilock(&id);
+    set_panic_handler(default_panic_handler);
+    ASSERT_UINT_EQ(0, id.valid);
+    iunlock(&id);
+    ASSERT_UINT_EQ(1, ilock_read_from_disk_invalid_inum_panic);
+}
+
+
+TEST(iput_no_links) {
+    const char* test_object = "idelete_obj1";
+    const char* data = "some data for the test";
+    log_add_object(data, strlen(data) + 1, test_object);
+    struct inode* id = ialloc(0x12, 0x34);
+    //use ilock to make the inode valid
+    ilock(id);
+    memmove(
+        id->data_object_name,
+        test_object,
+        strlen(test_object) + 1
+    );
+    char iname[INODE_NAME_LENGTH];
+    inode_name(iname, id->inum);
+    uint size;
+    ASSERT_NO_ERR(cache_object_size(test_object, &size));
+    ASSERT_NO_ERR(cache_object_size(iname, &size));
+    //set the inode data object
+    iupdate(id);
+    iunlockput(id);
+    //validate the data object is deleted
+    ASSERT_UINT_EQ(OBJECT_NOT_EXISTS, cache_object_size(test_object, &size));
+    //validate the inode object is deleted
+    ASSERT_UINT_EQ(OBJECT_NOT_EXISTS, cache_object_size(iname, &size));
+}
+
+
+TEST(iput_with_links) {
+    const char* test_object = "idelete_obj1";
+    const char* data = "some data for the test";
+    log_add_object(data, strlen(data) + 1, test_object);
+    struct inode* id = ialloc(0x12, 0x34);
+    //use ilock to make the inode valid
+    ilock(id);
+    memmove(
+        id->data_object_name,
+        test_object,
+        strlen(test_object) + 1
+    );
+    id->nlink = 1;
+    char iname[INODE_NAME_LENGTH];
+    inode_name(iname, id->inum);
+    uint size;
+    //set the inode data object
+    iupdate(id);
+    iunlockput(id);
+    ASSERT_NO_ERR(cache_object_size(test_object, &size));
+    ASSERT_NO_ERR(cache_object_size(iname, &size));
+    ASSERT_NO_ERR(log_delete_object(test_object));
+    ASSERT_NO_ERR(log_delete_object(iname));
+}
+
+
+TEST(stati_correctness_data_object_no_exists) {
+    struct stat stat;
+    struct inode* id = ialloc(0, 0);
+    id->type = 0x17;
+    stati(id, &stat);
+    ASSERT_UINT_EQ(0x17, stat.type);
+    ASSERT_UINT_EQ(id->inum, stat.ino);
+    ASSERT_UINT_EQ(0, stat.size);
+    iput(id);
+}
+
+
+TEST(stati_correctness_data_object_exists) {
+    struct stat stat;
+    struct inode* id = ialloc(0, 0);
+    const char* test_object = "stati_object1";
+    const char* data = "some data for the test";
+    log_add_object(data, strlen(data) + 1, test_object);
+    memmove(
+        id->data_object_name,
+        test_object,
+        strlen(test_object) + 1
+    );
+    stati(id, &stat);
+    ASSERT_UINT_EQ(strlen(data) + 1, stat.size);
+    iput(id);
+}
+
+
+TEST(readi_from_existing_without_offset) {
+    struct inode* id = ialloc(0, 0);
+    const char* test_object = "readi_obj_1";
+    const char* data = "abcdefghijklmnopqrstuvwxyz";
+    log_add_object(data, strlen(data) + 1, test_object);
+    memmove(
+        id->data_object_name,
+        test_object,
+        strlen(test_object) + 1
+    );
+    char actual[10];
+    readi(id, actual, 0, 10);
+    ASSERT_UINT_EQ(10, readi(id, actual, 0, 10));
+    iput(id);
+}
+
+
+TEST(readi_from_existing_with_offset) {
+    struct inode* id = ialloc(0, 0);
+    const char* test_object = "readi_obj_2";
+    const char* data = "abcdefghijklmnopqrstuvwxyz";
+    log_add_object(data, strlen(data), test_object);
+    memmove(
+        id->data_object_name,
+        test_object,
+        strlen(test_object) + 1
+    );
+    char actual[10];
+    ASSERT_UINT_EQ(10, readi(id, actual, 5, 10));
+    ASSERT_UINT_EQ(0, strncmp(data + 5, actual, 10));
+    iput(id);
+}
+
+
+int readi_from_non_existing_panic = 0;
+void readi_from_non_existing_panic_handler(void) {
+    readi_from_non_existing_panic = 1;
+}
+TEST(readi_from_non_existing) {
+    set_panic_handler(readi_from_non_existing_panic_handler);
+    struct inode* id = ialloc(0, 0);
+    char actual[10];
+    readi(id, actual, 0, 10);
+    iput(id);
+    set_panic_handler(default_panic_handler);
+    ASSERT_UINT_EQ(1, readi_from_non_existing_panic);
+}
+
+
+TEST(readi_read_too_much) {
+    struct inode* id = ialloc(0, 0);
+    const char* test_object = "readi_obj_2";
+    const char* data = "abcdefghijklmnopqrstuvwxyz";
+    log_add_object(data, strlen(data), test_object);
+    memmove(
+        id->data_object_name,
+        test_object,
+        strlen(test_object) + 1
+    );
+    char actual[strlen(data)];
+    ASSERT_UINT_EQ(strlen(data), readi(id, actual, 0, 100));
+    ASSERT_UINT_EQ(0, strncmp(data, actual, strlen(data)));
+    iput(id);
+}
+
+
+TEST(readi_read_offset_too_large) {
+    struct inode* id = ialloc(0, 0);
+    const char* test_object = "readi_obj_2";
+    const char* data = "abcdefghijklmnopqrstuvwxyz";
+    log_add_object(data, strlen(data), test_object);
+    memmove(
+        id->data_object_name,
+        test_object,
+        strlen(test_object) + 1
+    );
+    char actual[strlen(data)];
+    ASSERT_UINT_EQ(-1, readi(id, actual, 100, 100));
+    iput(id);
+}
+
+int writei_from_non_existing_panic = 0;
+void writei_from_non_existing_panic_handler(void) {
+    writei_from_non_existing_panic = 1;
+}
+TEST(writei_from_non_existing) {
+    set_panic_handler(writei_from_non_existing_panic_handler);
+    struct inode* id = ialloc(0, T_FILE);
+    const char* write_data = "abcdefghijklmnopqrstuvwxyz";
+    writei(id, write_data, 0, strlen(write_data));
+    set_panic_handler(default_panic_handler);
+    iput(id);
+}
+
+
+int compare_object_data_strings(const char* object_name, const char* expected) {
+    uint size;
+    if (cache_object_size(object_name, &size) != NO_ERR) {
+        panic("failed getting object size");
+    }
+    char obj_data[size];
+    if (cache_get_object(object_name, obj_data) != NO_ERR) {
+        panic("failed getting object data§");
+    }
+    return strcmp(obj_data, expected);
+}
+
+
+TEST(writei_from_existing_without_offset) {
+    struct inode* id = ialloc(0, T_FILE);
+    ilock(id);
+    const char* test_object = "write_obj_2";
+    const char* original_data = "abcdefghijklmnopqrstuvwxyz";
+    log_add_object(original_data, strlen(original_data) + 1, test_object);
+    memmove(
+        id->data_object_name,
+        test_object,
+        strlen(test_object) + 1
+    );
+    iupdate(id);
+    ASSERT_UINT_EQ(0, compare_object_data_strings(test_object, original_data));
+    ASSERT_UINT_EQ(4, writei(id, "1234", 0, 4));
+    ASSERT_UINT_EQ(0, compare_object_data_strings(test_object, "1234efghijklmnopqrstuvwxyz"));
+    iunlockput(id);
+}
+
+
+TEST(writei_from_existing_with_offset) {
+    struct inode* id = ialloc(0, T_FILE);
+    ilock(id);
+    const char* test_object = "write_obj_3";
+    const char* original_data = "abcdefghijklmnopqrstuvwxyz";
+    log_add_object(original_data, strlen(original_data) + 1, test_object);
+    memmove(
+        id->data_object_name,
+        test_object,
+        strlen(test_object) + 1
+    );
+    iupdate(id);
+    ASSERT_UINT_EQ(0, compare_object_data_strings(test_object, original_data));
+    ASSERT_UINT_EQ(4, writei(id, "1234", 2, 4));
+    ASSERT_UINT_EQ(0, compare_object_data_strings(test_object, "ab1234ghijklmnopqrstuvwxyz"));
+    iunlockput(id);
+}
+
+
+TEST(writei_write_beyond_fail) {
+    struct inode* id = ialloc(0, T_FILE);
+    ilock(id);
+    const char* test_object = "write_obj_4";
+    const char* original_data = "abcdef";
+    log_add_object(original_data, strlen(original_data) + 1, test_object);
+    memmove(
+        id->data_object_name,
+        test_object,
+        strlen(test_object) + 1
+    );
+    iupdate(id);
+    ASSERT_UINT_EQ(0, compare_object_data_strings(test_object, original_data));
+    ASSERT_UINT_EQ(10, writei(id, "123456789", 3, 10));
+    ASSERT_UINT_EQ(0, compare_object_data_strings(test_object, "abc123456789"));
+    iunlockput(id);
+}
+
+
+TEST(writei_write_append) {
+    struct inode* id = ialloc(0, T_FILE);
+    ilock(id);
+    const char* test_object = "write_obj_5";
+    const char* original_data = "abc";
+    log_add_object(original_data, strlen(original_data), test_object);
+    memmove(
+        id->data_object_name,
+        test_object,
+        strlen(test_object) + 1
+    );
+    iupdate(id);
+    ASSERT_UINT_EQ(3, writei(id, "123", strlen(original_data), 3));
+    char actual[6];
+    readi(id, actual, 0, 6);
+    ASSERT_UINT_EQ(0, strncmp("abc123", actual, 6));
+    iunlockput(id);
+}
+
+
 int main() {
     printf("[===========]\n");
     init_obj_fs();
@@ -476,6 +898,33 @@ int main() {
     run_test(logbook_add_object_regular_flow);
     run_test(logbook_rewrite_object_regular_flow);
     run_test(logbook_delete_object_regular_flow);
+
+    // Inodes layer
+    run_test(initialize_icache);
+    run_test(correct_inode_name);
+    run_test(ialloc_data_correctness);
+    run_test(ialloc_advancing_inodes_counter);
+    run_test(ialloc_store_in_disk);
+    run_test(iget_from_cache);
+    run_test(iget_add_new_inode_to_cache);
+    run_test(iupdate_correctness);
+    run_test(idup_correctness);
+    run_test(ilock_read_from_disk);
+    run_test(ilock_read_from_disk_invalid_inum);
+    run_test(iput_no_links);
+    run_test(iput_with_links);
+    run_test(stati_correctness_data_object_no_exists);
+    run_test(stati_correctness_data_object_exists);
+    run_test(readi_from_existing_without_offset);
+    run_test(readi_from_existing_with_offset);
+    run_test(readi_from_non_existing);
+    run_test(readi_read_too_much);
+    run_test(readi_read_offset_too_large);
+    run_test(writei_from_non_existing);
+    run_test(writei_from_existing_without_offset);
+    run_test(writei_from_existing_with_offset);
+    run_test(writei_write_beyond_fail);
+    run_test(writei_write_append);
 
     // Summary
     printf("[===========]\n");

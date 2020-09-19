@@ -1,9 +1,9 @@
 #include <stdlib.h>
-#include <string.h>
+#include "string.h"
 
 #include "obj_disk.h"
 
-#ifndef KERNEL_TESTS
+#ifdef CPU_ENABLED
 #include "defs.h"  // import `panic`
 #else
 #include "obj_fs_tests_utilities.h"  // impot mock `panic`
@@ -147,7 +147,7 @@ static void* find_empty_space(uint size) {
 
 static void initialize_super_block_entry() {
     ObjectsTableEntry* entry = objects_table_entry(0);
-    memcpy(entry->object_id, SUPER_BLOCK_ID, strlen(SUPER_BLOCK_ID) + 1);
+    memmove(entry->object_id, SUPER_BLOCK_ID, strlen(SUPER_BLOCK_ID) + 1);
     entry->disk_offset = 0;
     entry->size = sizeof(super_block);
     entry->occupied = 1;
@@ -156,7 +156,7 @@ static void initialize_super_block_entry() {
 
 static void initialize_objects_table_entry() {
     ObjectsTableEntry* entry = objects_table_entry(1);
-    memcpy(entry->object_id, OBJECT_TABLE_ID, strlen(OBJECT_TABLE_ID) + 1);
+    memmove(entry->object_id, OBJECT_TABLE_ID, strlen(OBJECT_TABLE_ID) + 1);
     entry->disk_offset = super_block.objects_table_offset;
     entry->size = OBJECTS_TABLE_SIZE * sizeof(ObjectsTableEntry);
     entry->occupied = 1;
@@ -164,7 +164,7 @@ static void initialize_objects_table_entry() {
 
 
 static void write_super_block() {
-    memcpy(memory_storage, &super_block, sizeof(super_block));
+    memmove(memory_storage, &super_block, sizeof(super_block));
 }
 
 
@@ -202,10 +202,10 @@ uint add_object(const void* object, uint size, const char* name) {
             if (!address) {
                 return NO_DISK_SPACE_FOUND;
             }
-            memcpy(entry->object_id, name, obj_id_bytes(name));
+            memmove(entry->object_id, name, obj_id_bytes(name));
             entry->disk_offset = address - (void*)memory_storage;
             entry->size = size;
-            memcpy(address, object, size);
+            memmove(address, object, size);
             entry->occupied = 1;
             super_block.bytes_occupied += size;
             super_block.occupied_objects += 1;
@@ -233,7 +233,7 @@ uint rewrite_object(const void* object, uint size, const char* name) {
     if (entry->size >= size) {
         void* address =
             (void*)memory_storage + entry->disk_offset;
-        memcpy(address, object, size);
+        memmove(address, object, size);
         entry->size = size;
     } else {
         entry->occupied = 0;
@@ -244,7 +244,7 @@ uint rewrite_object(const void* object, uint size, const char* name) {
         if (!address) {
             return NO_DISK_SPACE_FOUND;
         }
-        memcpy(address, object, size);
+        memmove(address, object, size);
         entry->size = size;
         entry->disk_offset = address - (void*)memory_storage;
     }
@@ -268,7 +268,6 @@ uint object_size(const char* name, uint* output) {
     return NO_ERR;
 }
 
-
 uint get_object(const char* name, void* output) {
     if (strlen(name) > MAX_OBJECT_NAME_LENGTH) {
         return OBJECT_NAME_TOO_LONG;
@@ -280,7 +279,7 @@ uint get_object(const char* name, void* output) {
     }
     ObjectsTableEntry* entry = objects_table_entry(i);
     void* address = (void*)memory_storage + entry->disk_offset;
-    memcpy(output, address, entry->size);
+    memmove(output, address, entry->size);
     return NO_ERR;
 }
 
@@ -333,6 +332,13 @@ uint check_delete_object_validality(const char* name) {
         return OBJECT_NAME_TOO_LONG;
     }
     return NO_ERR;
+}
+
+
+uint new_inode_number() {
+    super_block.last_inode++;
+    write_super_block();
+    return super_block.last_inode;
 }
 
 

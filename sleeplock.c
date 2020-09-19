@@ -10,6 +10,10 @@
 #include "spinlock.h"
 #include "sleeplock.h"
 
+#ifndef CPU_ENABLED
+#include "obj_fs_tests_utilities.h"
+#endif
+
 void
 initsleeplock(struct sleeplock *lk, char *name)
 {

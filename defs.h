@@ -20,7 +20,9 @@ void            bwrite(struct buf*);
 void            consoleinit(void);
 void            cprintf(char*, ...);
 void            consoleintr(int(*)(void));
+#ifdef CPU_ENABLED
 void            panic(char*) __attribute__((noreturn));
+#endif
 
 // exec.c
 int             exec(char*, char**);
@@ -35,23 +37,7 @@ int             filestat(struct file*, struct stat*);
 int             filewrite(struct file*, char*, int n);
 
 // fs.c
-void            readsb(int dev, struct superblock *sb);
-int             dirlink(struct inode*, char*, uint);
-struct inode*   dirlookup(struct inode*, char*, uint*);
-struct inode*   ialloc(uint, short);
-struct inode*   idup(struct inode*);
-void            iinit(int dev);
-void            ilock(struct inode*);
-void            iput(struct inode*);
-void            iunlock(struct inode*);
-void            iunlockput(struct inode*);
-void            iupdate(struct inode*);
-int             namecmp(const char*, const char*);
-struct inode*   namei(char*);
-struct inode*   nameiparent(char*, char*);
-int             readi(struct inode*, char*, uint, uint);
-void            stati(struct inode*, struct stat*);
-int             writei(struct inode*, char*, uint, uint);
+#include "fs.h"
 
 // ide.c
 void            ideinit(void);
@@ -103,6 +89,7 @@ int             pipewrite(struct pipe*, char*, int);
 
 //PAGEBREAK: 16
 // proc.c
+#ifdef CPU_ENABLED
 int             cpuid(void);
 void            exit(void);
 int             fork(void);
@@ -120,33 +107,29 @@ void            userinit(void);
 int             wait(void);
 void            wakeup(void*);
 void            yield(void);
+#endif
 
+#ifdef CPU_ENABLED
 // swtch.S
 void            swtch(struct context**, struct context*);
+#endif
 
 // spinlock.c
 void            acquire(struct spinlock*);
-void            getcallerpcs(void*, uint*);
 int             holding(struct spinlock*);
 void            initlock(struct spinlock*, char*);
 void            release(struct spinlock*);
+#ifdef CPU_ENABLED
+void            getcallerpcs(void*, uint*);
 void            pushcli(void);
 void            popcli(void);
+#endif
 
 // sleeplock.c
-void            acquiresleep(struct sleeplock*);
-void            releasesleep(struct sleeplock*);
-int             holdingsleep(struct sleeplock*);
-void            initsleeplock(struct sleeplock*, char*);
+#include "sleeplock.h"
 
 // string.c
-int             memcmp(const void*, const void*, uint);
-void*           memmove(void*, const void*, uint);
-void*           memset(void*, int, uint);
-char*           safestrcpy(char*, const char*, int);
-int             strlen(const char*);
-int             strncmp(const char*, const char*, uint);
-char*           strncpy(char*, const char*, int);
+#include "string.h"
 
 // syscall.c
 int             argint(int, int*);

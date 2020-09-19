@@ -1,3 +1,5 @@
+#include "string.h"
+
 #include "types.h"
 #include "x86.h"
 
@@ -55,11 +57,19 @@ memcpy(void *dst, const void *src, uint n)
   return memmove(dst, src, n);
 }
 
+#include "stdio.h"
+int
+strcmp(const char *p, const char *q)
+{
+  return strncmp(p, q, (uint)-1);
+}
+
 int
 strncmp(const char *p, const char *q, uint n)
 {
-  while(n > 0 && *p && *p == *q)
+  while(n > 0 && *p && *p == *q) {
     n--, p++, q++;
+  }
   if(n == 0)
     return 0;
   return (uchar)*p - (uchar)*q;
