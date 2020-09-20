@@ -5,6 +5,13 @@
 #include "mmu.h"
 #include "proc.h"
 #include "x86.h"
+#include "objfs_user_tests.h"
+
+/**
+ * To test the objects file system, we disabled the shell and the scheduler.
+ * At the end of initialization, we call `objfs_tests` which tests the file
+ * system.
+ */
 
 static void startothers(void);
 static void mpmain(void)  __attribute__((noreturn));
@@ -30,12 +37,12 @@ main(void)
   tvinit();        // trap vectors
   binit();         // buffer cache
   fileinit();      // file table
-  ideinit();       // disk 
-  objfsinit();
+  objfsinit();     // initialize the object file system
   startothers();   // start other processors
   kinit2(P2V(4*1024*1024), P2V(PHYSTOP)); // must come after startothers()
-  userinit();      // first user process
-  mpmain();        // finish this processor's setup
+  //userinit();      // first user process
+  //mpmain();        // finish this processor's setup
+  objfs_tests();   // run the object file system tests
 }
 
 static void

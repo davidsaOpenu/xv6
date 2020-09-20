@@ -242,9 +242,7 @@ exit(void)
     }
   }
 
-  begin_op();
   iput(curproc->cwd);
-  end_op();
   curproc->cwd = 0;
 
   acquire(&ptable.lock);
