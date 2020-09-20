@@ -81,8 +81,9 @@ uint cache_get_object(const char* name, void* output);
 
 /**
  * Remove the object from the objects cache but not form the disk.
+ * This function locks the cache lock and release it in the end.
  */
-uint cache_free_from_cache(const char* name);
+uint cache_free_from_cache_safe(const char* name);
 
 
 /**

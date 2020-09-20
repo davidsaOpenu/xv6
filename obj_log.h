@@ -185,7 +185,7 @@
 
 #define LOGBOOK_OBJECT_ID "\xfflogbook\xff"
 
-void finish_log_transaction();
+void init_objfs_log();
 
 uint log_add_object(const void* object, uint size, const char* name);
 uint log_rewrite_object(const void* object, uint size, const char* name);

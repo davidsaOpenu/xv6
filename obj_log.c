@@ -1,6 +1,7 @@
 #include "obj_log.h"
 
 #include "string.h"
+#include "sleeplock.h"
 
 #include "obj_cache.h"
 #include "obj_disk.h"
@@ -9,6 +10,15 @@
 #else
 #include "obj_fs_tests_utilities.h"  // impot mock `panic`
 #endif
+
+/**
+ * The loglock protect the logbook from multiple actions occuring at the same
+ * time. Before every `panic`, we release the lock. By that, the
+ * implementation does not depend on "panic" implementation.
+ * Note that if panic does not stop the run, the behavior is undefined.
+ * This feature lets us unit test edge cases which leads to panic.
+ */
+struct sleeplock loglock;
 
 
 struct add_object_event {
@@ -50,6 +60,7 @@ struct {
 } logbook;
 
 
+/// The caller must hold the log lock
 static void finish_add_event() {
     uint size;
     if (cache_object_size(logbook.add_event.object_id, &size) != NO_ERR) {
@@ -60,12 +71,14 @@ static void finish_add_event() {
     if (occupied_objects() == logbook.add_event.total_objects_before) {
         set_occupied_objects(logbook.add_event.total_objects_after);
     } else if (occupied_objects() != logbook.add_event.total_objects_after) {
+        releasesleep(&loglock);
         panic("unexpected occupied objects value");
     }
     cache_delete_object(LOGBOOK_OBJECT_ID);
 }
 
 
+/// The caller must hold the log lock
 static void finish_rewrite_event() {
     uint size;
     if (cache_object_size(logbook.rewrite_event.new_object_id, &size) != NO_ERR) {
@@ -81,10 +94,12 @@ static void finish_rewrite_event() {
             &logbook.rewrite_event.new_object_table_index
         );
         if (err != NO_ERR) {
+            releasesleep(&loglock);
             panic("logbook - error getting the new object objects table offset");
         }
         err = cache_rewrite_object(&logbook, sizeof(logbook), LOGBOOK_OBJECT_ID);
         if (err != NO_ERR) {
+            releasesleep(&loglock);
             panic("logbook - error updating the logbook to the disk");
         }
     }
@@ -101,12 +116,14 @@ static void finish_rewrite_event() {
     set_occupied_objects(occupied_objects() - 1);
     // delete the event
     if (cache_delete_object(LOGBOOK_OBJECT_ID) != NO_ERR) {
+        releasesleep(&loglock);
         panic("logbook - unexpected error when deleting the event object");
     }
-    cache_free_from_cache(logbook.rewrite_event.old_object_id);
+    cache_free_from_cache_safe(logbook.rewrite_event.old_object_id);
 }
 
 
+/// The caller must hold the log lock
 static void finish_delete_event() {
     uint size;
     if (cache_object_size(logbook.delete_event.object_id, &size) == NO_ERR) {
@@ -115,13 +132,15 @@ static void finish_delete_event() {
     if (occupied_objects() == logbook.delete_event.total_objects_before) {
         set_occupied_objects(logbook.delete_event.total_objects_after);
     } else if (occupied_objects() != logbook.delete_event.total_objects_after) {
+        releasesleep(&loglock);
         panic("unexpected occupied objects value");
     }
     cache_delete_object(LOGBOOK_OBJECT_ID);
 }
 
 
-void finish_log_transactions() {
+/// The caller must hold the log lock - if success, the lock is still held
+static void finish_log_transactions() {
     uint event_size;
     uint err;
     err = object_size(LOGBOOK_OBJECT_ID, &event_size);
@@ -129,10 +148,12 @@ void finish_log_transactions() {
         return;
     }
     if (err != NO_ERR) {
+        releasesleep(&loglock);
         panic("logbook - unexpected error when loading the logbook event object size");
     }
     err = cache_get_object(LOGBOOK_OBJECT_ID, &logbook);
     if (err != NO_ERR) {
+        releasesleep(&loglock);
         panic("logbook - unexpected error when loading the logbook event object");
     }
     switch (logbook.type) {
@@ -146,14 +167,25 @@ void finish_log_transactions() {
             finish_delete_event();
             break;
         default:
+            releasesleep(&loglock);
             panic("logbook - unexpected event type found inside logbook");
     }
 }
 
 
+void init_objfs_log() {
+    initsleeplock(&loglock, "loglock");
+    acquiresleep(&loglock);
+    finish_log_transactions();
+    releasesleep(&loglock);
+}
+
+
 uint log_add_object(const void* object, uint size, const char* name) {
+    acquiresleep(&loglock);
     uint err = check_add_object_validality(size, name);
     if (err != NO_ERR) {
+        releasesleep(&loglock);
         return err;
     }
     logbook.type = ADD_EVENT;
@@ -161,19 +193,24 @@ uint log_add_object(const void* object, uint size, const char* name) {
     logbook.add_event.total_objects_before = occupied_objects();
     logbook.add_event.total_objects_after = occupied_objects() + 1;
     if (cache_add_object(&logbook, sizeof(logbook), LOGBOOK_OBJECT_ID) != NO_ERR) {
+        releasesleep(&loglock);
         panic("logbook - unexpected error when adding the logbook object");
     }
     if (cache_add_object(object, size, name) != NO_ERR) {
+        releasesleep(&loglock);
         panic("logbook - unexpected error when adding the object itself");
     }
     if (cache_delete_object(LOGBOOK_OBJECT_ID) != NO_ERR) {
+        releasesleep(&loglock);
         panic("logbook - unexpected error when deleting the event object");
     }
+    releasesleep(&loglock);
     return NO_ERR;
 }
 
 
 uint log_rewrite_object(const void* object, uint size, const char* name) {
+    acquiresleep(&loglock);
     uint err;
     err = check_rewrite_object_validality(size, name);
     if (err != NO_ERR) {
@@ -189,25 +226,30 @@ uint log_rewrite_object(const void* object, uint size, const char* name) {
         &logbook.rewrite_event.old_object_table_index
     );
     if (err != NO_ERR) {
+        releasesleep(&loglock);
         panic("logbook - error while getting the old object table index");
     }
     logbook.rewrite_event.new_object_table_index = -1;
     logbook.rewrite_event.total_objects = occupied_objects();
     err = cache_add_object(&logbook, sizeof(logbook), LOGBOOK_OBJECT_ID);
     if (err != NO_ERR) {
+        releasesleep(&loglock);
         panic("logbook - error adding the logbook to the disk");
     }
     // adds the new object to the disk
     err = cache_add_object(object, size, logbook.rewrite_event.new_object_id);
     if (err != NO_ERR) {
+        releasesleep(&loglock);
         panic("logbook - error adding the new object to the disk");
     }
     finish_rewrite_event();
+    releasesleep(&loglock);
     return NO_ERR;
 }
 
 
 uint log_delete_object(const char* name) {
+    acquiresleep(&loglock);
     uint err = check_delete_object_validality(name);
     if (err != NO_ERR) {
         return err;
@@ -217,13 +259,17 @@ uint log_delete_object(const char* name) {
     logbook.delete_event.total_objects_before = occupied_objects();
     logbook.delete_event.total_objects_after = occupied_objects() - 1;
     if (cache_add_object(&logbook, sizeof(logbook), LOGBOOK_OBJECT_ID) != NO_ERR) {
+        releasesleep(&loglock);
         panic("logbook - unexpected error when adding the logbook object");
     }
     if (cache_delete_object(name) != NO_ERR) {
+        releasesleep(&loglock);
         panic("logbook - unexpected error when deleting the object itself");
     }
     if (cache_delete_object(LOGBOOK_OBJECT_ID) != NO_ERR) {
+        releasesleep(&loglock);
         panic("logbook - unexpected error when deleting the event object");
     }
+    releasesleep(&loglock);
     return NO_ERR;
 }
