@@ -590,6 +590,7 @@ TEST(ilock_read_from_disk_invalid_inum) {
     struct inode id;
     id.valid = 0;
     id.inum = (uint)-1;
+    id.ref = 1;
     initsleeplock(&id.lock, "inode");
     ilock(&id);
     set_panic_handler(default_panic_handler);
@@ -870,6 +871,7 @@ int main() {
     printf("[===========]\n");
     init_obj_fs();
     init_objects_cache();
+    init_objfs_log();
 
     // Driver layer
     run_test(initialization);
