@@ -43,7 +43,7 @@ objfsinit(void)
 {
   init_obj_fs();
   init_objects_cache();
-  finish_log_transactions();
+  init_objfs_log();
 }
 
 // Other CPUs jump here from entryother.S.

@@ -2,6 +2,7 @@
 
 #include "obj_cache.h"
 #include "obj_disk.h"
+#include "sleeplock.h"
 
 #ifdef CPU_ENABLED
 #include "defs.h"  // import `panic`
@@ -18,6 +19,9 @@
 #ifndef OBJECTS_CACHE_ENTRIES
 #define OBJECTS_CACHE_ENTRIES 32
 #endif
+
+
+struct sleeplock cachelock;
 
 
 uint hits;
@@ -81,11 +85,14 @@ static void move_to_back(struct obj_cache_entry* e) {
 }
 
 uint cache_add_object(const void* object, uint size, const char* name) {
+    acquiresleep(&cachelock);
     uint rv = add_object(object, size, name);
     if (rv != NO_ERR) {
+        releasesleep(&cachelock);
         return rv;
     }
     if (size > CACHE_MAX_OBJECT_SIZE) {
+        releasesleep(&cachelock);
         return NO_ERR;
     }
     // The object is not located in the cache because it is new. And if it was
@@ -96,15 +103,19 @@ uint cache_add_object(const void* object, uint size, const char* name) {
     memmove(e->data, object, size);
     memmove(e->object_id, name, obj_id_bytes(name));
     misses++;
+    releasesleep(&cachelock);
     return NO_ERR;
 }
 
 uint cache_rewrite_object(const void* object, uint size, const char* name) {
+    acquiresleep(&cachelock);
     uint rv = rewrite_object(object, size, name);
     if (rv != NO_ERR) {
+        releasesleep(&cachelock);
         return rv;
     }
     if (size > CACHE_MAX_OBJECT_SIZE) {
+        releasesleep(&cachelock);
         return NO_ERR;
     }
     // the object might be inside the cache and might not
@@ -125,12 +136,33 @@ uint cache_rewrite_object(const void* object, uint size, const char* name) {
     e->size = size;
     memmove(e->data, object, size);
     memmove(e->object_id, name, obj_id_bytes(name));
+    releasesleep(&cachelock);
     return NO_ERR;
 }
 
+
+/// the caller holds the cache lock
+static uint cache_free_from_cache(const char* name) {
+    // the object might be inside the cache and might not
+    for(struct obj_cache_entry* e = obj_cache.head.prev;
+        e != &obj_cache.head;
+        e = e->prev)
+    {
+        if (obj_id_cmp(name, e->object_id) == 0) {
+            move_to_back(e);
+            e->object_id[0] = 0;
+            releasesleep(&cachelock);
+            return NO_ERR;
+        }
+    }
+    return OBJECT_NOT_EXISTS;
+}
+
 uint cache_delete_object(const char* name) {
+    acquiresleep(&cachelock);
     uint rv = delete_object(name);
     if (rv != NO_ERR) {
+        releasesleep(&cachelock);
         return rv;
     }
     // "remove" the object from the cache - otherwise the assumption
@@ -141,12 +173,15 @@ uint cache_delete_object(const char* name) {
     } else if (rv == NO_ERR) {
         hits++;
     } else {
+        releasesleep(&cachelock);
         panic("unexpected error from cache_free_from_cache");
     }
+    releasesleep(&cachelock);
     return NO_ERR;
 }
 
 uint cache_object_size(const char* name, uint* output) {
+    acquiresleep(&cachelock);
     for(struct obj_cache_entry* e = obj_cache.head.prev;
         e != &obj_cache.head;
         e = e->prev)
@@ -155,14 +190,18 @@ uint cache_object_size(const char* name, uint* output) {
             *output = e->size;
             move_to_front(e);
             hits++;
+            releasesleep(&cachelock);
             return NO_ERR;
         }
     }
     misses++;
-    return object_size(name, output);
+    uint err = object_size(name, output);
+    releasesleep(&cachelock);
+    return err;
 }
 
 uint cache_get_object(const char* name, void* output) {
+    acquiresleep(&cachelock);
     for(struct obj_cache_entry* e = obj_cache.head.prev;
         e != &obj_cache.head;
         e = e->prev)
@@ -171,45 +210,43 @@ uint cache_get_object(const char* name, void* output) {
             memmove(output, e->data, e->size);
             move_to_front(e);
             hits++;
+            releasesleep(&cachelock);
             return NO_ERR;
         }
     }
     misses++;
     uint rv = get_object(name, output);
     if (rv != NO_ERR) {
+        releasesleep(&cachelock);
         return rv;
     }
     uint size;
     if (object_size(name, &size) != NO_ERR) {
+        releasesleep(&cachelock);
         panic("cache get object failed to get object size");
     }
     if (size > CACHE_MAX_OBJECT_SIZE) {
+        releasesleep(&cachelock);
         return NO_ERR;
     }
     struct obj_cache_entry* e = obj_cache.head.prev;
     move_to_front(e);
     e->size = size;
     if (get_object(name, e->data)) {
+        releasesleep(&cachelock);
         panic("cache get object failed to get object data");
     }
     memmove(e->object_id, name, obj_id_bytes(name));
+    releasesleep(&cachelock);
     return NO_ERR;
 }
 
 
-uint cache_free_from_cache(const char* name) {
-    // the object might be inside the cache and might not
-    for(struct obj_cache_entry* e = obj_cache.head.prev;
-        e != &obj_cache.head;
-        e = e->prev)
-    {
-        if (obj_id_cmp(name, e->object_id) == 0) {
-            move_to_back(e);
-            e->object_id[0] = 0;
-            return NO_ERR;
-        }
-    }
-    return OBJECT_NOT_EXISTS;
+uint cache_free_from_cache_safe(const char* name) {
+    acquiresleep(&cachelock);
+    uint err = cache_free_from_cache(name);
+    releasesleep(&cachelock);
+    return err;
 }
 
 
