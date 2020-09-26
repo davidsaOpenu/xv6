@@ -6,6 +6,7 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "obj_log.h"
 
 struct {
   struct spinlock lock;
@@ -242,9 +243,7 @@ exit(void)
     }
   }
 
-  begin_op();
   iput(curproc->cwd);
-  end_op();
   curproc->cwd = 0;
 
   acquire(&ptable.lock);
@@ -406,7 +405,7 @@ forkret(void)
     // be run from main().
     first = 0;
     iinit(ROOTDEV);
-    initlog(ROOTDEV);
+    init_objfs_log();
   }
 
   // Return to "caller", actually trapret (see allocproc).

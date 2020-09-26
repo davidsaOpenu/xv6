@@ -1,4 +1,4 @@
-struct buf;
+//struct buf;
 struct context;
 struct file;
 struct inode;
@@ -11,10 +11,10 @@ struct stat;
 struct superblock;
 
 // bio.c
-void            binit(void);
-struct buf*     bread(uint, uint);
-void            brelse(struct buf*);
-void            bwrite(struct buf*);
+// void            binit(void);
+// struct buf*     bread(uint, uint);
+// void            brelse(struct buf*);
+// void            bwrite(struct buf*);
 
 // console.c
 void            consoleinit(void);
@@ -40,9 +40,9 @@ int             filewrite(struct file*, char*, int n);
 #include "fs.h"
 
 // ide.c
-void            ideinit(void);
-void            ideintr(void);
-void            iderw(struct buf*);
+// void            ideinit(void);
+// void            ideintr(void);
+// void            iderw(struct buf*);
 
 // ioapic.c
 void            ioapicenable(int irq, int cpu);
@@ -68,10 +68,10 @@ void            lapicstartap(uchar, uint);
 void            microdelay(int);
 
 // log.c
-void            initlog(int dev);
-void            log_write(struct buf*);
-void            begin_op();
-void            end_op();
+// void            initlog(int dev);
+// void            log_write(struct buf*);
+// void            begin_op();
+// void            end_op();
 
 // mp.c
 extern int      ismp;
