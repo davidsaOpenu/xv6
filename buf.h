@@ -1,3 +1,5 @@
+#pragma once
+
 struct buf {
   int flags;
   uint dev;

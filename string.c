@@ -57,7 +57,6 @@ memcpy(void *dst, const void *src, uint n)
   return memmove(dst, src, n);
 }
 
-#include "stdio.h"
 int
 strcmp(const char *p, const char *q)
 {

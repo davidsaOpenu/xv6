@@ -1,5 +1,5 @@
-#include <stdlib.h>
 #include "string.h"
+#include "types.h"
 
 #include "obj_disk.h"
 #include "sleeplock.h"
@@ -79,19 +79,22 @@ uint obj_id_bytes(const char* object_id) {
     return bytes;
 }
 
-
-static int order_by_address(const void* left, const void* right) {
-    uint left_offset = objects_table_entry(*(uint*)(left))->disk_offset;
-    uint right_offset = objects_table_entry(*(uint*)(right))->disk_offset;
-    if (left_offset > right_offset) {
-        return 1;
-    }
-    if (right_offset > left_offset) {
-        return -1;
-    }
-    return 0;
+void swap(uint* xp, uint* yp) {
+    int temp = *xp;
+    *xp = *yp;
+    *yp = temp;
 }
 
+
+void bubble_sort(uint* arr, uint n) {
+    for (uint i = 0; i < n - 1; i++) {
+        for (uint j = 0; j < n - i - 1; j++) {
+            if (objects_table_entry(arr[j])->disk_offset > objects_table_entry(arr[j + 1])->disk_offset) {
+                swap(&arr[j], &arr[j + 1]);
+            }
+        }
+    }
+}
 
 /**
  * The method finds a sequence of empty bytes of length `size`.
@@ -121,8 +124,7 @@ static void* find_empty_space(uint size) {
             }
         }
     }
-    qsort(entries_indices, super_block.occupied_objects, sizeof(uint),
-          order_by_address);
+    bubble_sort(entries_indices, super_block.occupied_objects);
 
     for (uint i = 0; i < super_block.occupied_objects - 1; ++i) {
         ObjectsTableEntry* current_entry = objects_table_entry(entries_indices[i]);

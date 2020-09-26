@@ -1,15 +1,12 @@
 OBJS = \
-	bio.o\
 	console.o\
 	exec.o\
 	file.o\
 	fs.o\
-	ide.o\
 	ioapic.o\
 	kalloc.o\
 	kbd.o\
 	lapic.o\
-	log.o\
 	main.o\
 	mp.o\
 	picirq.o\
@@ -27,6 +24,9 @@ OBJS = \
 	uart.o\
 	vectors.o\
 	vm.o\
+	obj_disk.o\
+	obj_cache.o\
+	obj_log.o\
 
 # Cross-compiling (e.g., on Mac OS X)
 # TOOLPREFIX = i386-jos-elf
@@ -51,7 +51,7 @@ TOOLPREFIX := $(shell if i386-jos-elf-objdump -i 2>&1 | grep '^elf32-i386$$' >/d
 endif
 
 # If the makefile can't find QEMU, specify its path here
-# QEMU = qemu-system-i386
+#QEMU = /usr/libexec/qemu-kvm
 
 # Try to infer the correct QEMU
 ifndef QEMU
@@ -76,7 +76,9 @@ AS = $(TOOLPREFIX)gas
 LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
-CFLAGS = -DENABLE_CPU -DEVICE_SUPPORT -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer
+CFLAGS = -DCPU_ENABLED -DEVICE_SUPPORT \
+		-DSTORAGE_DEVICE_SIZE=268435456 -DOBJECTS_TABLE_SIZE=200 \
+		-fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer
 CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
 ASFLAGS = -m32 -gdwarf-2 -Wa,-divide
 # FreeBSD ld wants ``elf_i386_fbsd''
@@ -219,7 +221,8 @@ QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
 ifndef CPUS
 CPUS := 2
 endif
-QEMUOPTS = -drive file=fs.img,index=1,media=disk,format=raw -drive file=xv6.img,index=0,media=disk,format=raw -smp $(CPUS) -m 512 $(QEMUEXTRA)
+QEMUOPTS = -drive file=xv6.img,index=0,media=disk,format=raw -smp $(CPUS) -m 512 $(QEMUEXTRA)
+#QEMUOPTS = -drive file=fs.img,index=1,media=disk,format=raw -drive file=xv6.img,index=0,media=disk,format=raw -smp $(CPUS) -m 512 $(QEMUEXTRA)
 
 qemu: fs.img xv6.img
 	$(QEMU) -serial mon:stdio $(QEMUOPTS)
@@ -227,7 +230,7 @@ qemu: fs.img xv6.img
 qemu-memfs: xv6memfs.img
 	$(QEMU) -drive file=xv6memfs.img,index=0,media=disk,format=raw -smp $(CPUS) -m 256
 
-qemu-nox: fs.img xv6.img
+qemu-nox: xv6.img
 	$(QEMU) -nographic $(QEMUOPTS)
 
 .gdbinit: .gdbinit.tmpl
@@ -288,7 +291,7 @@ tar:
 # Object file system related files
 # TODO integrate with the rest of xv6 sources - would be done in later part.
 run-objfs-tests:
-	$(CC) -g -fno-builtin -Werror \
+	$(CC) -g -fno-builtin -Werror -m32 \
 		obj_disk.c obj_cache.c obj_log.c obj_fs_tests.c obj_fs_tests_utilities.c \
 		fs.c spinlock.c sleeplock.c string.c \
 		-DSTORAGE_DEVICE_SIZE=67108864 -DOBJECTS_TABLE_SIZE=200 \

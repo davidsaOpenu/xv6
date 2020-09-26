@@ -19,10 +19,7 @@ exec(char *path, char **argv)
   pde_t *pgdir, *oldpgdir;
   struct proc *curproc = myproc();
 
-  begin_op();
-
   if((ip = namei(path)) == 0){
-    end_op();
     cprintf("exec: fail\n");
     return -1;
   }
@@ -57,7 +54,6 @@ exec(char *path, char **argv)
       goto bad;
   }
   iunlockput(ip);
-  end_op();
   ip = 0;
 
   // Allocate two pages at the next page boundary.
@@ -108,7 +104,6 @@ exec(char *path, char **argv)
     freevm(pgdir);
   if(ip){
     iunlockput(ip);
-    end_op();
   }
   return -1;
 }
