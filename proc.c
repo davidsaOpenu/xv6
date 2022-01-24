@@ -184,7 +184,8 @@ void userinit(void) {
 // Return 0 on success, -1 on failure.
 int growproc(int n) {
   uint sz;
-  struct proc *curproc = myproc();
+  struct proc* curproc = myproc();
+  struct cgroup* cgroup = curproc->cgroup;
 
   // In case trying to grow process's memory over memory limit, and
   // given memory controller is enabled, return failure
@@ -195,21 +196,46 @@ int growproc(int n) {
   }
 
   sz = curproc->sz;
-  if (n > 0) {
-    if ((sz = allocuvm(curproc->pgdir, sz, sz + n)) == 0) return -1;
-  } else if (n < 0) {
-    if ((sz = deallocuvm(curproc->pgdir, sz, sz + n)) == 0) return -1;
+  if (n > 0) {// In this case we update protected memory inside of allocuvm function  
+    if ((sz = allocuvm(curproc->pgdir, sz, sz + n, cgroup)) == 0)
+      return -1;
   }
+  else if (n < 0) {
+    if ((sz = deallocuvm(curproc->pgdir, sz, sz + n)) == 0){
+      return -1;
+    }else{
+      update_protect_mem(curproc->cgroup, curproc->sz, sz);
+    }
+  }
+
   curproc->sz = sz;
 
   // Update memory usage in cgroup and its ancestors
-  struct cgroup *cgroup = curproc->cgroup;
   do {
     cgroup->current_mem += n;
-  } while ((cgroup = cgroup->parent));
+    } while ((cgroup = cgroup->parent));
 
   switchuvm(curproc);
   return 0;
+}
+
+void
+update_protect_mem(struct cgroup* cgroup, int oldsz, int newsz)
+{
+
+    if (cgroup == cgroup_root())
+        return;
+
+    if (cgroup->mem_controller_enabled) {
+        int proc_page = PGROUNDUP(oldsz)/PGSIZE - PGROUNDUP(newsz)/PGSIZE;
+        cgroup->current_page -= proc_page;
+        int min = PGROUNDUP(cgroup->min_mem)/PGSIZE;
+        int protect = min - cgroup->current_page;
+        if (protect > 0) {//we need to protect memory
+            increse_protect_counter(protect - cgroup->protected_mem);
+            cgroup->protected_mem = protect;
+        }
+    }
 }
 
 // Create a new process copying p as the parent.
@@ -304,11 +330,15 @@ int fork(void) {
 
   return pid;
 }
+
 /*Kill the given process p, and set its parent to given process reaper*/
-void kill_proc(struct proc *p, struct proc *reaper) {
-  p->killed = 1;
-  if (p->state == SLEEPING) p->state = RUNNABLE;
-  p->parent = reaper;
+void kill_proc(struct proc* p, struct proc* reaper) {
+   p->killed = 1;
+   if (p->state == SLEEPING)
+    p->state = RUNNABLE;
+   p->parent = reaper;
+   cgroup_erase(p->cgroup, p);
+   update_protect_mem(p->cgroup, p->sz, 0);
 }
 
 /*Kill all the processes inside the namespace of a given process, called parent
@@ -407,6 +437,7 @@ void exit(int status) {
 
   // Remove the process cgroup.
   cgroup_erase(curproc->cgroup, curproc);
+  update_protect_mem(curproc->cgroup, curproc->sz, 0);
 
   // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE;

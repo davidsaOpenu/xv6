@@ -23,6 +23,7 @@
 #define CGFS_SET_FRZ "cgroup.freeze"
 #define CGFS_MEM_CUR "memory.current"
 #define CGFS_MEM_MAX "memory.max"
+#define CGFS_MEM_MIN "memory.min"
 #define CGFS_MEM_STAT "memory.stat"
 
 /**
@@ -53,7 +54,8 @@
  *    14)   "cgroup.freeze"
  *    15)   "memory.current"
  *    16)   "memory.max"
- *    17)    cgroup directories
+ *    17)   "memory.min"
+ * *  18)    cgroup directories
  */
 int unsafe_cg_open(cg_file_type type, char* filename, struct cgroup* cgp,
                    int omode);
@@ -81,7 +83,8 @@ int unsafe_cg_open(cg_file_type type, char* filename, struct cgroup* cgp,
  *    14)   "cgroup.freeze"
  *    15)   "memory.current"
  *    16)   "memory.max"
- *    17)    cgroup directories
+ *    17)   "memory.min"
+ **   18)    cgroup directories
  */
 int unsafe_cg_read(cg_file_type type, struct vfs_file* f, char* addr, int n);
 
@@ -101,6 +104,7 @@ int unsafe_cg_read(cg_file_type type, struct vfs_file* f, char* addr, int n);
  *    7)    "cpuset.cpus"
  *    8)    "cgroup.freeze"
  *    9)    "memory.max"
+ *   10)    "memory.min"
  */
 int unsafe_cg_write(struct vfs_file* f, char* addr, int n);
 

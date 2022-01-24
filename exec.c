@@ -24,6 +24,7 @@ int exec(char *path, char **argv) {
   struct proc *curproc = myproc();
   elfv = newvector(sizeof(elf), 1);
   phv = newvector(sizeof(ph), 1);
+  struct cgroup* cgroup = curproc->cgroup;
 
   begin_op();
 
@@ -55,7 +56,7 @@ int exec(char *path, char **argv) {
     if (ph.type != ELF_PROG_LOAD) continue;
     if (ph.memsz < ph.filesz) goto bad;
     if (ph.vaddr + ph.memsz < ph.vaddr) goto bad;
-    if ((sz = allocuvm(pgdir, sz, ph.vaddr + ph.memsz)) == 0) goto bad;
+    if ((sz = allocuvm(pgdir, sz, ph.vaddr + ph.memsz, cgroup)) == 0) goto bad;
     if (ph.vaddr % PGSIZE != 0) goto bad;
     if (loaduvm(pgdir, (char *)ph.vaddr, ip, ph.off, ph.filesz) < 0) goto bad;
   }
@@ -66,8 +67,9 @@ int exec(char *path, char **argv) {
   // Allocate two pages at the next page boundary.
   // Make the first inaccessible.  Use the second as the user stack.
   sz = PGROUNDUP(sz);
-  if ((sz = allocuvm(pgdir, sz, sz + 2 * PGSIZE)) == 0) goto bad;
-  clearpteu(pgdir, (char *)(sz - 2 * PGSIZE));
+  if((sz = allocuvm(pgdir, sz, sz + 2*PGSIZE, cgroup)) == 0)
+    goto bad;
+  clearpteu(pgdir, (char*)(sz - 2*PGSIZE));
   sp = sz;
 
   // Push argument strings, prepare rest of stack in ustack.
@@ -92,7 +94,6 @@ int exec(char *path, char **argv) {
   safestrcpy(curproc->name, last, sizeof(curproc->name));
 
   // Update memory usage in cgroup and its ancestors
-  struct cgroup *cgroup = curproc->cgroup;
   do {
     cgroup->current_mem += sz - curproc->sz;
   } while ((cgroup = cgroup->parent));

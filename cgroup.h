@@ -20,86 +20,82 @@ typedef enum { CG_FILE, CG_DIR } cg_file_type;
 /**
  * Control group, contains up to NPROC processes.
  */
-struct cgroup {
-  char cgroup_dir_path[MAX_PATH_LENGTH]; /* Path of the cgroup
-                                            directory.*/
+struct cgroup
+{
+    char cgroup_dir_path[MAX_PATH_LENGTH]; /* Path of the cgroup
+                                              directory.*/
 
-  int ref_count; /* Reference count.*/
+    int ref_count; /* Reference count.*/
 
-  struct proc* proc[NPROC]; /* Array of all processes in the cgroup.*/
-  int num_of_procs;         /* Number of processes in the cgroup subtree
-                               (including processes in this cgroup).*/
+    struct proc * proc[NPROC]; /* Array of all processes in the cgroup.*/
+    int num_of_procs;          /* Number of processes in the cgroup subtree
+                                  (including processes in this cgroup).*/
 
-  struct cgroup* parent; /* The parent cgroup.*/
+    struct cgroup * parent; /* The parent cgroup.*/
 
-  char cpu_controller_avalible; /* Is 1 if cpu controller may be enabled,
-                                   otherwise 0.*/
-  char cpu_controller_enabled;  /* Is 1 if cpu controller is enabled,
-                                   otherwise 0.*/
+    char cpu_controller_avalible; /* Is 1 if cpu controller may be enabled,
+                                     otherwise 0.*/
+    char cpu_controller_enabled;  /* Is 1 if cpu controller is enabled,
+                                     otherwise 0.*/
 
-  char pid_controller_avalible; /* Is 1 if pid controller may be enabled,
-                                   otherwise 0.*/
-  char pid_controller_enabled;  /* Is 1 if pid controller is enabled,
-                                   otherwise 0.*/
+    char pid_controller_avalible; /* Is 1 if pid controller may be enabled,
+                                     otherwise 0.*/
+    char pid_controller_enabled;  /* Is 1 if pid controller is enabled,
+                                     otherwise 0.*/
 
-  char set_controller_avalible; /* Is 1 if cpu set controller may be enabled,
-                                   otherwise 0.*/
-  char set_controller_enabled;  /* Is 1 if cpu set controller is enabled,
-                                   otherwise 0.*/
+    char set_controller_avalible; /* Is 1 if cpu set controller may be enabled,
+                                     otherwise 0.*/
+    char set_controller_enabled;  /* Is 1 if cpu set controller is enabled,
+                                     otherwise 0.*/
 
-  char mem_controller_avalible; /* Is 1 if memory controller may be enabled,
-                            otherwise 0.*/
-  char mem_controller_enabled;  /* Is 1 if memory controller is enabled,
-                                otherwise 0.*/
+    char mem_controller_avalible; /* Is 1 if memory controller may be enabled,
+                              otherwise 0.*/
+    char mem_controller_enabled;  /* Is 1 if memory controller is enabled,
+                                  otherwise 0.*/
 
-  char populated; /* Is 1 if subtree has at least one process in it,
-                     otherise 0.*/
+    char populated; /* Is 1 if subtree has at least one process in it,
+                       otherise 0.*/
 
-  unsigned int max_descendants_value; /* Number of maximum descendant
-                                cgroups allowed in subtree.*/
+    unsigned int max_descendants_value; /* Number of maximum descendant
+                                  cgroups allowed in subtree.*/
 
-  unsigned int max_depth_value; /*Number of maximum depth allowed in subtree.*/
+    unsigned int max_depth_value; /*Number of maximum depth allowed in subtree.*/
 
-  unsigned int depth; /*Current depth of the cgroup.*/
+    unsigned int depth; /*Current depth of the cgroup.*/
 
-  unsigned int nr_descendants; /* Current number of descendant cgroups.*/
+    unsigned int nr_descendants; /* Current number of descendant cgroups.*/
 
-  unsigned int
-      nr_dying_descendants; /*Current number of dying descendant cgroups.*/
+    unsigned int nr_dying_descendants; /*Current number of dying descendant cgroups.*/
 
-  int max_num_of_procs; /*The maximum number of processes that are allowed in
-                          the cgroup. Used by pid controller.*/
+    int max_num_of_procs; /*The maximum number of processes that are allowed in the cgroup.
+                            Used by pid controller.*/
 
-  uchar cpu_to_use; /*Which cpu id to use for cpu set controller.*/
+    uchar cpu_to_use; /*Which cpu id to use for cpu set controller.*/
 
-  int is_frozen; /*Indicates whether cgroup is frozen. */
+    int is_frozen; /*Indicates whether cgroup is frozen. */
 
-  unsigned int current_mem; /*The current amount of memory used by the group.*/
-  unsigned int max_mem;     /*The maximum memory allowed for a group to use.*/
-  unsigned int
-      mem_stat_file_dirty; /* Amount of cached filesystem data that was modified
-                              but not yet written back to disk */
-  unsigned int
-      mem_stat_file_dirty_aggregated; /* Total number of cached filesystem data
-                                         that was modified and written back to
-                                         disk */
-  unsigned int
-      mem_stat_pgfault; /*Number of page faults incurred when the kernel dos not
-                           needs to read the data from disk*/
-  unsigned int
-      mem_stat_pgmajfault; /*Number of page faults incurred and the kernel
-                              actually needs to read the data from disk*/
+    unsigned int current_mem; /*The current amount of memory used by the group.*/
+    unsigned int current_page; /*The current amount of memory used by the group in pages.*/
 
-  unsigned long long cpu_time;
-  unsigned int cpu_period_time;
-  unsigned int cpu_percent;
-  unsigned int cpu_account_period;
-  unsigned int cpu_time_limit;
-  unsigned int cpu_account_frame;
-  unsigned int cpu_nr_periods;
-  unsigned int cpu_nr_throttled;
-  unsigned int cpu_throttled_usec;
-  char cpu_is_throttled_period;
+    unsigned int mem_stat_file_dirty; /* Amount of cached filesystem data that was modified but not yet written back to disk */
+    unsigned int mem_stat_file_dirty_aggregated; /* Total number of cached filesystem data that was modified and written back to disk */
+    unsigned int mem_stat_pgfault;/*Number of page faults incurred when the kernel dos not needs to read the data from disk*/
+    unsigned int mem_stat_pgmajfault;/*Number of page faults incurred and the kernel actually needs to read the data from disk*/
+
+    unsigned int max_mem; /*The maximum memory allowed for a group to use.*/
+    unsigned int min_mem; /*Amount of memory that protected for this cgroup.*/
+    unsigned int protected_mem; /*How meny pages of memory we need to protect for this group (e.g. min_mem - current_page).*/
+
+    unsigned long long cpu_time;
+    unsigned int cpu_period_time;
+    unsigned int cpu_percent;
+    unsigned int cpu_account_period;
+    unsigned int cpu_time_limit;
+    unsigned int cpu_account_frame;
+    unsigned int cpu_nr_periods;
+    unsigned int cpu_nr_throttled;
+    unsigned int cpu_throttled_usec;
+    char cpu_is_throttled_period;
 };
 
 /**
@@ -183,6 +179,14 @@ int cgroup_insert(struct cgroup* cgroup, struct proc* proc);
  * cgroup. Must be valid process. Return value is void.
  */
 void cgroup_erase(struct cgroup* cgroup, struct proc* proc);
+
+/**
+ * These functions update protect memory counter after moveing process from src cgroup to dst cgroup.
+ * Return 0 for sucsses, 1 if there is no memory to protect for the "src" cgroup.
+ */
+int protect_memory(struct cgroup* src, struct cgroup* dst, int proc_size);
+int calc_dec_dst_protect_pg(struct cgroup* cgroup, int pg);
+int calc_inc_src_protect_pg(struct cgroup* cgroup, int pg);
 
 /**
  * These functions enable the cpu controller of a cgroup.
@@ -428,10 +432,27 @@ int frz_grp(struct cgroup* cgroup, int frz);
 /**
  *This function sets the maximum amount of memory.
  *Receives cgroup pointer parameter "cgroup" and integer "limit".
- *Sets the number of maximum allowed amount of memory in the cgroup to be
- *"limit". Returns 1 upon successes, 0 if no action taken, -1 upon failure.
+ *Sets the maximum allowed amount of memory in the cgroup to be "limit".
+ *Returns 1 upon successes, 0 if no action taken, -1 upon failure.
  */
 int set_max_mem(struct cgroup* cgp, unsigned int limit);
+
+/**
+ *This function sets the minimum amount of memory.
+ *Receives cgroup pointer parameter "cgroup" and integer "limit".
+ *Sets the minimum amount of memory in the cgroup to be "limit".
+ *calls set_protect_mem that ask mmu to protecet pages for cgroup.
+ *Returns 1 upon successes, 0 if no action taken, -1 upon failure.
+ */
+int set_min_mem(struct cgroup* cgp, unsigned int limit);
+
+/**
+ *This function sets the amount of memory pages that protected for cgroup.
+ *Receives cgroup pointer parameter "cgroup" and integer "pages".
+ *Increas/decreas the number of protected memory by "pages".
+ *Returns 0 upon successes, -1 upon failure.
+ */
+int set_protect_mem(struct cgroup* cgroup, unsigned int pages);
 
 /**
  * These functions enables the memory controller of a cgroup.
