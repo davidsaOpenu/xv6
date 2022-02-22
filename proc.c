@@ -282,8 +282,8 @@ fork(void)
   np->tf->eax = 0;
 
   for (i = 0; i < NOFILE; i++)
-    if (curproc->ofile[i])
-      np->ofile[i] = filedup(curproc->ofile[i]);
+        if (curproc->ofile[i])
+            np->ofile[i] = curproc->ofile[i]->f_op.filedup(curproc->ofile[i]);
   np->cwd = idup(curproc->cwd);
   safestrcpy(np->cwdp, curproc->cwdp, sizeof(curproc->cwdp));
   np->cwdmount = mntdup(curproc->cwdmount);
@@ -378,8 +378,8 @@ exit(int status)
   // Close all open files.
   for(fd = 0; fd < NOFILE; fd++){
     if(curproc->ofile[fd]){
-      fileclose(curproc->ofile[fd]);
-      curproc->ofile[fd] = 0;
+            vfs_fileclose(curproc->ofile[fd]);
+            curproc->ofile[fd] = 0;
     }
   }
 

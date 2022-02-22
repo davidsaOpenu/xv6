@@ -1,4 +1,5 @@
-#pragma once
+#ifndef XV6_OBJ_DISK_H
+#define XV6_OBJ_DISK_H
 
 #include "obj_fs.h"
 #include "types.h"
@@ -210,7 +211,7 @@ uint check_rewrite_object_validality(uint size, const char* name);
 uint check_delete_object_validality(const char* name);
 //@}
 
-
+uint new_inode_number();
 
 /**
  * The following methods provides metadata about the file system state.
@@ -254,3 +255,5 @@ uint device_size();
  * fregmentation, the actual amount of data you can write might be lower.
  */
 uint occupied_bytes();
+
+#endif

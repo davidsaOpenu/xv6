@@ -2,6 +2,7 @@
 #include "string.h"
 #include "obj_cache.h"
 #include "obj_disk.h"
+#include "sleeplock.h"
 
 #ifndef KERNEL_TESTS
 #include "defs.h"  // import `panic`
@@ -18,6 +19,9 @@
 #ifndef OBJECTS_CACHE_ENTRIES
 #define OBJECTS_CACHE_ENTRIES 32
 #endif
+
+
+struct sleeplock cachelock;
 
 
 uint hits;
@@ -81,11 +85,14 @@ static void move_to_back(struct obj_cache_entry* e) {
 }
 
 uint cache_add_object(const void* object, uint size, const char* name) {
+    acquiresleep(&cachelock);
     uint rv = add_object(object, size, name);
     if (rv != NO_ERR) {
+        releasesleep(&cachelock);
         return rv;
     }
     if (size > CACHE_MAX_OBJECT_SIZE) {
+        releasesleep(&cachelock);
         return NO_ERR;
     }
     // The object is not located in the cache because it is new. And if it was
@@ -93,18 +100,22 @@ uint cache_add_object(const void* object, uint size, const char* name) {
     struct obj_cache_entry* e = obj_cache.head.prev;
     move_to_front(e);
     e->size = size;
-    memcpy(e->data, object, size);
-    memcpy(e->object_id, name, obj_id_bytes(name));
+    memmove(e->data, object, size);
+    memmove(e->object_id, name, obj_id_bytes(name));
     misses++;
+    releasesleep(&cachelock);
     return NO_ERR;
 }
 
 uint cache_rewrite_object(const void* object, uint size, const char* name) {
+    acquiresleep(&cachelock);
     uint rv = rewrite_object(object, size, name);
     if (rv != NO_ERR) {
+        releasesleep(&cachelock);
         return rv;
     }
     if (size > CACHE_MAX_OBJECT_SIZE) {
+        releasesleep(&cachelock);
         return NO_ERR;
     }
     // the object might be inside the cache and might not
@@ -123,8 +134,9 @@ uint cache_rewrite_object(const void* object, uint size, const char* name) {
     }
     move_to_front(e);
     e->size = size;
-    memcpy(e->data, object, size);
-    memcpy(e->object_id, name, obj_id_bytes(name));
+    memmove(e->data, object, size);
+    memmove(e->object_id, name, obj_id_bytes(name));
+    releasesleep(&cachelock);
     return NO_ERR;
 }
 
