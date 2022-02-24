@@ -25,9 +25,6 @@
 #include "obj_cache.h"
 #include "obj_log.h"
 
-
-#define min(a, b) ((a) < (b) ? (a) : (b))
-
 int             obj_dirlink(struct vfs_inode*, char*, uint);
 struct vfs_inode*   obj_dirlookup(struct vfs_inode*, char*, uint*);
 struct vfs_inode*   obj_idup(struct vfs_inode*);

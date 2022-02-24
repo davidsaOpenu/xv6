@@ -281,6 +281,10 @@ int             intlen(int n);
 
 
 // number of elements in fixed-size array
+<<<<<<< HEAD
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))
 
 #endif
+=======
+#define NELEM(x) (sizeof(x)/sizeof((x)[0]))
+>>>>>>> cb27313... ObjFS adjustable inode and objectstore regions
