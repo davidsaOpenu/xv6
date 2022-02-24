@@ -214,6 +214,8 @@ void            initlock(struct spinlock*, char*);
 void            release(struct spinlock*);
 void            pushcli(void);
 void            popcli(void);
+void            continue_only_if_acquired(struct spinlock *, int *);
+void            restore(struct spinlock *, int);
 
 // sleeplock.c
 void            acquiresleep(struct sleeplock*);

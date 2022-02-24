@@ -8,6 +8,10 @@
 #include "mmu.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "errno.h"
+
+extern int errno;
+extern char errorstr[MAX_ERROR_STRING_LENGTH];
 
 void
 initlock(struct spinlock *lk, char *name)
@@ -17,17 +21,8 @@ initlock(struct spinlock *lk, char *name)
   lk->cpu = 0;
 }
 
-// Acquire the lock.
-// Loops (spins) until the lock is acquired.
-// Holding a lock for a long time may cause
-// other CPUs to waste time spinning to acquire it.
-void
-acquire(struct spinlock *lk)
-{
-  pushcli(); // disable interrupts to avoid deadlock.
-  if(holding(lk))
-    panic("acquire");
-
+static void 
+_loopandlock(struct spinlock *lk) {
   // The xchg is atomic.
   while(xchg(&lk->locked, 1) != 0)
     ;
@@ -42,13 +37,35 @@ acquire(struct spinlock *lk)
   getcallerpcs(&lk, lk->pcs);
 }
 
-// Release the lock.
+// Acquire the lock.
+// Loops (spins) until the lock is acquired.
+// Holding a lock for a long time may cause
+// other CPUs to waste time spinning to acquire it.
 void
-release(struct spinlock *lk)
+acquire(struct spinlock *lk)
 {
-  if(!holding(lk))
-    panic("release");
+  pushcli(); // disable interrupts to avoid deadlock.
+  if(holding(lk))
+    panic("acquire");
+  _loopandlock(lk);
+}
 
+// this function is trying to acquire a lock,
+// it will return, allowing its caller to run
+// only if the lock is acquired. otherwise it will
+// try to acquire it.
+void 
+continue_only_if_acquired(struct spinlock *lk, int * isLockedByMeBeforeCall) {
+  pushcli();
+  if((*isLockedByMeBeforeCall = holding(lk))) { // notice assignment in condition
+    seterror(ERR_LOCK_ALREADY_AQUIRED, "A lock was acquired by the same cpu more than once without releasing it first.");
+  } else {
+    _loopandlock(lk);
+  }
+}
+
+static void 
+_releaselock(struct spinlock * lk) {
   lk->pcs[0] = 0;
   lk->cpu = 0;
 
@@ -65,6 +82,26 @@ release(struct spinlock *lk)
   asm volatile("movl $0, %0" : "+m" (lk->locked) : );
 
   popcli();
+}
+
+// restore a given lock to its old value
+void 
+restore(struct spinlock *lk, int wasLockedBeforeReacquired) {
+  if(wasLockedBeforeReacquired) {
+    seterror(ERR_LOCK_ALREADY_RELEASED, "A lock was releases by the same cpu more than once without acquiring it in between.");
+    return;
+  } else {
+    _releaselock(lk);
+  }
+}
+
+// Release the lock.
+void
+release(struct spinlock *lk)
+{
+  if(!holding(lk))
+    panic("release");
+  _releaselock(lk);
 }
 
 // Record the current call stack in pcs[] by following the %ebp chain.
