@@ -134,7 +134,6 @@ constructarray(char ** head, char ** tail, unsigned int numberofelements, unsign
     unsigned int pointersspace = 2*sizeof(char*);
     unsigned int elementsperpage = (PGSIZE - pointersspace) / elementsize ;
     unsigned int requiredpages = numberofelements / elementsperpage + (numberofelements % elementsperpage != 0 ? 1 : 0);
-
     int currentpageindex;
     for(currentpageindex = 0; currentpageindex < requiredpages; currentpageindex++){
         char* p = kalloc();
