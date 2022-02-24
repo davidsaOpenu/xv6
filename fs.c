@@ -25,8 +25,6 @@
 #include "vfs_fs.h"
 #include "kvector.h"
 
-#define min(a, b) ((a) < (b) ? (a) : (b))
-
 int             dirlink(struct vfs_inode*, char*, uint);
 struct vfs_inode*   dirlookup(struct vfs_inode*, char*, uint*);
 struct vfs_inode*   idup(struct vfs_inode*);

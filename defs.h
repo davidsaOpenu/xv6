@@ -283,4 +283,6 @@ int             intlen(int n);
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))
 
+#define min(a, b) ((a) < (b) ? (a) : (b))
+#define abs(a) ((a) > 0 ? (a) : -(a))
 #endif
