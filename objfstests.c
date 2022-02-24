@@ -1181,6 +1181,7 @@ main(int argc, char *argv[])
     unlinkread();
     dirfile();
     iref();
+    
 
     exectest(); // Ensure this test to be the last one to run (prints ALL TESTS PASSED)
 

@@ -5,6 +5,7 @@
 
 #include "cgroup.h"
 #include "stat.h"
+#include "defs.h"
 
 #define CGFS_PROCS "cgroup.procs"
 #define CGFS_SUBTREE_CONTROL "cgroup.subtree_control"
