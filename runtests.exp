@@ -1,4 +1,4 @@
-#!/usr/bin/expect -f
+
 
 #-------------------------------------------------------------------------
 #-HELPER PROCEDURES-------------------------------------------------------
@@ -365,6 +365,18 @@ proc usertests {argv} {
     assert_on_exit_status
 }
 
+# - xv6 objfstests
+# @argv - file name for logging
+proc objfstests {argv} {
+
+    set timeout -1
+    #clean expect buffer
+    expect *
+    send "objfstests\n"
+    log_file -noappend [lindex $argv 0]
+    assert_on_exit_status
+}
+
 # - xv6 cgroup tests
 # @argv - file name for logging
 proc cgroupstests {argv} {
@@ -454,6 +466,7 @@ set running [pidns_tests $argv]
 set running [mounttest $argv]
 set running [mounttest_with_ls $argv]
 set running [usertests $argv]
+set running [objfstests $argv]
 
 log_file
 # just in case
