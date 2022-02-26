@@ -11,7 +11,7 @@
 
 char buf[8192];
 char name[3];
-char *echoargv[] = { "echo", "ALL", "TESTS", "PASSED", 0 };
+char *echoargv[] = { "echo", "ALL", "OBJFSTESTS", "PASSED", 0 };
 int stdout = 1;
 
 // another concurrent link/unlink/create test,

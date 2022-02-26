@@ -1188,8 +1188,8 @@ TEST (test_mem_stat) {
 
         // Go to sleep for long period of time alowe move the prosses into cgroup.
         sleep(10);
-        char str [128];
-        memset(str, 'a', 128);
+        char str [256];
+        memset(str, 'a', 256);
 
         // Write to a new file 2 times.
         int fd;
