@@ -1,4 +1,4 @@
-#!/usr/bin/expect -f
+
 
 #-------------------------------------------------------------------------
 #-HELPER PROCEDURES-------------------------------------------------------
@@ -467,6 +467,7 @@ set running [mounttest $argv]
 set running [mounttest_with_ls $argv]
 set running [objfstests $argv]
 set running [usertests $argv]
+set running [objfstests $argv]
 
 log_file
 # just in case
