@@ -101,7 +101,7 @@ OBJDUMP = $(TOOLPREFIX)objdump
 
 ########## CFLAGS ##########
 CFLAGS = -static -MD -m32 -mno-sse -gstabs -std=gnu99 -Wall -Werror -Wstack-usage=4096 \
-	-fno-pic -fno-builtin -fno-strict-aliasing -fno-omit-frame-pointer -O0 -g $(OFLAGS)
+	-fno-pic -fno-builtin -fno-strict-aliasing -fno-omit-frame-pointer $(OFLAGS)
 
 #x86
 HOST_CPU_TSC_FREQ := $(shell cat /proc/cpuinfo | grep -i "cpu mhz" | head -n 1 | rev | cut -d ' ' -f 1 | rev | cut -d '.' -f 1)*1000
@@ -115,7 +115,7 @@ else
 CFLAGS += -DXV6_WAIT_FOR_DEBUGGER=0
 endif
 
-OFLAGS = -O0
+OFLAGS = -O2
 CFLAGS += -DSTORAGE_DEVICE_SIZE=327680 -DOBJECTS_TABLE_SIZE=200
 CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
 ############################
