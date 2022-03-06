@@ -299,7 +299,7 @@ createmount(char *path, short type, short major, short minor, struct mount **mnt
     dp->nlink++;  // for ".."
     dp->i_op.iupdate(dp);
     // No ip->nlink++ for ".": avoid cyclic ref count.
-    if(dp->i_op.dirlink(ip, ".", ip->inum) < 0 || dp->i_op.dirlink(ip, "..", dp->inum) < 0)
+    if(ip->i_op.dirlink(ip, ".", ip->inum) < 0 || ip->i_op.dirlink(ip, "..", dp->inum) < 0)
       panic("create dots");
   }
 
