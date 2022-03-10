@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "afdaf9dc_dea5ef32",
+        "filename": "device.c",
+        "patchSetId": 3
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-03-10T19:46:47Z",
+      "side": 1,
+      "message": "leftover?",
+      "revId": "e3966e2f865181b9d3132c74baf051183f375d2e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
