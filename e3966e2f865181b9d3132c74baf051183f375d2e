@@ -37,6 +37,29 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "a4018c48_8838c040",
+        "filename": "fs.c",
+        "patchSetId": 3
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-03-15T06:28:58Z",
+      "side": 1,
+      "message": "shouldn\u0027t they be in defs.h section fs.c?",
+      "range": {
+        "startLine": 29,
+        "startChar": 0,
+        "endLine": 42,
+        "endChar": 53
+      },
+      "revId": "e3966e2f865181b9d3132c74baf051183f375d2e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "9a51e30c_8f16b04d",
         "filename": "fs.h",
         "patchSetId": 3
