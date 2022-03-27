@@ -20,6 +20,23 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "dce96adc_8edcb57b",
+        "filename": "file.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-03-27T10:13:34Z",
+      "side": 1,
+      "message": "// that also keeps one to one correspondence between a physical inode  and it\u0027s vfs_inode counterpart",
+      "revId": "e3966e2f865181b9d3132c74baf051183f375d2e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "a869d6b8_aebdb88d",
         "filename": "file.h",
         "patchSetId": 3
@@ -31,6 +48,24 @@
       "writtenOn": "2022-03-15T06:21:40Z",
       "side": 1,
       "message": "supposed to be a standalone one",
+      "revId": "e3966e2f865181b9d3132c74baf051183f375d2e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "14bc0245_344fc5ca",
+        "filename": "file.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-03-27T10:13:34Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a869d6b8_aebdb88d",
       "revId": "e3966e2f865181b9d3132c74baf051183f375d2e",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
@@ -77,6 +112,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "32339c1e_8e0b9274",
+        "filename": "fs.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-03-27T10:13:34Z",
+      "side": 1,
+      "message": "that also keeps one to one correspondence between X and Y",
+      "parentUuid": "9a51e30c_8f16b04d",
+      "revId": "e3966e2f865181b9d3132c74baf051183f375d2e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "f47397c4_e0896e32",
         "filename": "fs.h",
         "patchSetId": 3
@@ -88,6 +141,41 @@
       "writtenOn": "2022-03-15T06:23:25Z",
       "side": 1,
       "message": "same here",
+      "revId": "e3966e2f865181b9d3132c74baf051183f375d2e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "21533a21_30d7fa34",
+        "filename": "fs.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-03-27T10:13:34Z",
+      "side": 1,
+      "message": "that also keeps one to one correspondence between X and Y",
+      "parentUuid": "f47397c4_e0896e32",
+      "revId": "e3966e2f865181b9d3132c74baf051183f375d2e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "137d2f88_87640a7f",
+        "filename": "obj_file.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-03-27T10:13:34Z",
+      "side": 1,
+      "message": "// that also keeps the mapping between an object in our object store and it\u0027s vfs_inode counterpart",
       "revId": "e3966e2f865181b9d3132c74baf051183f375d2e",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
