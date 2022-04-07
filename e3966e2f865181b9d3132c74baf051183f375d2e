@@ -95,6 +95,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "abeccc1b_c1b28d89",
+        "filename": "fs.c",
+        "patchSetId": 3
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 1019014
+      },
+      "writtenOn": "2022-04-07T06:06:47Z",
+      "side": 1,
+      "message": "No, because those functions are inode operations and you shouldn\u0027t call them directly but from the vfs_inode.i_op.",
+      "parentUuid": "a4018c48_8838c040",
+      "range": {
+        "startLine": 29,
+        "startChar": 0,
+        "endLine": 42,
+        "endChar": 53
+      },
+      "revId": "e3966e2f865181b9d3132c74baf051183f375d2e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "9a51e30c_8f16b04d",
         "filename": "fs.h",
         "patchSetId": 3
