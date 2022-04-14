@@ -31,6 +31,11 @@ argfd(int n, int *pfd, struct vfs_file **pf)
   return 0;
 }
 
+/* 
+returns:  0 - returned inside the newly created process.
+          positive - returned to parent process on success this is the ID of child process.
+          negative - on failure.
+*/ 
 int
 sys_fork(void)
 {

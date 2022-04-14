@@ -195,6 +195,8 @@ void            initlock(struct spinlock*, char*);
 void            release(struct spinlock*);
 void            pushcli(void);
 void            popcli(void);
+void            continueOnlyIfAcquired(struct spinlock *, int *);
+void            restore(struct spinlock *, int);
 
 // sleeplock.c
 void            acquiresleep(struct sleeplock*);
@@ -261,7 +263,6 @@ int             atoi(char * str);
 int             itoa(char * buf, int n);
 int             utoa(char * buf, unsigned int n);
 int             intlen(int n);
-
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

@@ -61,16 +61,22 @@ struct cpu*
 mycpu(void)
 {
   int apicid, i;
-
-  if(readeflags()&FL_IF)
-    panic("mycpu called with interrupts enabled\n");
+  int calledWithInterruptsEnabled = readeflags()&FL_IF;
+  if (calledWithInterruptsEnabled){
+    cprintf("mycpu called with interrupts enabled\n");
+    cli();
+  }
 
   apicid = lapicid();
   // APIC IDs are not guaranteed to be contiguous. Maybe we should have
   // a reverse map, or reserve a register to store &cpus[i].
   for (i = 0; i < ncpu; ++i) {
-    if (cpus[i].apicid == apicid)
+    if (cpus[i].apicid == apicid){
+      if (calledWithInterruptsEnabled){
+        sti();
+      }
       return &cpus[i];
+    }
   }
   panic("unknown apicid\n");
 }
@@ -99,20 +105,23 @@ allocproc(void)
   struct proc *p;
   char *sp;
 
-  acquire(&ptable.lock);
-
+  //acquire(&ptable.lock);
+  int originalLockState;
+  continueOnlyIfAcquired(&ptable.lock, &originalLockState);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     if(p->state == UNUSED)
       goto found;
 
-  release(&ptable.lock);
+  //release(&ptable.lock);
+  restore(&ptable.lock, originalLockState);
   return 0;
 
 found:
   p->state = EMBRYO;
   p->killed = 0; // Prevents process allocating with killed=1 flag. This behavior was exhibited as a bug and this prevents it.
-  release(&ptable.lock);
-
+  //release(&ptable.lock);
+  restore(&ptable.lock, originalLockState);
+  
   // Allocate kernel stack.
   if((p->kstack = kalloc()) == 0){
     p->state = UNUSED;
@@ -302,6 +311,9 @@ fork(void)
   while (cur) {
     if (i >= MAX_PID_NS_DEPTH) {
       panic("too many danif!");
+      // TODO :
+      // cprintf("fork exceeds its allowed depth.");
+      // return -1;
     }
 
     np->pids[i].pid = pid_ns_next_pid(cur);

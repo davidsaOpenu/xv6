@@ -8,26 +8,21 @@
 #include "mmu.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "errno.h"
 
-void
-initlock(struct spinlock *lk, char *name)
+extern int errno;
+extern char errorString[MAX_ERROR_STRING_LENGTH];
+static void _loopAndLock(struct spinlock *lk);                                    // private function used by both 'acquire' and 'continueOnlyIfAcquired'.
+static void _releaseLock(struct spinlock * lk);                                   // private function used by both 'release' and 'restore'.
+
+void initlock(struct spinlock *lk, char *name)
 {
   lk->name = name;
   lk->locked = 0;
   lk->cpu = 0;
 }
 
-// Acquire the lock.
-// Loops (spins) until the lock is acquired.
-// Holding a lock for a long time may cause
-// other CPUs to waste time spinning to acquire it.
-void
-acquire(struct spinlock *lk)
-{
-  pushcli(); // disable interrupts to avoid deadlock.
-  if(holding(lk))
-    panic("acquire");
-
+static void _loopAndLock(struct spinlock *lk){
   // The xchg is atomic.
   while(xchg(&lk->locked, 1) != 0)
     ;
@@ -42,13 +37,30 @@ acquire(struct spinlock *lk)
   getcallerpcs(&lk, lk->pcs);
 }
 
-// Release the lock.
-void
-release(struct spinlock *lk)
+// Acquire the lock.
+// Loops (spins) until the lock is acquired.
+// Holding a lock for a long time may cause
+// other CPUs to waste time spinning to acquire it.
+void acquire(struct spinlock *lk)
 {
-  if(!holding(lk))
-    panic("release");
+  pushcli(); // disable interrupts to avoid deadlock.
+  if(holding(lk))
+    panic("acquire");
+  _loopAndLock(lk);
+}
 
+void continueOnlyIfAcquired(struct spinlock *lk, int * isLockedByMeBeforeCall){
+  pushcli();
+  if((*isLockedByMeBeforeCall = holding(lk))){ // notice assignment in condition
+    setError(ERR_LOCK_ALREADY_AQUIRED, "A lock was acquired by the same cpu more than once without releasing it first.");
+    return;
+  }else{
+    _loopAndLock(lk);
+  }
+}
+
+static void _releaseLock(struct spinlock * lk)
+{
   lk->pcs[0] = 0;
   lk->cpu = 0;
 
@@ -63,7 +75,25 @@ release(struct spinlock *lk)
   // This code can't use a C assignment, since it might
   // not be atomic. A real OS would use C atomics here.
   asm volatile("movl $0, %0" : "+m" (lk->locked) : );
+}
 
+void restore(struct spinlock *lk, int wasLockedBeforeReacquired){
+  if(wasLockedBeforeReacquired){
+    popcli();
+    setError(ERR_LOCK_ALREADY_RELEASED, "A lock was releases by the same cpu more than once without acquiring it in between.");
+    return;
+  }else{
+    _releaseLock(lk);
+    popcli();
+  }
+}
+
+// Release the lock.
+void release(struct spinlock *lk)
+{
+  if(!holding(lk))
+    panic("release");
+  _releaseLock(lk);
   popcli();
 }
 
@@ -86,8 +116,7 @@ getcallerpcs(void *v, uint pcs[])
 }
 
 // Check whether this cpu is holding the lock.
-int
-holding(struct spinlock *lock)
+int holding(struct spinlock *lock)
 {
   return lock->locked && lock->cpu == mycpu();
 }
@@ -97,8 +126,7 @@ holding(struct spinlock *lock)
 // it takes two popcli to undo two pushcli.  Also, if interrupts
 // are off, then pushcli, popcli leaves them off.
 
-void
-pushcli(void)
+void pushcli(void)
 {
   int eflags;
 
@@ -109,8 +137,7 @@ pushcli(void)
   mycpu()->ncli += 1;
 }
 
-void
-popcli(void)
+void popcli(void)
 {
   if(readeflags()&FL_IF)
     panic("popcli - interruptible");
