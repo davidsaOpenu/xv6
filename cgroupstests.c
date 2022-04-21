@@ -39,6 +39,7 @@ static void empty_string(char* string, int length) {
 // Open given file.
 int open_file(const char* file) {
   int fd;
+
   if ((fd = open(file, O_RDWR)) < 1) {
     if (suppress == 0) printf(1, "\nFailed to open file: %s\n", file);
     return 0;
