@@ -50,9 +50,9 @@ main(void)
   startothers();   // start other processors
   kinit2(P2V(4*1024*1024), P2V(PHYSTOP)); // must come after startothers()
   cginit();        // cgroup table, must come before userinit()
-  userinit();      // first user process
   devinit();       // initialize devices
   namespaceinit(); // initialize namespaces
+  userinit();      // first user process
   mpmain();        // finish this processor's setup
 }
 
