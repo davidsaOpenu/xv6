@@ -1,0 +1,308 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "660e0838_62c3b03a",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-06-17T16:33:09Z",
+      "side": 1,
+      "message": "WDUT \nFixing kernel crash relating to pouch\n\nBefore this fix test could not pass and trying to create containers would lead to crash (panic).\n\nFixed issues:",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 10,
+        "endChar": 16
+      },
+      "revId": "65309a719e98a8d41be4ca7a942b9fa3d73906c7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "063696fc_f0a8e49a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-06-17T16:33:09Z",
+      "side": 1,
+      "message": "Thanks for working on major fix. Several notes inside.",
+      "revId": "65309a719e98a8d41be4ca7a942b9fa3d73906c7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c791375a_d0998d23",
+        "filename": "kmount.c",
+        "patchSetId": 1
+      },
+      "lineNbr": 283,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-06-17T16:33:09Z",
+      "side": 1,
+      "message": "nit: no need in this change. It creases style inconsistency and makes comparison harder.",
+      "range": {
+        "startLine": 283,
+        "startChar": 6,
+        "endLine": 283,
+        "endChar": 7
+      },
+      "revId": "65309a719e98a8d41be4ca7a942b9fa3d73906c7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "69a40e83_a1614215",
+        "filename": "kmount.c",
+        "patchSetId": 1
+      },
+      "lineNbr": 293,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-06-17T16:33:09Z",
+      "side": 1,
+      "message": "seems redundant since entry-\u003emnt.mountpoint \u003d\u003d 0",
+      "range": {
+        "startLine": 290,
+        "startChar": 0,
+        "endLine": 293,
+        "endChar": 7
+      },
+      "revId": "65309a719e98a8d41be4ca7a942b9fa3d73906c7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "904c211f_2704f2db",
+        "filename": "kmount.c",
+        "patchSetId": 1
+      },
+      "lineNbr": 299,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-06-17T16:33:09Z",
+      "side": 1,
+      "message": "same here",
+      "range": {
+        "startLine": 299,
+        "startChar": 1,
+        "endLine": 299,
+        "endChar": 7
+      },
+      "revId": "65309a719e98a8d41be4ca7a942b9fa3d73906c7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "75998b19_6a403556",
+        "filename": "kmount.c",
+        "patchSetId": 1
+      },
+      "lineNbr": 304,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-06-17T16:33:09Z",
+      "side": 1,
+      "message": "and here",
+      "range": {
+        "startLine": 304,
+        "startChar": 0,
+        "endLine": 304,
+        "endChar": 7
+      },
+      "revId": "65309a719e98a8d41be4ca7a942b9fa3d73906c7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "75a990ea_9b1e48b1",
+        "filename": "main.c",
+        "patchSetId": 1
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-06-17T16:33:09Z",
+      "side": 1,
+      "message": "Please add an explanation why this order is essential and what exactly happened before. Maybe it worth even submitting this one as a separate CR.\n\nLet\u0027s add a kernel panic inside unerinit if no initialization of the root cgroup and namespace were performed.",
+      "revId": "65309a719e98a8d41be4ca7a942b9fa3d73906c7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "21c07c98_e1ffa1e9",
+        "filename": "pouch.c",
+        "patchSetId": 1
+      },
+      "lineNbr": 511,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-06-17T16:33:09Z",
+      "side": 1,
+      "message": "in general are all those printouts:\na) informative\nb) consistent \nwith other messages printed by pouch?\n\nAnother question: maybe better to have them printed in a verbose mode specified by \"pouch -v other-parameters\" ?",
+      "revId": "65309a719e98a8d41be4ca7a942b9fa3d73906c7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3dfc7561_7ea24166",
+        "filename": "pouch.c",
+        "patchSetId": 1
+      },
+      "lineNbr": 518,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-06-17T16:33:09Z",
+      "side": 1,
+      "message": "nit: style consistency",
+      "range": {
+        "startLine": 518,
+        "startChar": 4,
+        "endLine": 518,
+        "endChar": 5
+      },
+      "revId": "65309a719e98a8d41be4ca7a942b9fa3d73906c7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "acb3dabc_00be40d9",
+        "filename": "pouch.c",
+        "patchSetId": 1
+      },
+      "lineNbr": 524,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-06-17T16:33:09Z",
+      "side": 1,
+      "message": "nit: style consistency",
+      "range": {
+        "startLine": 524,
+        "startChar": 3,
+        "endLine": 524,
+        "endChar": 9
+      },
+      "revId": "65309a719e98a8d41be4ca7a942b9fa3d73906c7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "702fbf7f_619899ae",
+        "filename": "pouch.c",
+        "patchSetId": 1
+      },
+      "lineNbr": 528,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-06-17T16:33:09Z",
+      "side": 1,
+      "message": "nice catch",
+      "range": {
+        "startLine": 528,
+        "startChar": 2,
+        "endLine": 528,
+        "endChar": 39
+      },
+      "revId": "65309a719e98a8d41be4ca7a942b9fa3d73906c7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "90cc8013_2ba87653",
+        "filename": "pouch.c",
+        "patchSetId": 1
+      },
+      "lineNbr": 534,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-06-17T16:33:09Z",
+      "side": 1,
+      "message": "also return -1",
+      "range": {
+        "startLine": 534,
+        "startChar": 12,
+        "endLine": 534,
+        "endChar": 26
+      },
+      "revId": "65309a719e98a8d41be4ca7a942b9fa3d73906c7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a6e8159d_62d02d6f",
+        "filename": "pouch.c",
+        "patchSetId": 1
+      },
+      "lineNbr": 540,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-06-17T16:33:09Z",
+      "side": 1,
+      "message": "nit: style consistency",
+      "range": {
+        "startLine": 540,
+        "startChar": 0,
+        "endLine": 540,
+        "endChar": 9
+      },
+      "revId": "65309a719e98a8d41be4ca7a942b9fa3d73906c7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c33b5e97_7d971437",
+        "filename": "pouch.c",
+        "patchSetId": 1
+      },
+      "lineNbr": 548,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-06-17T16:33:09Z",
+      "side": 1,
+      "message": "nit: style consistency",
+      "range": {
+        "startLine": 548,
+        "startChar": 2,
+        "endLine": 548,
+        "endChar": 5
+      },
+      "revId": "65309a719e98a8d41be4ca7a942b9fa3d73906c7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
