@@ -128,6 +128,7 @@ void            kinit2(void*, void*);
 int             kmemtest(void);
 int             increse_protect_counter(int num);
 int             decrese_protect_counter(int num);
+uint            get_total_memory();
 
 // kvector.c
 vector newvector(unsigned int, unsigned int);
