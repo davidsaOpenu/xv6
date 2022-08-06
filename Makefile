@@ -372,3 +372,10 @@ run-objfs-tests:
 		-std=gnu99 -DSTORAGE_DEVICE_SIZE=67108864 -DOBJECTS_TABLE_SIZE=200 \
 		-o tests
 	./tests
+
+run-vector-tests:
+	$(CC) $(CLAGS) -DUNITTESTS=1 \
+		kvector.h kvector.c unittests/unittests.h unittests/kvectortest.c \
+		-std=gnu99 \
+		-o vectortests
+	./vectortests
