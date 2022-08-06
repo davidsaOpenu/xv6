@@ -134,7 +134,8 @@ uint add_object(const void* object, uint size, const char* name);
  *   NO_ERR            - no error occured.
  *   OBJECT_NOT_EXISTS - object with this name already exists.
  */
-uint rewrite_object(vector object, uint size, const char* name);
+uint rewrite_entire_object(vector object, uint size, const char* name);
+uint rewrite_object(vector object, uint objectsize, uint write_starting_offset, const char* name);
 
 
 /**
