@@ -73,16 +73,18 @@ createdelete(void)
             name[2] = '\0';
             for(i = 0; i < N; i++){
                 name[1] = '0' + i;
+                printf(1,"creating %s\n",name);
                 fd = open(name, O_CREATE | O_RDWR);
                 if(fd < 0){
-                    printf(1, "create failed\n");
+                    printf(1, "create %s failed\n", name);
                     exit(1);
                 }
                 close(fd);
                 if(i > 0 && (i % 2 ) == 0){
                     name[1] = '0' + (i / 2);
+                    printf(1,"unlinking %s\n", name);
                     if(unlink(name) < 0){
-                        printf(1, "unlink failed\n");
+                        printf(1, "unlink %s failed\n", name);
                         exit(1);
                     }
                 }
@@ -94,7 +96,7 @@ createdelete(void)
     for(pi = 0; pi < process_count; pi++){
         wait(0);
     }
-
+    printf(1,"done creating/deleting\n");
     name[0] = name[1] = name[2] = 0;
     for(i = 0; i < N; i++){
         for(pi = 0; pi < process_count; pi++){
