@@ -235,6 +235,7 @@ void init_obj_fs() {
     initialize_objects_table_entry();
 }
 
+
 uint find_space_and_populate_entry(ObjectsTableEntry * entry, const void* object, const char* name, uint size) {
     void* address = find_empty_space(size);
     if (!address) {
@@ -252,6 +253,7 @@ uint find_space_and_populate_entry(ObjectsTableEntry * entry, const void* object
     releasesleep(&disklock);
     return NO_ERR;
 }
+
 
 uint add_object(const void* object, uint size, const char* name) {
     // 1. check if the object is already present in disk
@@ -284,7 +286,7 @@ uint add_object(const void* object, uint size, const char* name) {
 }
 
 
-uint rewrite_object(vector object, uint size, const char* name) {
+uint rewrite_entire_object(vector object, uint size, const char* name) {
     uint err;
     err = check_rewrite_object_validality(size, name);
     if (err != NO_ERR) {
@@ -321,6 +323,53 @@ uint rewrite_object(vector object, uint size, const char* name) {
         entry->disk_offset = address - (void*)memory_storage;
     }
     super_block.bytes_occupied += size;
+    write_super_block();
+    releasesleep(&disklock);
+    return NO_ERR;
+}
+
+
+uint rewrite_object(vector data, uint objectsize, uint write_starting_offset, const char* name) {
+    uint err;
+    // 1. check for name contraints validity
+    err = check_rewrite_object_validality(objectsize, name);
+    if (err != NO_ERR) {
+        return err;
+    }
+    // 2. name is ok. get the index off the object's entry
+    acquiresleep(&disklock);
+    uint i;
+    err = get_objects_table_index(name, &i);
+    if (err != NO_ERR) {
+        releasesleep(&disklock);
+        return err;
+    }
+    ObjectsTableEntry* entry = objects_table_entry(i);
+    super_block.bytes_occupied -= entry->size;
+    if (entry->size >= objectsize) {
+        // 3.A - the new object written is smaller or equals the the original.
+        void* address =
+            (void*)memory_storage + entry->disk_offset + write_starting_offset;
+        memmove_from_vector(address, data, 0, data.vectorsize); //TODO? instead of data.vectorsize add parameter 'datasize'
+        entry->size = objectsize;
+    } else {
+        //3.B - the new object is larger
+        entry->occupied = 0;
+        super_block.occupied_objects -= 1;
+        void* new_object_address = find_empty_space(objectsize);
+        void* data_destination_address = new_object_address + write_starting_offset;
+        entry->occupied = 1;
+        super_block.occupied_objects += 1;
+        if (!new_object_address) {
+            releasesleep(&disklock);
+            return NO_DISK_SPACE_FOUND;
+        }
+        memmove(new_object_address, (void*)memory_storage + entry->disk_offset, entry->size);
+        memmove_from_vector(data_destination_address, data, 0, data.vectorsize);
+        entry->size = objectsize;
+        entry->disk_offset = new_object_address - (void*)memory_storage;
+    }
+    super_block.bytes_occupied += objectsize;
     write_super_block();
     releasesleep(&disklock);
     return NO_ERR;
@@ -451,6 +500,7 @@ void set_occupied_objects(uint value) {
     write_super_block();
     releasesleep(&disklock);
 }
+
 
 void set_store_offset(uint new_offset) {
     acquiresleep(&disklock);
