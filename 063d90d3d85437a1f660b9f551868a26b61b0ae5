@@ -1,0 +1,90 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7006bf5c_36c954a0",
+        "filename": "windows-debugging-templates/gdbcommand",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-08-09T06:37:11Z",
+      "side": 0,
+      "message": "seems like a another change (if needed at all)",
+      "revId": "063d90d3d85437a1f660b9f551868a26b61b0ae5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6d914509_99dffed8",
+        "filename": "windows-debugging-templates/load-symbols",
+        "patchSetId": 1
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-08-09T06:37:11Z",
+      "side": 0,
+      "message": "seem like a another change (if needed at all)",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 34,
+        "endChar": 7
+      },
+      "revId": "063d90d3d85437a1f660b9f551868a26b61b0ae5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e7de9e1b_6f39d304",
+        "filename": "windows-debugging-templates/options.xml",
+        "patchSetId": 1
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-08-09T06:37:11Z",
+      "side": 0,
+      "message": "seem like a another change (if needed at all)",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 13,
+        "endChar": 30
+      },
+      "revId": "063d90d3d85437a1f660b9f551868a26b61b0ae5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "295e5d46_ff894c20",
+        "filename": "windows-debugging-templates/readme.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-08-09T06:37:11Z",
+      "side": 0,
+      "message": "seem like a another change (if needed at all)",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 19,
+        "endChar": 12
+      },
+      "revId": "063d90d3d85437a1f660b9f551868a26b61b0ae5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
