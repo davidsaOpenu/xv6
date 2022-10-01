@@ -34,13 +34,15 @@ typedef struct tty {
   int flags;
   struct spinlock lock;
 } tty;
+
 tty tty_table[MAX_TTY];
 
 static device_lock cons;
 
 static void consputc(int);
 
-static inline void update_pos(int pos) {
+static inline void update_pos(int pos)
+{
   outb(CRTPORT, 14);
   outb(CRTPORT + 1, pos >> 8);
   outb(CRTPORT, 15);
@@ -288,7 +290,6 @@ int ttyread(struct vfs_inode *ip, int n, vector *dstvector) {
     release(&tty_table[ip->minor].lock);
     ip->i_op.ilock(ip);
   }
-  
   return -1;
 }
 
@@ -324,7 +325,6 @@ void consoleinit(void) {
   tty_table[CONSOLE_MINOR].flags |= DEV_ATTACH;
   initlock(&tty_table[CONSOLE_MINOR].lock, "ttyconsole");
 
-
   cons.locking = 1;
 
   ioapicenable(IRQ_KBD, 0);
@@ -354,18 +354,18 @@ void tty_connect(struct vfs_inode *ip) {
   for (int i = CONSOLE_MINOR; i < MAX_TTY; i++) {
     if (ip->minor != i) {
       tty_table[i].flags &= ~(DEV_CONNECT);
-      }
-   }
-   consoleclear();
-   cprintf("\ntty%d connected\n", ip->minor - (CONSOLE_MINOR + 1));
-  
-  //Wakeup the processes that slept on ttyread()
-  wakeup(&tty_table[ip->minor]);
+  }
+ }
+ consoleclear();
+ cprintf("\ntty%d connected\n",ip->minor-(CONSOLE_MINOR+1));
+
+ //Wakeup the processes that slept on ttyread()
+ wakeup(&tty_table[ip->minor]);
 }
 
 void tty_attach(struct vfs_inode *ip) {
   tty_table[ip->minor].flags |= DEV_ATTACH;
-  initlock(&tty_table[ip->minor].lock, "tty");
+  initlock(&(tty_table[ip->minor].lock), "tty");
 }
 
 void tty_detach(struct vfs_inode *ip) {
