@@ -114,8 +114,13 @@ int sys_ioctl(void) {
   }
 
   ip = f->ip;
-
-  if (ip->minor == CONSOLE_MINOR) {
+  /*
+  Note: exculding minor device 0 which should mostly
+  be used for main devices or devices controller that doesn't support
+  ioctls.
+  Best practice is to test inode minor in the driver itself.
+  */
+  if(ip->minor <= 0){
     return -1;
   }
 
