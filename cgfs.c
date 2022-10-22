@@ -103,7 +103,7 @@ static inline int return_new_controller_state(char input_char) {
  * Receives char parameter pointer to pointer "buffer", char parameter pointer
  * "string", int parameter "size".
  *
- * The function copies from "string" into "buffer" "size" amount of characters.
+ * The function copies from "string" into "buffer" at most "size" amount of characters.
  * In addition "buffer" index is advanced by "size".
  */
 static inline void copy_and_move_buffer(char** buffer, char* string, int size) {
@@ -242,6 +242,8 @@ static cgroup_file_name_t get_file_name_constant(char* filename) {
     return MEM_MIN;
   else if (strcmp(filename, CGFS_MEM_STAT) == 0)
     return MEM_STAT;
+  else if (strcmp(filename, CGFS_IO_STAT) == 0)
+    return IO_STAT;
 
   return -1;
 }
@@ -351,6 +353,13 @@ static int unsafe_cg_open_file(char* filename, struct cgroup* cgp, int omode) {
       f->mem.stat.pgfault = cgp->mem_stat_pgfault;
       f->mem.stat.pgmajfault = cgp->mem_stat_pgmajfault;
       f->mem.stat.kernel = get_total_memory() * PGSIZE;
+      break;
+    
+    case IO_STAT:
+      if(cgp == cgroup_root())
+          return -1;
+      /* internally initialize the io related stats in the file structure */
+      set_cgroup_io_stat(f);
       break;
     // for any other type we do nothing (no special handling)
     default:
@@ -659,6 +668,58 @@ static int read_file_mem_min(struct vfs_file* f, char* addr, int n) {
                                min(abs(maxtextp - maxtext - f->off), n), addr);
 }
 
+static int read_file_io_stat(struct vfs_file* f, char * addr, int n) {
+  char *stattext = buf;
+  char *stattextp = stattext;
+  uint stattext_size = min(n + f->off, sizeof(buf) / sizeof(char));
+  cgroup_io_device_statistics_t * dev_stat = (void *)0;
+  char rbytes_buff[8] = {0};
+  char wbytes_buff[8] = {0};
+  char rios_buff[8] = {0};
+  char wios_buff[8] = {0};
+  uint buff_length = 0;
+
+  if(f == (void *)0 || f->cgp == (void *)0)
+      panic("Can't read file io stat. file structure invalid (NULL)");
+
+  /* set the io stats in the file structure (f->cgp should be already set with
+      the io inodes, if there are any)
+  */
+  get_cgroup_io_stat(f, f->cgp);
+
+  /* parse from file structure */
+  memset(stattext, 0, stattext_size);
+
+  for(int i = 0; i < NDEV; i ++)
+  {
+      dev_stat = (cgroup_io_device_statistics_t *)f->io.devices_stats[i];
+      if(dev_stat == (void *)0)
+          continue;
+
+      copy_and_move_buffer(&stattextp, dev_stat->dev_name, strlen(dev_stat->dev_name));
+
+      copy_and_move_buffer(&stattextp, " rbytes=", strlen(" rbytes="));
+      buff_length = utoa(rbytes_buff, dev_stat->device_stats.rbytes);
+      copy_and_move_buffer(&stattextp, rbytes_buff, buff_length);
+
+      copy_and_move_buffer(&stattextp, " wbytes=", strlen(" wbytes="));
+      buff_length = utoa(wbytes_buff, dev_stat->device_stats.wbytes);
+      copy_and_move_buffer(&stattextp, wbytes_buff, buff_length);
+
+      copy_and_move_buffer(&stattextp, " rios=", strlen(" rios="));
+      buff_length = utoa(rios_buff, dev_stat->device_stats.rios);
+      copy_and_move_buffer(&stattextp, rios_buff, buff_length);
+
+      copy_and_move_buffer(&stattextp, " wios=", strlen(" wios="));
+      buff_length = utoa(wios_buff, dev_stat->device_stats.wios);
+      copy_and_move_buffer(&stattextp, wios_buff, buff_length);
+
+      copy_and_move_buffer(&stattextp, "\n", strlen("\n"));
+  }
+
+  return copy_buffer_up_to_end(stattext + f->off, min(abs(stattextp - stattext - f->off), n), addr);
+}
+
 static int read_file_mem_stat(struct vfs_file* f, char* addr, int n) {
   char file_dirty_buf[10] = {0};
   char file_dirty_aggregated_buf[10] = {0};
@@ -803,6 +864,10 @@ static int unsafe_cg_read_file(struct vfs_file* f, char* addr, int n) {
     case MEM_STAT:
       r = read_file_mem_stat(f, addr, n);
       break;
+    
+    case IO_STAT:
+      r = read_file_io_stat(f, addr, n);
+      break;
     // for any other file type we do nothing (no special handling)
     default:
       break;
@@ -850,6 +915,7 @@ int unsafe_cg_read(cg_file_type type, struct vfs_file* f, char* addr, int n) {
       copy_and_move_buffer_max_len(&bufp, CGFS_MEM_CUR);
       copy_and_move_buffer_max_len(&bufp, CGFS_CPU_STAT);
       copy_and_move_buffer_max_len(&bufp, CGFS_MEM_STAT);
+      copy_and_move_buffer_max_len(&bufp, CGFS_IO_STAT);
 
       if (f->cgp->cpu_controller_enabled) {
         copy_and_move_buffer_max_len(&bufp, CGFS_CPU_WEIGHT);
