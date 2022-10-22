@@ -15,7 +15,6 @@
 #include "pid_ns.h"
 #include "proc.h"
 #include "sleeplock.h"
-#include "spinlock.h"
 #include "traps.h"
 #include "types.h"
 #include "vfs_file.h"
@@ -228,6 +227,18 @@ void consoleintr(int (*getc)(void)) {
   }
 }
 
+int ttystat(int minor, struct dev_stat *device_stats) {
+  if ((void *)0 == device_stats)
+    panic("Invalid device statisitcs structre (NULL)");
+
+  device_stats->rbytes = tty_table[minor].tty_bytes_read;
+  device_stats->wbytes = tty_table[minor].tty_bytes_written;
+  device_stats->rios = tty_table[minor].ttyread_operations_counter;
+  device_stats->wios = tty_table[minor].ttywrite_operations_counter;
+
+  return 0;
+}
+
 int consoleread(struct vfs_inode *ip, int n, vector *dstvector) {
   uint target;
   int c;
@@ -256,6 +267,11 @@ int consoleread(struct vfs_inode *ip, int n, vector *dstvector) {
     memmove_into_vector_bytes(*dstvector, dstindx++, (char *)&c, 1);
     // test for vector \ buffer similarity using silent version of vectormemcmp
     --n;
+
+    /* increment number of bytes read on the specific tty */
+    /* TODO: make sure this operation shouldn't be atomic */
+    tty_table[ip->minor].tty_bytes_read++;
+
     if (c == '\n') break;
   }
   release(&cons.lock);
@@ -266,6 +282,10 @@ int consoleread(struct vfs_inode *ip, int n, vector *dstvector) {
 
 int ttyread(struct vfs_inode *ip, int n, vector *dstvector) {
   if (tty_table[ip->minor].flags & DEV_CONNECT) {
+    /* increment the number of read operations done (even if they
+    not succeeded)
+    */
+    tty_table[ip->minor].ttyread_operations_counter++;
     return consoleread(ip, n, dstvector);
   }
 
@@ -285,7 +305,11 @@ int consolewrite(struct vfs_inode *ip, char *buf, int n) {
 
   ip->i_op.iunlock(ip);
   acquire(&cons.lock);
-  for (i = 0; i < n; i++) consputc(buf[i] & 0xff);
+  for (i = 0; i < n; i++) {
+    consputc(buf[i] & 0xff);
+    /* increment the number of bytes written to a specific tty*/
+    tty_table[ip->minor].tty_bytes_written++;
+  }
   release(&cons.lock);
   ip->i_op.ilock(ip);
 
@@ -294,6 +318,9 @@ int consolewrite(struct vfs_inode *ip, char *buf, int n) {
 
 int ttywrite(struct vfs_inode *ip, char *buf, int n) {
   if (tty_table[ip->minor].flags & DEV_CONNECT) {
+    /* increment the number of write operations executed on the
+    specific tty device (even if its not succeeded) */
+    tty_table[ip->minor].ttywrite_operations_counter++;
     return consolewrite(ip, buf, n);
   }
   // 2DO: should return -1 when write to tty fails - filewrite panics.
@@ -303,8 +330,10 @@ int ttywrite(struct vfs_inode *ip, char *buf, int n) {
 void consoleinit(void) {
   initlock(&cons.lock, "console");
 
+  /* init the device driver callback functions */
   devsw[CONSOLE_MAJOR].write = ttywrite;
   devsw[CONSOLE_MAJOR].read = ttyread;
+  devsw[CONSOLE_MAJOR].stat = ttystat;
   tty_table[CONSOLE_MINOR].flags = DEV_CONNECT;
 
   // To state that the console tty is also attached
@@ -322,6 +351,10 @@ void ttyinit(void) {
   // therefor the tty's minor will be after the console's
   for (int i = CONSOLE_MINOR + 1; i < MAX_TTY; i++) {
     tty_table[i].flags = 0;
+    tty_table[i].tty_bytes_read = 0;
+    tty_table[i].tty_bytes_written = 0;
+    tty_table[i].ttyread_operations_counter = 0;
+    tty_table[i].ttywrite_operations_counter = 0;
   }
 }
 
@@ -353,10 +386,16 @@ void tty_connect(struct vfs_inode *ip) {
 void tty_attach(struct vfs_inode *ip) {
   tty_table[ip->minor].flags |= DEV_ATTACH;
   initlock(&(tty_table[ip->minor].lock), "tty");
+
+  /* add the tty device to the current cgroup devices list */
+  cgroup_add_io_device(proc_get_cgroup(), ip);
 }
 
 void tty_detach(struct vfs_inode *ip) {
   tty_table[ip->minor].flags &= ~(DEV_ATTACH);
+
+  /* remove the tty device from the current cgroup devices list */
+  cgroup_remove_io_device(proc_get_cgroup(), ip);
 }
 
 int tty_gets(struct vfs_inode *ip, int command) {
