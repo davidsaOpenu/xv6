@@ -1,7 +1,7 @@
 #ifndef XV6_VFS_FILE_H
 #define XV6_VFS_FILE_H
 
-#include "cgroup.h"
+#include "defs.h"
 #include "kvector.h"
 #include "param.h"
 #include "sleeplock.h"
@@ -70,6 +70,10 @@ struct vfs_file {
             int frozen;
           } freezer;
         } frz;
+        // IO
+        union {
+          struct cgroup_io_device_statistics_s * devices_stats[NDEV];
+        } io;
         // memory
         union {
           struct {
@@ -135,6 +139,21 @@ struct vfs_inode {
 struct devsw {
   int (*read)(struct vfs_inode *, int, vector *dstvector);
   int (*write)(struct vfs_inode *, char *, int);
+  int (*stat)(int, struct dev_stat *);
+};
+
+/* device statistics structure which defines what info every device
+   should supply.
+*/
+struct dev_stat {
+  /* number of read IO operation made on the device */
+  uint rios;
+  /* number of write IO operation made on the device */
+  uint wios;
+  /* Total bytes read from device */
+  uint rbytes;
+  /* Total bytes written to device */
+  uint wbytes;
 };
 
 extern struct devsw devsw[];

@@ -4,6 +4,7 @@
 #include "defs.h"
 #include "param.h"
 #include "proc.h"
+#include "vfs_file.h"
 
 /* Max length of string representation of descendants number. (the value is
  * a number of at most two digits + null terminator) */
@@ -16,7 +17,25 @@
 /* Max length allowed for controller names. */
 #define MAX_CONTROLLER_NAME_LENGTH 16
 
+/* major:minor format which takes at most 17 bytes (8 bytes for each uint value) */
+#define DEVICE_NAME 17
+
 typedef enum { CG_FILE, CG_DIR } cg_file_type;
+
+/* cgroup's io device statistics structure, here we got all the relevant fields
+    from the cgroup perspective and also the dev_stat structure which describes
+    what status fields every IO device should have in the system.
+
+    Note: this is a wrapper to the dev_stat so we can add more cgroup specific
+    parameters and info which is not really relevant to the driver itself (like dev_name)
+*/
+typedef struct cgroup_io_device_statistics_s
+{
+    char dev_name[DEVICE_NAME];
+    uint major;
+    uint minor;
+    struct dev_stat device_stats;
+} cgroup_io_device_statistics_t;
 
 /*
  * Control group, contains up to NPROC processes.
@@ -120,6 +139,12 @@ struct cgroup {
   unsigned int cpu_nr_throttled;
   unsigned int cpu_throttled_usec;
   char cpu_is_throttled_period;
+
+  /* Used IO devices in a current cgroup (For example, attached tty). Updated on io.stat read */
+  unsigned int used_devices;
+
+  /* IO statistics for each available IO in cgroup */
+  cgroup_io_device_statistics_t io_stats[NDEV];
 };
 
 /**
@@ -537,5 +562,9 @@ void cgroup_mem_stat_pgfault_incr(struct cgroup* cgroup);
  * @param cgroup pointer to a cgroup
  */
 void cgroup_mem_stat_pgmajfault_incr(struct cgroup* cgroup);
+
+/* TODO: add documentation */
+void get_cgroup_io_stat(struct vfs_file* f, struct cgroup* cgp);
+void set_cgroup_io_stat(struct vfs_file* f);
 
 #endif /* XV6_CGROUP_H */
