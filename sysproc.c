@@ -8,6 +8,7 @@
 #include "mmu.h"
 #include "param.h"
 #include "proc.h"
+#include "stat.h"
 #include "steady_clock.h"
 #include "types.h"
 #include "x86.h"
@@ -115,11 +116,12 @@ int sys_ioctl(void) {
   }
 
   ip = f->ip;
+
   /*
-  Note: exculding minor device 0 which should mostly
-  be used for main devices or devices controller that doesn't support
-  ioctls.
-  Best practice is to test inode minor in the driver itself.
+  Do not accept when minor == 0 because this mostly the main device
+  or a controller device which does not accept ioctls
+  Better implementation would be to test in the driver itself if it
+  allows working on "main" devices when minor == 0
   */
   if (ip->minor <= CONSOLE_MINOR) {
     return -1;
