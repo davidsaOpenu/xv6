@@ -11,6 +11,7 @@
 #include "steady_clock.h"
 #include "types.h"
 #include "x86.h"
+#include "stat.h"
 
 // Fetch the nth word-sized system call argument as a file descriptor
 // and return both the descriptor and the corresponding struct file.
@@ -115,11 +116,12 @@ int sys_ioctl(void) {
   }
 
   ip = f->ip;
+
   /*
-  Note: exculding minor device 0 which should mostly
-  be used for main devices or devices controller that doesn't support
-  ioctls.
-  Best practice is to test inode minor in the driver itself.
+  Do not accept when minor == 0 because this mostly the main device
+  or a controller device which does not accept ioctls
+  Better implementation would be to test in the driver itself if it
+  allows working on "main" devices when minor == 0
   */
   if (ip->minor <= CONSOLE_MINOR) {
     return -1;
