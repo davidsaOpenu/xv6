@@ -1,0 +1,135 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1c92f4d0_392f4553",
+        "filename": "obj_disk.c",
+        "patchSetId": 6
+      },
+      "lineNbr": 289,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-10-28T13:15:12Z",
+      "side": 1,
+      "message": "seems like this one is not called from anywhere. Let\u0027s remove it",
+      "revId": "c53e4158e24a0af4a1905110c14bc94123dbf61c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0c611f8b_6078d196",
+        "filename": "obj_disk.h",
+        "patchSetId": 6
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-10-28T13:15:12Z",
+      "side": 1,
+      "message": "the explanation is relevant for the rewrite_entire object. We need to relate to the case of partial rewriting staring from the specified offset as well (in addition to the explanation of what\u0027s going on when the rewrited object size exceeds the exiting object size_",
+      "range": {
+        "startLine": 127,
+        "startChar": 2,
+        "endLine": 131,
+        "endChar": 40
+      },
+      "revId": "c53e4158e24a0af4a1905110c14bc94123dbf61c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "32408467_4f371e18",
+        "filename": "obj_disk.h",
+        "patchSetId": 6
+      },
+      "lineNbr": 137,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-10-28T13:15:12Z",
+      "side": 1,
+      "message": "seems like this one is not called from anywhere. Let\u0027s remove it",
+      "revId": "c53e4158e24a0af4a1905110c14bc94123dbf61c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "45646b8a_e73508d5",
+        "filename": "obj_fs.c",
+        "patchSetId": 6
+      },
+      "lineNbr": 174,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-10-28T13:15:12Z",
+      "side": 1,
+      "message": "seems it was already done",
+      "range": {
+        "startLine": 174,
+        "startChar": 86,
+        "endLine": 174,
+        "endChar": 111
+      },
+      "revId": "c53e4158e24a0af4a1905110c14bc94123dbf61c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cc4f718f_49d6c6c7",
+        "filename": "objfstests.c",
+        "patchSetId": 6
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-10-28T13:15:12Z",
+      "side": 1,
+      "message": "not needed anymore",
+      "revId": "c53e4158e24a0af4a1905110c14bc94123dbf61c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9a269c2b_7ba2228d",
+        "filename": "objfstests.c",
+        "patchSetId": 6
+      },
+      "lineNbr": 85,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-10-28T13:15:12Z",
+      "side": 1,
+      "message": "not needed anymore",
+      "revId": "c53e4158e24a0af4a1905110c14bc94123dbf61c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f3619aa9_86372dc4",
+        "filename": "objfstests.c",
+        "patchSetId": 6
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-10-28T13:15:12Z",
+      "side": 1,
+      "message": "not needed anymore",
+      "revId": "c53e4158e24a0af4a1905110c14bc94123dbf61c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
