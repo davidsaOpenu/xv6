@@ -1,0 +1,228 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "97ab4892_7d6bbbc6",
+        "filename": ".vscode/launch.json",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-11-04T09:44:59Z",
+      "side": 1,
+      "message": "seems not relevant to the change",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 1
+      },
+      "revId": "f716c0ec969089dab9f738a5fa32f86822ce743a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3d85612b_ca1a50ba",
+        "filename": ".vscode/settings.json",
+        "patchSetId": 1
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-11-04T09:44:59Z",
+      "side": 1,
+      "message": "seems not relevant to the change",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 6,
+        "endChar": 1
+      },
+      "revId": "f716c0ec969089dab9f738a5fa32f86822ce743a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3d3678fd_820c5db6",
+        "filename": ".vscode/tasks.json",
+        "patchSetId": 1
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-11-04T09:44:59Z",
+      "side": 1,
+      "message": "seems not relevant to the change",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 28,
+        "endChar": 1
+      },
+      "revId": "f716c0ec969089dab9f738a5fa32f86822ce743a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7cd5b912_3826f7ae",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-11-04T09:44:59Z",
+      "side": 1,
+      "message": "Thanks for pushing this patch. In addition to the inline comments, let\u0027s remove the binary file",
+      "revId": "f716c0ec969089dab9f738a5fa32f86822ce743a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "33965119_deda0741",
+        "filename": "Makefile",
+        "patchSetId": 1
+      },
+      "lineNbr": 381,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-11-04T09:44:59Z",
+      "side": 1,
+      "message": "let\u0027s invoke this from runtests.exp (as runtests.exp is invoked from the CI).",
+      "range": {
+        "startLine": 381,
+        "startChar": 3,
+        "endLine": 381,
+        "endChar": 14
+      },
+      "revId": "f716c0ec969089dab9f738a5fa32f86822ce743a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "197d4ea0_c2c76291",
+        "filename": "unittests/kvectortest.c",
+        "patchSetId": 1
+      },
+      "lineNbr": 188,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-11-04T09:44:59Z",
+      "side": 1,
+      "message": "worth splitting (easier to track passed/failed tests)",
+      "range": {
+        "startLine": 183,
+        "startChar": 0,
+        "endLine": 188,
+        "endChar": 47
+      },
+      "revId": "f716c0ec969089dab9f738a5fa32f86822ce743a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2ec6edc6_e2081d89",
+        "filename": "windows-debugging/gdbcommand",
+        "patchSetId": 1
+      },
+      "lineNbr": 4,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-11-04T09:44:59Z",
+      "side": 1,
+      "message": "seems not relevant to the change and containing paths specific to particular user",
+      "range": {
+        "startLine": 4,
+        "startChar": 15,
+        "endLine": 4,
+        "endChar": 21
+      },
+      "revId": "f716c0ec969089dab9f738a5fa32f86822ce743a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "833572fa_9745402b",
+        "filename": "windows-debugging/load-symbols",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-11-04T09:44:59Z",
+      "side": 1,
+      "message": "the file seems not relevant to the change",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 1,
+        "endChar": 2
+      },
+      "revId": "f716c0ec969089dab9f738a5fa32f86822ce743a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3b75269d_aef1bc0b",
+        "filename": "windows-debugging/options.xml",
+        "patchSetId": 1
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-11-04T09:44:59Z",
+      "side": 1,
+      "message": "seems not relevant to the change and containing paths specific to particular user",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 14,
+        "endChar": 20
+      },
+      "revId": "f716c0ec969089dab9f738a5fa32f86822ce743a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3b84f4a9_5125cd00",
+        "filename": "windows-debugging/readme.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-11-04T09:44:59Z",
+      "side": 1,
+      "message": "those instructions are already in place",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 19,
+        "endChar": 12
+      },
+      "revId": "f716c0ec969089dab9f738a5fa32f86822ce743a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
