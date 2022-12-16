@@ -17,7 +17,8 @@ void memmove_from_vector(char * dst, vector vec, unsigned int elementoffset, uns
 char* getelementpointer(vector v, unsigned int index);
 
 
-int initializeVectorTest(){
+//int initializeVectorTest(){
+TEST(initializeVectorTest) { 
     char testName[] = "initializeVectorTest";
     int vectorsize;
     int typesize;
@@ -42,8 +43,10 @@ int initializeVectorTest(){
     freevector(&v);
     return PASS;
 }
-int readAndWriteDataTest(){
-    char testName[] = "readAndWriteDataTest";
+
+//int readAndWriteDataTest(){
+TEST(readAndWriteDataTest) {
+    //char testName[] = "readAndWriteDataTest";
 
     // Some composite data
     struct info {
@@ -92,7 +95,9 @@ int readAndWriteDataTest(){
     PASSTEST(testName);
     return PASS;
 }
-int moveBytesTest(){
+
+//int moveBytesTest(){
+TEST(moveBytesTest) {
     char testName[] = "moveBytesTest";
 
     vector v = newvector(3,1);
