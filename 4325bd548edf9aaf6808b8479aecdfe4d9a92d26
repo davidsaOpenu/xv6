@@ -1,0 +1,159 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a10e3b0b_dc6df0f1",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-12-25T12:27:48Z",
+      "side": 1,
+      "message": "cloud you please revise the commit message according to: https://climbtheladder.com/7-git-commit-message-best-practices/",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 9,
+        "endChar": 14
+      },
+      "revId": "4325bd548edf9aaf6808b8479aecdfe4d9a92d26",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8808582c_aa09c406",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-12-25T12:27:48Z",
+      "side": 1,
+      "message": "thanks for working on this change. comments inline\n\nthe last one is that \nwindows-debugging/gdbcommand\nwindows-debugging/load-symbols  \nwindows-debugging/options.xml  \nwindows-debugging/readme.txt  \n\nshould stay unchanged",
+      "revId": "4325bd548edf9aaf6808b8479aecdfe4d9a92d26",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b96f11df_7958711a",
+        "filename": "kvector.c",
+        "patchSetId": 2
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-12-25T12:27:48Z",
+      "side": 1,
+      "message": "s$./tests/host/unitmock.h$tests/host/unitmock.h",
+      "range": {
+        "startLine": 14,
+        "startChar": 10,
+        "endLine": 14,
+        "endChar": 12
+      },
+      "revId": "4325bd548edf9aaf6808b8479aecdfe4d9a92d26",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b9d00db2_9c167363",
+        "filename": "runtests.exp",
+        "patchSetId": 2
+      },
+      "lineNbr": 438,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-12-25T12:27:48Z",
+      "side": 1,
+      "message": "nit:whitespace",
+      "range": {
+        "startLine": 438,
+        "startChar": 35,
+        "endLine": 438,
+        "endChar": 36
+      },
+      "revId": "4325bd548edf9aaf6808b8479aecdfe4d9a92d26",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8d73a48a_22acbf38",
+        "filename": "tests/README",
+        "patchSetId": 2
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-12-25T12:27:48Z",
+      "side": 1,
+      "message": "nit: ws",
+      "range": {
+        "startLine": 6,
+        "startChar": 51,
+        "endLine": 6,
+        "endChar": 52
+      },
+      "revId": "4325bd548edf9aaf6808b8479aecdfe4d9a92d26",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e6998e46_69a54e64",
+        "filename": "tests/README",
+        "patchSetId": 2
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-12-25T12:27:48Z",
+      "side": 1,
+      "message": "nit: ws",
+      "range": {
+        "startLine": 12,
+        "startChar": 69,
+        "endLine": 12,
+        "endChar": 70
+      },
+      "revId": "4325bd548edf9aaf6808b8479aecdfe4d9a92d26",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "dbf1a7df_a80ee43d",
+        "filename": "tests/host/unitmock.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2022-12-25T12:27:48Z",
+      "side": 1,
+      "message": "nit:whitespace",
+      "range": {
+        "startLine": 6,
+        "startChar": 18,
+        "endLine": 6,
+        "endChar": 19
+      },
+      "revId": "4325bd548edf9aaf6808b8479aecdfe4d9a92d26",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
