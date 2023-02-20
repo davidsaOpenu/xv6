@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "181c30f8_549dafb6",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-02-20T09:54:45Z",
+      "side": 1,
+      "message": "windows-debugging/gdbcommand Deleted \n\nwindows-debugging/load-symbols Deleted \n\nwindows-debugging/options.xml Deleted \n\nwindows-debugging/readme.txt Deleted \n\nwere deleted again :-)",
+      "revId": "8db5b9b8e96a0ceff22d6bb1e2324e3a86e251da",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
