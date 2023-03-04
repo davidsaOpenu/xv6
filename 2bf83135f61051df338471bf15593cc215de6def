@@ -54,6 +54,24 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "3481c6d2_0d2d2e8a",
+        "filename": "obj_disk.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 1020122
+      },
+      "writtenOn": "2023-03-04T12:50:45Z",
+      "side": 1,
+      "message": "Added to 547511",
+      "parentUuid": "f1ac3435_62cd2088",
+      "revId": "2bf83135f61051df338471bf15593cc215de6def",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "a5290e73_d071dd77",
@@ -91,6 +109,30 @@
       "side": 1,
       "message": "Done",
       "parentUuid": "a5290e73_d071dd77",
+      "range": {
+        "startLine": 434,
+        "startChar": 0,
+        "endLine": 434,
+        "endChar": 37
+      },
+      "revId": "2bf83135f61051df338471bf15593cc215de6def",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c9dc656d_08b6be39",
+        "filename": "runtests.exp",
+        "patchSetId": 1
+      },
+      "lineNbr": 434,
+      "author": {
+        "id": 1020122
+      },
+      "writtenOn": "2023-03-04T12:50:45Z",
+      "side": 1,
+      "message": "Added to 547511",
+      "parentUuid": "ba0aa93e_6a2b154b",
       "range": {
         "startLine": 434,
         "startChar": 0,
