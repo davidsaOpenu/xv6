@@ -36,6 +36,24 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "f1ac3435_62cd2088",
+        "filename": "obj_disk.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 1020122
+      },
+      "writtenOn": "2023-03-04T12:44:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c1052824_002f0a38",
+      "revId": "2bf83135f61051df338471bf15593cc215de6def",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "a5290e73_d071dd77",
@@ -49,6 +67,30 @@
       "writtenOn": "2022-11-25T13:11:10Z",
       "side": 1,
       "message": "return value check is required (something like https://stackoverflow.com/questions/54467108/how-to-check-success-or-failure-of-a-command-that-is-within-an-expect-block)",
+      "range": {
+        "startLine": 434,
+        "startChar": 0,
+        "endLine": 434,
+        "endChar": 37
+      },
+      "revId": "2bf83135f61051df338471bf15593cc215de6def",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ba0aa93e_6a2b154b",
+        "filename": "runtests.exp",
+        "patchSetId": 1
+      },
+      "lineNbr": 434,
+      "author": {
+        "id": 1020122
+      },
+      "writtenOn": "2023-03-04T12:44:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a5290e73_d071dd77",
       "range": {
         "startLine": 434,
         "startChar": 0,
@@ -96,6 +138,30 @@
       "side": 1,
       "message": "following the discussion lets move the libarary to \n /tests/host",
       "parentUuid": "02954a9a_4b3df7eb",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 14,
+        "endChar": 6
+      },
+      "revId": "2bf83135f61051df338471bf15593cc215de6def",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4448ad11_565c74f1",
+        "filename": "unittests/unittests.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1020122
+      },
+      "writtenOn": "2023-03-04T12:44:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "56cdc753_3c9c283b",
       "range": {
         "startLine": 1,
         "startChar": 0,

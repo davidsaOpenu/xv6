@@ -56,6 +56,30 @@
       },
       "revId": "e7740bbb22bdcb418259ec81ebe9b6f3fe52cec7",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "85a9a6b5_c24c0a17",
+        "filename": "unittests/unittests.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 4,
+      "author": {
+        "id": 1020122
+      },
+      "writtenOn": "2023-03-04T12:44:41Z",
+      "side": 1,
+      "message": "will be fixed in change: https://review.gerrithub.io/c/davidsaOpenu/xv6-objfs/+/547511/2",
+      "parentUuid": "7cf80ae7_7f6f50a4",
+      "range": {
+        "startLine": 4,
+        "startChar": 18,
+        "endLine": 4,
+        "endChar": 19
+      },
+      "revId": "e7740bbb22bdcb418259ec81ebe9b6f3fe52cec7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
