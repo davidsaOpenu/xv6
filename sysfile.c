@@ -234,7 +234,7 @@ bad:
 }
 
 static struct vfs_inode *createmount(char *path, short type, short major,
-                                     short minor, struct mount **mnt) {
+                                     short minor, struct mount **mnt, int omode) {
   uint off;
   struct vfs_inode *ip, *dp;
   char name[DIRSIZ];
@@ -244,6 +244,8 @@ static struct vfs_inode *createmount(char *path, short type, short major,
 
   if ((ip = dp->i_op.dirlookup(dp, name, &off)) != 0) {
     dp->i_op.iunlockput(dp);
+    // The path has already been created
+    if (omode & O_EXCL) return (void *)EEXIST;
     ip->i_op.ilock(ip);
     if (type == T_FILE && ip->type == T_FILE) return ip;
     ip->i_op.iunlockput(ip);
@@ -283,7 +285,7 @@ static struct vfs_inode *createmount(char *path, short type, short major,
 static struct vfs_inode *create(char *path, short type, short major,
                                 short minor) {
   struct mount *mnt;
-  struct vfs_inode *res = createmount(path, type, major, minor, &mnt);
+  struct vfs_inode *res = createmount(path, type, major, minor, &mnt, O_CREATE);
   if (res != 0) {
     mntput(mnt);
   }
@@ -309,10 +311,13 @@ int sys_open(void) {
   }
 
   if (omode & O_CREATE) {
-    ip = createmount(path, T_FILE, 0, 0, &mnt);
+    ip = createmount(path, T_FILE, 0, 0, &mnt, omode);
     if (ip == 0) {
       end_op();
       return -1;
+    } else if((int)ip == EEXIST){
+      end_op();
+      return EEXIST;
     }
   } else {
     if ((ip = vfs_nameimount(path, &mnt)) == 0) {
