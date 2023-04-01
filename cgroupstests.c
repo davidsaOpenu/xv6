@@ -2,10 +2,16 @@
 
 #include "fcntl.h"
 #include "mmu.h"
+#include "mutex.h"
 #include "param.h"
 #include "test.h"
 #include "types.h"
 #include "user.h"
+
+
+#define GIVE_TURN(my_lock, other_lock) \
+  mutex_unlock(&other_lock);           \
+  mutex_lock(&my_lock)
 
 char controller_names[CONTROLLER_COUNT][MAX_CONTROLLER_NAME_LENGTH] = {
     "cpu", "pid", "set", "mem"};
@@ -16,8 +22,8 @@ int failed = 0;
 
 char temp_path_g[MAX_PATH_LENGTH] = {0};
 
-//######################################## Helper
-// functions#######################
+// ######################################## Helper
+//  functions#######################
 
 // Parse memory.stat info and fetch "kernel" value
 int get_kernel_total_memory(char* mem_stat_info) {
@@ -253,7 +259,6 @@ int temp_write(int num) {
 
   char buf[256];
   itoa(buf, num);
-
   if (!write_file(TEMP_FILE, buf)) {
     close_file(fd);
     return 0;
@@ -1379,6 +1384,26 @@ TEST(test_mem_stat) {
   char befor_all[265];
   char effect_write_first_file[265];
   char effect_write_second_file[265];
+  mutex_t child_mutex;
+  mutex_t father_mutex;
+
+  ASSERT_UINT_EQ(mutex_init(&child_mutex), MUTEX_SUCCESS);
+  ASSERT_UINT_EQ(mutex_init(&father_mutex), MUTEX_SUCCESS);
+
+  /* The locking mechanism for turn based locking works as following:
+   * 1. Both child and father mutex started as locked.
+   * 2. When one (child or father) want to wait he locks his lock again.
+   * 3. Due to double lock the one who locked is waiting.
+   * 4. When one want to wake up the other he unlocks his lock.
+   *
+   * Therefore when child want to give turn and wait he:
+   *   1. mutex_unlock(&father_mutex).
+   *   2. mutex_lock(&child_mutex).
+   *
+   * Created a macro for this mechanism.
+   */
+  mutex_lock(&child_mutex);
+  mutex_lock(&father_mutex);
 
   strcpy(befor_all, read_file(TEST_1_MEM_STAT, 0));
   // Fork a process because reading the memory values from inside the cgroup may
@@ -1387,13 +1412,16 @@ TEST(test_mem_stat) {
   int pidToMove = 0;
   if (pid == 0) {
     // Child
-
+    /**** 1 ****/
     pidToMove = getpid();
     // Save the pid of child in temp file.
     ASSERT_TRUE(temp_write(pidToMove));
 
-    // Go to sleep for long period of time alowe move the prosses into cgroup.
-    sleep(10);
+    // Let father run and wait for child unlock.
+    // Allow father to move the process into cgroup.
+    GIVE_TURN(child_mutex, father_mutex);
+
+    /**** 3 ****/
     char str[256];
     memset(str, 'a', 256);
 
@@ -1402,33 +1430,50 @@ TEST(test_mem_stat) {
     ASSERT_TRUE(fd = write_new_file("c", str));
     ASSERT_TRUE(write_new_file("c", str));
     ASSERT_TRUE(close_file(fd));
-    sleep(20);
 
-    // Write times to another file with the file closed in the middle.
-    ASSERT_TRUE(fd = write_new_file("d", str));
-    ASSERT_TRUE(close_file(fd));
-    ASSERT_TRUE(write_new_file("d", str));
-    ASSERT_TRUE(close_file(fd));
+    // Let Father run and wait for child unlock.
+    GIVE_TURN(child_mutex, father_mutex);
+
+    /**** 5 ****/
+    // Write multiple times to another file with the file closed
+    // to create more pgfaults than previous operations
+    for (int i = 0; i < 10; i++) {
+      ASSERT_TRUE(write_new_file("d", str));
+      ASSERT_TRUE(close_file(fd));
+    }
+
+    // Cleanup
+    mutex_unlock(&father_mutex);
+    mutex_unlock(&child_mutex);
 
     exit(0);
-
   } else {
     // Father
 
-    sleep(5);
+    // Waits for child to unlock.
+    mutex_lock(&father_mutex);
+
+    /**** 2 ****/
     // Read the child pid from temp file.
     pidToMove = temp_read(0);
     // Move the child process to "/cgroup/test1" cgroup.
     ASSERT_TRUE(move_proc(TEST_1_CGROUP_PROCS, pidToMove));
     // Check that the process we moved is really in "/cgroup/test1" cgroup.
     ASSERT_TRUE(is_pid_in_group(TEST_1_CGROUP_PROCS, pidToMove));
-    // Go to sleep to ensure the child process had a chance to be scheduled.
-    // Allows the child to write a page twice for a new file
-    sleep(20);
+
+    // Let child run and wait for father unlock.
+    // Allows the child to write a page twice for a new file.
+    GIVE_TURN(father_mutex, child_mutex);
+
+    /**** 4 ****/
     strcpy(effect_write_first_file, read_file(TEST_1_MEM_STAT, 0));
 
-    // Allows the child to write to a new file close and write again
-    sleep(20);
+    // Let child run and wait for father unlock.
+    // Let child run and wait for father unlock.
+    // Allows the child to write to a new file close and write again.
+    GIVE_TURN(father_mutex, child_mutex);
+
+    /**** 6 ****/
     strcpy(effect_write_second_file, read_file(TEST_1_MEM_STAT, 0));
 
     // check the effect of pgmajfault
@@ -1462,6 +1507,10 @@ TEST(test_mem_stat) {
     ASSERT_TRUE(wstatus);
     // Remove the temp file.
     ASSERT_TRUE(temp_delete());
+
+    // Cleanup
+    mutex_unlock(&father_mutex);
+    mutex_unlock(&child_mutex);
   }
 }
 
