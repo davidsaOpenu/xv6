@@ -177,7 +177,7 @@ int sys_unlink(void) {
   begin_op();
 
   int delete_cgroup_res = cgroup_delete(path, "unlink");
-  if (delete_cgroup_res == -1) {
+  if (delete_cgroup_res == RESULT_ERROR_ARGUMENT) {
     // 1. search for parent derectory inode, denote it dp
     if ((dp = vfs_nameiparent(path, name)) == 0) {
       end_op();
@@ -219,7 +219,7 @@ int sys_unlink(void) {
     ip->i_op.iupdate(ip);
     ip->i_op.iunlockput(ip);
   }
-  if (delete_cgroup_res == -2) {
+  if (delete_cgroup_res == RESULT_ERROR_OPERATION) {
     end_op();
     return -1;
   }

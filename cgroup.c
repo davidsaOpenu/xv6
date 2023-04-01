@@ -193,31 +193,31 @@ struct cgroup* cgroup_create(char* path) {
   return new_cgp;
 }
 
-int cgroup_delete(char* path, char* type) {
+result_code cgroup_delete(char* path, char* type) {
   acquire(&cgtable.lock);
   /*Get cgroup at given path.*/
   struct cgroup* cgp = unsafe_get_cgroup_by_path(path);
-  /*If no cgroup at given path return -1.*/
+  /*If no cgroup at given path return error.*/
   if (cgp == 0) {
     release(&cgtable.lock);
-    return -1;
+    return RESULT_ERROR_ARGUMENT;
   }
 
   if (strcmp(type, "umount") == 0 && cgp != cgroup_root()) {
     release(&cgtable.lock);
-    return -2;
+    return RESULT_ERROR_OPERATION;
   }
 
   if (strcmp(type, "unlink") == 0 && cgp == cgroup_root()) {
     release(&cgtable.lock);
-    return -2;
+    return RESULT_ERROR_OPERATION;
   }
 
   /*Check if we are allowed to delete the cgroup. Check if the cgroup has
    * descendants or processes in it.*/
   if (cgp->nr_descendants || (cgp->num_of_procs && cgp != cgroup_root())) {
     release(&cgtable.lock);
-    return -2;
+    return RESULT_ERROR_OPERATION;
   }
 
   if (cgp != cgroup_root() && cgp->mem_controller_enabled) set_min_mem(cgp, 0);
@@ -236,7 +236,7 @@ int cgroup_delete(char* path, char* type) {
     cgp = cgp->parent;
   }
   release(&cgtable.lock);
-  return 0;
+  return RESULT_SUCCESS;
 }
 
 void cgroup_initialize(struct cgroup* cgroup, char* path,
@@ -341,25 +341,25 @@ void cgroup_initialize(struct cgroup* cgroup, char* path,
   cgroup->used_devices = 0;
 }
 
-int cgroup_insert(struct cgroup* cgroup, struct proc* proc) {
+result_code cgroup_insert(struct cgroup* cgroup, struct proc* proc) {
   acquire(&cgtable.lock);
-  int res = unsafe_cgroup_insert(cgroup, proc);
+  result_code res = unsafe_cgroup_insert(cgroup, proc);
   release(&cgtable.lock);
   return res;
 }
 
-int unsafe_cgroup_insert(struct cgroup* cgroup, struct proc* proc) {
+result_code unsafe_cgroup_insert(struct cgroup* cgroup, struct proc* proc) {
   // If the number of processes in the cgroup is already at max allowed and pid
   // controller enabled, return error
   if (cgroup->pid_controller_enabled == 1 &&
       (cgroup->num_of_procs + 1) > cgroup->max_num_of_procs)
-    return -1;
+    return RESULT_ERROR;
 
   // If the process memory in addition to existing memory is over the limit and
   // memory controller is enabled, return error.
   if (cgroup->mem_controller_enabled == 1 &&
       (cgroup->current_mem + proc->sz) > cgroup->max_mem)
-    return -1;
+    return RESULT_ERROR;
 
   // Whether a free slot was found.
   int found = 0;
@@ -380,19 +380,19 @@ int unsafe_cgroup_insert(struct cgroup* cgroup, struct proc* proc) {
 
     // If process was found, return success.
     if (proc == cgroup->proc[i]) {
-      return 0;
+      return RESULT_SUCCESS;
     }
   }
 
   // If not found, return a failure.
   if (!found) {
-    return -1;
+    return RESULT_ERROR;
   }
 
   // Erase the proc from the other cgroup.
   if (proc->cgroup) {
-    if (protect_memory(proc->cgroup, cgroup, proc->sz) != 0) {
-      return -1;
+    if (protect_memory(proc->cgroup, cgroup, proc->sz) != RESULT_SUCCESS) {
+      return RESULT_ERROR;
     }
     unsafe_cgroup_erase(proc->cgroup, proc);
   }
@@ -412,10 +412,10 @@ int unsafe_cgroup_insert(struct cgroup* cgroup, struct proc* proc) {
     cgroup->current_page += PGROUNDUP(proc->sz) / PGSIZE;
     cgroup = cgroup->parent;
   }
-  return 0;
+  return RESULT_SUCCESS;
 }
 
-int protect_memory(struct cgroup* src, struct cgroup* dst, int proc_size) {
+result_code protect_memory(struct cgroup* src, struct cgroup* dst, int proc_size) {
   // By moving procces fron dst cgroup to src we need to decrease
   // protected memory pages for dst cgroup and decrease for src
   int proc_pg = PGROUNDUP(proc_size) / PGSIZE;
@@ -424,9 +424,9 @@ int protect_memory(struct cgroup* src, struct cgroup* dst, int proc_size) {
   if (increse_protect_counter(inc - dec) == 0) {
     dst->protected_mem -= dec;
     src->protected_mem += inc;
-    return 0;
+    return RESULT_SUCCESS;
   }
-  return 1;
+  return RESULT_ERROR;
 }
 
 int calc_dec_dst_protect_pg(struct cgroup* cgroup, int proc_pg) {
@@ -462,15 +462,15 @@ void cgroup_erase(struct cgroup* cgroup, struct proc* proc) {
   release(&cgtable.lock);
 }
 
-int unsafe_enable_cpu_controller(struct cgroup* cgroup) {
+result_code unsafe_enable_cpu_controller(struct cgroup* cgroup) {
   // If cgroup has processes in it, controllers can't be enabled.
   if (!cgroup || cgroup->populated == 1) {
-    return -1;
+    return RESULT_ERROR;
   }
 
   // If controller is enabled do nothing.
   if (cgroup->cpu_controller_enabled) {
-    return 0;
+    return RESULT_SUCCESS;
   }
 
   if (cgroup->cpu_controller_avalible) {
@@ -485,24 +485,24 @@ int unsafe_enable_cpu_controller(struct cgroup* cgroup) {
         cgtable.cgroups[i].cpu_controller_avalible = 1;
   }
 
-  return 0;
+  return RESULT_SUCCESS;
 }
 
-int enable_cpu_controller(struct cgroup* cgroup) {
+result_code enable_cpu_controller(struct cgroup* cgroup) {
   acquire(&cgtable.lock);
-  int res = unsafe_enable_cpu_controller(cgroup);
+  result_code res = unsafe_enable_cpu_controller(cgroup);
   release(&cgtable.lock);
   return res;
 }
 
-int unsafe_disable_cpu_controller(struct cgroup* cgroup) {
+result_code unsafe_disable_cpu_controller(struct cgroup* cgroup) {
   if (!cgroup) {
-    return -1;
+    return RESULT_ERROR;
   }
 
   // If controller is disabled do nothing.
   if (!cgroup->cpu_controller_enabled) {
-    return 0;
+    return RESULT_SUCCESS;
   }
 
   // Check that all child cgroups have cpu controller disabled. (cannot
@@ -510,7 +510,7 @@ int unsafe_disable_cpu_controller(struct cgroup* cgroup) {
   for (int i = 1; i < sizeof(cgtable.cgroups) / sizeof(cgtable.cgroups[0]); i++)
     if (cgtable.cgroups[i].parent == cgroup &&
         cgtable.cgroups[i].cpu_controller_enabled) {
-      return -1;
+      return RESULT_ERROR;
     }
 
   /* TODO: complete deactivation of controller. */
@@ -523,12 +523,12 @@ int unsafe_disable_cpu_controller(struct cgroup* cgroup) {
     if (cgtable.cgroups[i].parent == cgroup)
       cgtable.cgroups[i].cpu_controller_avalible = 0;
 
-  return 0;
+  return RESULT_SUCCESS;
 }
 
-int disable_cpu_controller(struct cgroup* cgroup) {
+result_code disable_cpu_controller(struct cgroup* cgroup) {
   acquire(&cgtable.lock);
-  int res = unsafe_disable_cpu_controller(cgroup);
+  result_code res = unsafe_disable_cpu_controller(cgroup);
   release(&cgtable.lock);
   return res;
 }
@@ -616,7 +616,7 @@ int cg_sys_open(char* path, int omode) {
       (cgp = get_cgroup_by_path(dir_path)))
     return cg_open(CG_FILE, file_name, cgp, omode);
 
-  return -1;
+  return RESULT_ERROR;
 }
 
 int cg_read(cg_file_type type, struct vfs_file* f, char* addr, int n) {
@@ -647,29 +647,29 @@ int cg_stat(struct vfs_file* f, struct stat* st) {
   return res;
 }
 
-int set_max_procs(struct cgroup* cgroup, int limit) {
+result_code set_max_procs(struct cgroup* cgroup, int limit) {
   // If no cgroup found, return error.
-  if (cgroup == 0) return -1;
+  if (cgroup == 0) return RESULT_ERROR;
 
   // Set the limit if it is within allowed parameters.
   // 0 is used for testing.
   if (limit >= 0 && limit <= NPROC) {
     cgroup->max_num_of_procs = limit;
-    return 1;
+    return RESULT_SUCCESS_OPERATION;
   }
 
-  return 0;
+  return RESULT_SUCCESS;
 }
 
-int unsafe_enable_pid_controller(struct cgroup* cgroup) {
+result_code unsafe_enable_pid_controller(struct cgroup* cgroup) {
   // If cgroup has processes in it, controllers can't be enabled.
   if (cgroup == 0 || cgroup->populated == 1) {
-    return -1;
+    return RESULT_ERROR;
   }
 
   // If controller is enabled do nothing.
   if (cgroup->pid_controller_enabled) {
-    return 0;
+    return RESULT_SUCCESS;
   }
 
   if (cgroup->pid_controller_avalible) {
@@ -682,17 +682,17 @@ int unsafe_enable_pid_controller(struct cgroup* cgroup) {
         cgtable.cgroups[i].pid_controller_avalible = 1;
   }
 
-  return 0;
+  return RESULT_SUCCESS;
 }
 
-int unsafe_disable_pid_controller(struct cgroup* cgroup) {
+result_code unsafe_disable_pid_controller(struct cgroup* cgroup) {
   if (cgroup == 0) {
-    return -1;
+    return RESULT_ERROR;
   }
 
   // If controller is disabled do nothing.
   if (cgroup->pid_controller_enabled == 0) {
-    return 0;
+    return RESULT_SUCCESS;
   }
 
   // Check that all child cgroups have pid controller disabled. (cannot
@@ -700,7 +700,7 @@ int unsafe_disable_pid_controller(struct cgroup* cgroup) {
   for (int i = 1; i < sizeof(cgtable.cgroups) / sizeof(cgtable.cgroups[0]); i++)
     if (cgtable.cgroups[i].parent == cgroup &&
         cgtable.cgroups[i].pid_controller_enabled) {
-      return -1;
+      return RESULT_ERROR;
     }
 
   // Set pid controller to disabled.
@@ -711,46 +711,46 @@ int unsafe_disable_pid_controller(struct cgroup* cgroup) {
     if (cgtable.cgroups[i].parent == cgroup)
       cgtable.cgroups[i].pid_controller_avalible = 0;
 
-  return 0;
+  return RESULT_SUCCESS;
 }
 
-int enable_pid_controller(struct cgroup* cgroup) {
+result_code enable_pid_controller(struct cgroup* cgroup) {
   acquire(&cgtable.lock);
-  int res = unsafe_enable_pid_controller(cgroup);
+  result_code res = unsafe_enable_pid_controller(cgroup);
   release(&cgtable.lock);
   return res;
 }
 
-int disable_pid_controller(struct cgroup* cgroup) {
+result_code disable_pid_controller(struct cgroup* cgroup) {
   acquire(&cgtable.lock);
-  int res = unsafe_disable_pid_controller(cgroup);
+  result_code res = unsafe_disable_pid_controller(cgroup);
   release(&cgtable.lock);
   return res;
 }
 
-int set_cpu_id(struct cgroup* cgroup, int cpuid) {
+result_code set_cpu_id(struct cgroup* cgroup, int cpuid) {
   // If no cgroup found, return error.
-  if (cgroup == 0) return -1;
+  if (cgroup == 0) return RESULT_ERROR;
 
   // Set the cpu id if it is within allowed parameters.
   // NCPU+1 is used for testing, since this cpu id can never be in the system.
   if (cpuid >= 0 && cpuid <= NCPU + 1) {
     cgroup->cpu_to_use = cpuid;
-    return 1;
+    return RESULT_SUCCESS_OPERATION;
   }
 
-  return 0;
+  return RESULT_SUCCESS;
 }
 
-int unsafe_enable_set_controller(struct cgroup* cgroup) {
+result_code unsafe_enable_set_controller(struct cgroup* cgroup) {
   // If cgroup has processes in it, controllers can't be enabled.
   if (cgroup == 0 || cgroup->populated == 1) {
-    return -1;
+    return RESULT_ERROR;
   }
 
   // If controller is enabled do nothing.
   if (cgroup->set_controller_enabled) {
-    return 0;
+    return RESULT_SUCCESS;
   }
 
   if (cgroup->set_controller_avalible) {
@@ -763,17 +763,17 @@ int unsafe_enable_set_controller(struct cgroup* cgroup) {
         cgtable.cgroups[i].set_controller_avalible = 1;
   }
 
-  return 0;
+  return RESULT_SUCCESS;
 }
 
-int unsafe_disable_set_controller(struct cgroup* cgroup) {
+result_code unsafe_disable_set_controller(struct cgroup* cgroup) {
   if (cgroup == 0) {
-    return -1;
+    return RESULT_ERROR;
   }
 
   // If controller is disabled do nothing.
   if (cgroup->set_controller_enabled == 0) {
-    return 0;
+    return RESULT_SUCCESS;
   }
 
   // Check that all child cgroups have cpu set controller disabled. (cannot
@@ -781,7 +781,7 @@ int unsafe_disable_set_controller(struct cgroup* cgroup) {
   for (int i = 1; i < sizeof(cgtable.cgroups) / sizeof(cgtable.cgroups[0]); i++)
     if (cgtable.cgroups[i].parent == cgroup &&
         cgtable.cgroups[i].set_controller_enabled) {
-      return -1;
+      return RESULT_ERROR;
     }
 
   // Set cpu set controller to disabled.
@@ -792,67 +792,67 @@ int unsafe_disable_set_controller(struct cgroup* cgroup) {
     if (cgtable.cgroups[i].parent == cgroup)
       cgtable.cgroups[i].set_controller_avalible = 0;
 
-  return 0;
+  return RESULT_SUCCESS;
 }
 
-int enable_set_controller(struct cgroup* cgroup) {
+result_code enable_set_controller(struct cgroup* cgroup) {
   acquire(&cgtable.lock);
-  int res = unsafe_enable_set_controller(cgroup);
+  result_code res = unsafe_enable_set_controller(cgroup);
   release(&cgtable.lock);
   return res;
 }
 
-int disable_set_controller(struct cgroup* cgroup) {
+result_code disable_set_controller(struct cgroup* cgroup) {
   acquire(&cgtable.lock);
-  int res = unsafe_disable_set_controller(cgroup);
+  result_code res = unsafe_disable_set_controller(cgroup);
   release(&cgtable.lock);
   return res;
 }
 
-int frz_grp(struct cgroup* cgroup, int frz) {
+result_code frz_grp(struct cgroup* cgroup, int frz) {
   // If no cgroup found, return error.
-  if (cgroup == 0) return -1;
+  if (cgroup == 0) return RESULT_ERROR;
 
   // Freeze/unfreeze cgroup based on input.
   if (frz == 1 || frz == 0) {
     cgroup->is_frozen = frz;
-    return 1;
+    return RESULT_SUCCESS_OPERATION;
   }
 
-  return 0;
+  return RESULT_SUCCESS;
 }
 
-int set_max_mem(struct cgroup* cgroup, unsigned int limit) {
+result_code set_max_mem(struct cgroup* cgroup, unsigned int limit) {
   // If no cgroup found, return error.
-  if (cgroup == 0) return -1;
+  if (cgroup == 0) return RESULT_ERROR;
 
   // Set the limit if it is within allowed parameters.
   // 0 is used for testing.
   if (limit >= 0 && limit <= KERNBASE && limit >= cgroup->min_mem) {
     cgroup->max_mem = limit;
-    return 1;
+    return RESULT_SUCCESS_OPERATION;
   }
 
-  return 0;
+  return RESULT_SUCCESS;
 }
 
-int set_min_mem(struct cgroup* cgroup, unsigned int limit) {
+result_code set_min_mem(struct cgroup* cgroup, unsigned int limit) {
   // If no cgroup found, return error.
-  if (cgroup == 0) return -1;
+  if (cgroup == 0) return RESULT_ERROR;
 
   // Set the limit if it is within allowed parameters.
   // 0 is used for testing.
   if (limit >= 0 && limit <= KERNBASE && limit <= cgroup->max_mem) {
-    if (set_protect_mem(cgroup, PGROUNDUP(limit) / PGSIZE) == 0) {
+    if (set_protect_mem(cgroup, PGROUNDUP(limit) / PGSIZE) == RESULT_SUCCESS) {
       cgroup->min_mem = limit;
-      return 1;
+      return RESULT_SUCCESS_OPERATION;
     }
   }
 
-  return 0;
+  return RESULT_SUCCESS;
 }
 
-int set_protect_mem(struct cgroup* cgroup, unsigned int pages) {
+result_code set_protect_mem(struct cgroup* cgroup, unsigned int pages) {
   int protect = pages - cgroup->current_page;
   if (protect <= 0) {  // actualy we dont need to protect memory, cgroup use
                        // memory more then min
@@ -865,26 +865,26 @@ int set_protect_mem(struct cgroup* cgroup, unsigned int pages) {
         0)  // there is enugh memory to protect or we decreas
       cgroup->protected_mem = protect;
     else
-      return -1;  // fail
+      return RESULT_ERROR;
   }
 
-  return 0;  // success
+  return RESULT_SUCCESS;
 }
 
-int unsafe_enable_mem_controller(struct cgroup* cgroup) {
+result_code unsafe_enable_mem_controller(struct cgroup* cgroup) {
   // If cgroup has processes in it, controllers can't be enabled.
   if (cgroup == 0 || cgroup->populated == 1) {
-    return -1;
+    return RESULT_ERROR;
   }
 
   // If controller is enabled do nothing.
   if (cgroup->mem_controller_enabled) {
-    return 0;
+    return RESULT_SUCCESS;
   }
 
   int protect = PGROUNDUP(cgroup->min_mem) / PGSIZE - cgroup->current_page;
   if (protect > 0)
-    if (increse_protect_counter(protect) != 0) return -1;
+    if (increse_protect_counter(protect) != 0) return RESULT_ERROR;
 
   if (cgroup->mem_controller_avalible) {
     // Set memory controller to enabled.
@@ -896,17 +896,17 @@ int unsafe_enable_mem_controller(struct cgroup* cgroup) {
         cgtable.cgroups[i].mem_controller_avalible = 1;
   }
 
-  return 0;
+  return RESULT_SUCCESS;
 }
 
-int unsafe_disable_mem_controller(struct cgroup* cgroup) {
+result_code unsafe_disable_mem_controller(struct cgroup* cgroup) {
   if (cgroup == 0) {
-    return -1;
+    return RESULT_ERROR;
   }
 
   // If controller is disabled do nothing.
   if (cgroup->mem_controller_enabled == 0) {
-    return 0;
+    return RESULT_SUCCESS;
   }
 
   // Check that all child cgroups have memory controller disabled. (cannot
@@ -914,7 +914,7 @@ int unsafe_disable_mem_controller(struct cgroup* cgroup) {
   for (int i = 1; i < sizeof(cgtable.cgroups) / sizeof(cgtable.cgroups[0]); i++)
     if (cgtable.cgroups[i].parent == cgroup &&
         cgtable.cgroups[i].mem_controller_enabled) {
-      return -1;
+      return RESULT_ERROR;
     }
 
   // Set memory controller to disabled.
@@ -928,19 +928,19 @@ int unsafe_disable_mem_controller(struct cgroup* cgroup) {
     if (cgtable.cgroups[i].parent == cgroup)
       cgtable.cgroups[i].mem_controller_avalible = 0;
 
-  return 0;
+  return RESULT_SUCCESS;
 }
 
-int enable_mem_controller(struct cgroup* cgroup) {
+result_code enable_mem_controller(struct cgroup* cgroup) {
   acquire(&cgtable.lock);
-  int res = unsafe_enable_mem_controller(cgroup);
+  result_code res = unsafe_enable_mem_controller(cgroup);
   release(&cgtable.lock);
   return res;
 }
 
-int disable_mem_controller(struct cgroup* cgroup) {
+result_code disable_mem_controller(struct cgroup* cgroup) {
   acquire(&cgtable.lock);
-  int res = unsafe_disable_mem_controller(cgroup);
+  result_code res = unsafe_disable_mem_controller(cgroup);
   release(&cgtable.lock);
   return res;
 }

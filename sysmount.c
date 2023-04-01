@@ -149,7 +149,7 @@ int sys_umount(void) {
 
   int delete_cgroup_res = cgroup_delete(mount_path, "umount");
 
-  if (delete_cgroup_res == -1) {
+  if (delete_cgroup_res == RESULT_ERROR_ARGUMENT) {
     struct vfs_inode *mount_dir;
     struct mount *mnt;
 
@@ -176,7 +176,7 @@ int sys_umount(void) {
     return res;
   }
 
-  if (delete_cgroup_res == -2) {
+  if (delete_cgroup_res == RESULT_ERROR_ARGUMENT) {
     end_op();
     cprintf("cannot unmount cgroup\n");
     return -1;
