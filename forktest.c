@@ -7,12 +7,6 @@
 
 #define N  1000
 
-int
-printf(int fd, const char *s, ...)
-{
-  return write(fd, s, strlen(s));
-}
-
 void
 forktest(void)
 {
