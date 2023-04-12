@@ -14,6 +14,12 @@
 
 struct devsw devsw[NDEV];
 
+struct {
+    struct spinlock lock;
+    struct vfs_file file[NFILE];
+} ftable;
+
+
 void
 vfs_fileinit(void)
 {

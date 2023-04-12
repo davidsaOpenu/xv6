@@ -89,10 +89,6 @@ struct vfs_file {
   };
 };
 
-struct {
-    struct spinlock lock;
-    struct vfs_file file[NFILE];
-} ftable;
 
 struct inode_operations {
     int             (*dirlink) (struct vfs_inode*, char*, uint);

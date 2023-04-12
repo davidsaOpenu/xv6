@@ -19,6 +19,9 @@
 #error "STORAGE_DEVICE_SIZE must be defined when using the mock storage device"
 #endif
 
+char memory_storage[STORAGE_DEVICE_SIZE];
+
+
 #define entry_index_to_entry_offset(index) super_block.objects_table_offset + index * sizeof(ObjectsTableEntry)
 
 struct sleeplock disklock;
