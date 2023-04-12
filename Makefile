@@ -187,7 +187,7 @@ _%: %.o $(ULIB)
 	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
 
 
-_forktest: forktest.o $(ULIB)
+tests/xv6/_forktest: tests/xv6/forktest.o $(ULIB)
 	# forktest has less library code linked in - needs to be small
 	# in order to be able to max out the proc table.
 	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^
@@ -202,35 +202,38 @@ mkfs: mkfs.c fs.h
 # http://www.gnu.org/software/make/manual/html_node/Chained-Rules.html
 .PRECIOUS: %.o
 
+UPROGS_TESTS=\
+	tests/xv6/_forktest\
+	tests/xv6/_mounttest\
+	tests/xv6/_usertests\
+	tests/xv6/_pidns_tests\
+	tests/xv6/_cgroupstests\
+	tests/xv6/_ioctltests\
+	tests/xv6/_objfstests
+
 UPROGS=\
 	_cat\
 	_echo\
-	_forktest\
 	_grep\
 	_init\
 	_kill\
 	_ln\
 	_ls\
 	_mkdir\
-	_mounttest\
 	_rm\
 	_sh\
 	_stressfs\
-	_usertests\
-	_pidns_tests\
 	_wc\
 	_zombie\
 	_mount\
 	_umount\
 	_timer\
 	_cpu\
-	_cgroupstests\
-        _pouch\
-        _ctrl_grp \
-        _demo_pid_ns \
-        _demo_mount_ns \
-        _ioctltests \
-        _objfstests
+	_pouch\
+	_ctrl_grp\
+	_demo_pid_ns\
+	_demo_mount_ns\
+	$(UPROGS_TESTS)
 
 INTERNAL_DEV=\
 	internal_fs_a\
@@ -314,9 +317,10 @@ qemu-nox-gdb: gdb .gdbinit
 # check in that version.
 
 EXTRA=\
-	mkfs.c ulib.c user.h cat.c echo.c forktest.c grep.c kill.c\
-        ln.c ls.c mkdir.c mounttest.c rm.c stressfs.c usertests.c pidns_tests.c wc.c zombie.c\
-        printf.c umalloc.c mount.c umount.c timer.c cpu.c cgroupstests.c ioctltests.c\
+	mkfs.c ulib.c user.h cat.c echo.c grep.c kill.c ln.c ls.c mkdir.c rm.c\
+	stressfs.c wc.c zombie.c printf.c umalloc.c mount.c umount.c timer.c cpu.c\
+	tests/xv6/forktest.c tests/xv6/mounttest.c tests/xv6/usertests.c\
+	tests/xv6/pidns_tests.c tests/xv6/cgroupstests.c tests/xv6/ioctltests.c\
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
 	.gdbinit.tmpl gdbutil\
 
