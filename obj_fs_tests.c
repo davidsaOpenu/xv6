@@ -4,7 +4,7 @@
 #include "obj_disk.h"
 #include "obj_cache.h"
 #include "obj_log.h"
-#include "obj_fs_tests.h"
+#include "test.h"
 
 
 /**

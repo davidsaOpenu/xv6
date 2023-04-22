@@ -116,5 +116,11 @@ void print_error(const char* name, unsigned long int x, unsigned long int y,
     }
 
 
+/**
+ * OBJECT FILE SYSTEM SPECIFIC VALIDATIONS
+ */
+#define ASSERT_NO_ERR(x) \
+    ASSERT_UINT_EQ(NO_ERR, (x))
+
 #endif /* XV6_TEST_H */
  
