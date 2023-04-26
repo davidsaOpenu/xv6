@@ -1,0 +1,4 @@
+Collecting pbr
+  Downloading https://files.pythonhosted.org/packages/01/06/4ab11bf70db5a60689fc521b636849c8593eb67a2c6bdf73a16c72d16a12/pbr-5.11.1-py2.py3-none-any.whl (112kB)
+Installing collected packages: pbr
+Successfully installed pbr

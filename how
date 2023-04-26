@@ -1,0 +1,458 @@
+[1mdiff --git a/asm.h b/asm.h[m
+[1mindex 68210d7..ed1e2b3 100644[m
+[1m--- a/asm.h[m
+[1m+++ b/asm.h[m
+[36m@@ -1,3 +1,5 @@[m
+[32m+[m[32m#ifndef XV6_ASM_H[m
+[32m+[m[32m#define XV6_ASM_H[m
+ //[m
+ // assembler macros to create x86 segments[m
+ //[m
+[36m@@ -19,3 +21,5 @@[m
+ #define STA_W     0x2       // Writeable (non-executable segments)[m
+ #define STA_R     0x2       // Readable (executable segments)[m
+ #define STA_A     0x1       // Accessed[m
+[32m+[m
+[32m+[m[32m#endif /* XV6_ASM_H */[m
+\ No newline at end of file[m
+[1mdiff --git a/cgfs.h b/cgfs.h[m
+[1mindex 65bc31e..8a20032 100644[m
+[1m--- a/cgfs.h[m
+[1m+++ b/cgfs.h[m
+[36m@@ -150,4 +150,4 @@[m [mint get_dir_name(char * path, char * dir_name);[m
+  */[m
+ int unsafe_cg_stat(struct vfs_file * f, struct stat * st);[m
+ [m
+[31m-#endif[m
+[32m+[m[32m#endif /* XV6_CGFS_H */[m
+[1mdiff --git a/cgroup.h b/cgroup.h[m
+[1mindex b4c4961..8523c86 100644[m
+[1m--- a/cgroup.h[m
+[1m+++ b/cgroup.h[m
+[36m@@ -1,9 +1,10 @@[m
+[32m+[m[32m#ifndef XV6_CGROUP_H[m
+[32m+[m[32m#define XV6_CGROUP_H[m
+[32m+[m
+ #include "param.h"[m
+ #include "proc.h"[m
+ #include "defs.h"[m
+ [m
+[31m-#ifndef XV6_CGROUP_H[m
+[31m-#define XV6_CGROUP_H[m
+ [m
+ #define MAX_DECS_SIZE 3       // Max length of string representation of descendants number. (the value is a number of at most two digits + null terminator)[m
+ #define MAX_DEPTH_SIZE 3      // Max length of string representation of depth number. (the value is a number of at most two digits + null terminator)[m
+[36m@@ -471,4 +472,4 @@[m [mvoid cgroup_mem_stat_pgfault_incr(struct cgroup* cgroup);[m
+  * @param cgroup pointer to a cgroup[m
+  */[m
+ void cgroup_mem_stat_pgmajfault_incr(struct cgroup* cgroup);[m
+[31m-#endif[m
+[32m+[m[32m#endif /* XV6_CGROUP_H */[m
+[1mdiff --git a/date.h b/date.h[m
+[1mindex 94aec4b..55e4d8b 100644[m
+[1m--- a/date.h[m
+[1m+++ b/date.h[m
+[36m@@ -1,3 +1,5 @@[m
+[32m+[m[32m#ifndef XV6_DATE_H[m
+[32m+[m[32m#define XV6_DATE_H[m
+ struct rtcdate {[m
+   uint second;[m
+   uint minute;[m
+[36m@@ -6,3 +8,5 @@[m [mstruct rtcdate {[m
+   uint month;[m
+   uint year;[m
+ };[m
+[32m+[m
+[32m+[m[32m#endif /* XV6_DATE_H */[m
+\ No newline at end of file[m
+[1mdiff --git a/device.h b/device.h[m
+[1mindex 475643b..3b2ce26 100644[m
+[1m--- a/device.h[m
+[1m+++ b/device.h[m
+[36m@@ -1,3 +1,5 @@[m
+[32m+[m[32m#ifndef XV6_DEVICE_H[m
+[32m+[m[32m#define XV6_DEVICE_H[m
+ #define LOOP_DEVICE_DEV (7)[m
+ #define OBJ_DEV (15)[m
+ #define DEV_TO_LOOP_DEVICE(dev) ((dev) & 0xffff)[m
+[36m@@ -5,4 +7,5 @@[m
+ #define LOOP_DEVICE_TO_DEV(ld) ((ld) | (LOOP_DEVICE_DEV << 16))[m
+ #define OBJ_TO_DEV(ld) ((ld) | (OBJ_DEV << 16))[m
+ #define IS_LOOP_DEVICE(dev) (((dev) >> 16) == LOOP_DEVICE_DEV)[m
+[31m-#define IS_OBJ_DEVICE(dev) (((dev) >> 16) == OBJ_DEV)[m
+\ No newline at end of file[m
+[32m+[m[32m#define IS_OBJ_DEVICE(dev) (((dev) >> 16) == OBJ_DEV)[m
+[32m+[m[32m#endif /* XV6_DEVICE_H */[m
+\ No newline at end of file[m
+[1mdiff --git a/elf.h b/elf.h[m
+[1mindex d16c967..02991e1 100644[m
+[1m--- a/elf.h[m
+[1m+++ b/elf.h[m
+[36m@@ -1,3 +1,5 @@[m
+[32m+[m[32m#ifndef XV6_ELF_H[m
+[32m+[m[32m#define XV6_ELF_H[m
+ // Format of an ELF executable file[m
+ [m
+ #define ELF_MAGIC 0x464C457FU  // "\x7FELF" in little endian[m
+[36m@@ -40,3 +42,5 @@[m [mstruct proghdr {[m
+ #define ELF_PROG_FLAG_EXEC      1[m
+ #define ELF_PROG_FLAG_WRITE     2[m
+ #define ELF_PROG_FLAG_READ      4[m
+[32m+[m
+[32m+[m[32m#endif /* XV6_ELF_H */[m
+\ No newline at end of file[m
+[1mdiff --git a/fcntl.h b/fcntl.h[m
+[1mindex 9e601f2..0552639 100644[m
+[1m--- a/fcntl.h[m
+[1m+++ b/fcntl.h[m
+[36m@@ -1,3 +1,5 @@[m
+[32m+[m[32m#ifndef XV6_FCNTL_H[m
+[32m+[m[32m#define XV6_FCNTL_H[m
+ #define O_RDONLY  0x000[m
+ #define O_WRONLY  0x001[m
+ #define O_RDWR    0x002[m
+[36m@@ -14,3 +16,5 @@[m
+ #define TTYSETS  0x0001[m
+ #define TTYGETS  0x0002[m
+ [m
+[32m+[m
+[32m+[m[32m#endif /* XV6_FCNTL_H */[m
+\ No newline at end of file[m
+[1mdiff --git a/kbd.h b/kbd.h[m
+[1mindex babbd6e..8e4baed 100644[m
+[1m--- a/kbd.h[m
+[1m+++ b/kbd.h[m
+[36m@@ -1,3 +1,5 @@[m
+[32m+[m[32m#ifndef XV6_KBD_H[m
+[32m+[m[32m#define XV6_KBD_H[m
+ // PC keyboard interface constants[m
+ [m
+ #define KBSTATP         0x64    // kbd controller status port(I)[m
+[36m@@ -110,3 +112,5 @@[m [mstatic uchar ctlmap[256] =[m
+   [0xD2] KEY_INS,   [0xD3] KEY_DEL[m
+ };[m
+ [m
+[32m+[m
+[32m+[m[32m#endif /* XV6_KBD_H */[m
+\ No newline at end of file[m
+[1mdiff --git a/memlayout.h b/memlayout.h[m
+[1mindex 70c1968..8f641f9 100644[m
+[1m--- a/memlayout.h[m
+[1m+++ b/memlayout.h[m
+[36m@@ -1,3 +1,5 @@[m
+[32m+[m[32m#ifndef XV6_MEMLAYOUT_H[m
+[32m+[m[32m#define XV6_MEMLAYOUT_H[m
+ // Memory layout[m
+ [m
+ #define EXTMEM  0x100000            // Start of extended memory[m
+[36m@@ -13,3 +15,5 @@[m
+ [m
+ #define V2P_WO(x) ((x) - KERNBASE)    // same as V2P, but without casts[m
+ #define P2V_WO(x) ((x) + KERNBASE)    // same as P2V, but without casts[m
+[32m+[m
+[32m+[m[32m#endif /* XV6_MEMLAYOUT_H */[m
+\ No newline at end of file[m
+[1mdiff --git a/mount.h b/mount.h[m
+[1mindex 77b4da2..a6f2f35 100644[m
+[1m--- a/mount.h[m
+[1m+++ b/mount.h[m
+[36m@@ -1,3 +1,5 @@[m
+[32m+[m[32m#ifndef XV6_MOUNT_H[m
+[32m+[m[32m#define XV6_MOUNT_H[m
+ struct mount {[m
+   struct mount *parent;[m
+   struct vfs_inode *mountpoint;[m
+[36m@@ -6,3 +8,5 @@[m [mstruct mount {[m
+ };[m
+ [m
+ #define NMOUNT (200)[m
+[32m+[m
+[32m+[m[32m#endif /* XV6_MOUNT_H */[m
+\ No newline at end of file[m
+[1mdiff --git a/mount_ns.h b/mount_ns.h[m
+[1mindex 0632678..47b739c 100644[m
+[1m--- a/mount_ns.h[m
+[1m+++ b/mount_ns.h[m
+[36m@@ -1,3 +1,5 @@[m
+[32m+[m[32m#ifndef XV6_MOUNT_NS_H[m
+[32m+[m[32m#define XV6_MOUNT_NS_H[m
+ /* Note the structure of active_mounts. New mounts are always added to the[m
+  * front, so the mount "parent" referencesare always pointing to entries[m
+  * farther in the back.[m
+[36m@@ -8,4 +10,5 @@[m [mstruct mount_ns {[m
+   struct spinlock lock; // protects active_mounts[m
+   struct mount* root;[m
+   struct mount_list *active_mounts;[m
+[31m-};[m
+\ No newline at end of file[m
+[32m+[m[32m};[m
+[32m+[m[32m#endif /* XV6_MOUNT_NS_H */[m
+\ No newline at end of file[m
+[1mdiff --git a/mp.h b/mp.h[m
+[1mindex 4d17283..0be0fd9 100644[m
+[1m--- a/mp.h[m
+[1m+++ b/mp.h[m
+[36m@@ -1,3 +1,5 @@[m
+[32m+[m[32m#ifndef XV6_MP_H[m
+[32m+[m[32m#define XV6_MP_H[m
+ // See MultiProcessor Specification Version 1.[14][m
+ [m
+ struct mp {             // floating pointer[m
+[36m@@ -54,3 +56,5 @@[m [mstruct mpioapic {       // I/O APIC table entry[m
+ [m
+ //PAGEBREAK![m
+ // Blank page.[m
+[32m+[m
+[32m+[m[32m#endif /* XV6_MP_H */[m
+\ No newline at end of file[m
+[1mdiff --git a/namespace.h b/namespace.h[m
+[1mindex 908ddc0..77ffdac 100644[m
+[1m--- a/namespace.h[m
+[1m+++ b/namespace.h[m
+[36m@@ -1,3 +1,5 @@[m
+[32m+[m[32m#ifndef XV6_NAMESPACE_H[m
+[32m+[m[32m#define XV6_NAMESPACE_H[m
+ struct nsproxy {[m
+     int ref;[m
+     struct mount_ns* mount_ns;[m
+[36m@@ -5,3 +7,5 @@[m [mstruct nsproxy {[m
+ };[m
+ [m
+ struct nsproxy* namespace_replace_pid_ns(struct nsproxy* oldns, struct pid_ns* pid_ns);[m
+[32m+[m
+[32m+[m[32m#endif /* XV6_NAMESPACE_H */[m
+\ No newline at end of file[m
+[1mdiff --git a/ns_types.h b/ns_types.h[m
+[1mindex f9b5b1a..d522706 100644[m
+[1m--- a/ns_types.h[m
+[1m+++ b/ns_types.h[m
+[36m@@ -1,2 +1,6 @@[m
+[32m+[m[32m#ifndef XV6_NS_TYPES_H[m
+[32m+[m[32m#define XV6_NS_TYPES_H[m
+ #define MOUNT_NS (1)[m
+ #define PID_NS (2)[m
+[32m+[m
+[32m+[m[32m#endif /* XV6_NS_TYPES_H */[m
+\ No newline at end of file[m
+[1mdiff --git a/obj_fs_tests.h b/obj_fs_tests.h[m
+[1mindex 9b98069..cc83de5 100644[m
+[1m--- a/obj_fs_tests.h[m
+[1m+++ b/obj_fs_tests.h[m
+[36m@@ -1,3 +1,5 @@[m
+[32m+[m[32m#ifndef XV6_OBJ_FS_TESTS_H[m
+[32m+[m[32m#define XV6_OBJ_FS_TESTS_H[m
+ /**[m
+  Defines a simple test library.[m
+  To define a new test use `TEST`. For example:[m
+[36m@@ -86,3 +88,5 @@[m [mvoid print_error(const char *name, unsigned long int x, unsigned long int y,[m
+  */[m
+ #define ASSERT_NO_ERR(x) \[m
+     ASSERT_UINT_EQ(NO_ERR, (x))[m
+[32m+[m
+[32m+[m[32m#endif /* XV6_OBJ_FS_TESTS_H */[m
+\ No newline at end of file[m
+[1mdiff --git a/obj_fs_tests_utilities.h b/obj_fs_tests_utilities.h[m
+[1mindex f8902fa..a4b7e69 100644[m
+[1m--- a/obj_fs_tests_utilities.h[m
+[1m+++ b/obj_fs_tests_utilities.h[m
+[36m@@ -1 +1,5 @@[m
+[32m+[m[32m#ifndef XV6_OBJ_FS_TESTS_UTILITIES_H[m
+[32m+[m[32m#define XV6_OBJ_FS_TESTS_UTILITIES_H[m
+ void panic(const char* msg);[m
+[32m+[m
+[32m+[m[32m#endif /* XV6_OBJ_FS_TESTS_UTILITIES_H */[m
+\ No newline at end of file[m
+[1mdiff --git a/pid_ns.h b/pid_ns.h[m
+[1mindex d375a62..4b11d3b 100644[m
+[1m--- a/pid_ns.h[m
+[1m+++ b/pid_ns.h[m
+[36m@@ -1,3 +1,5 @@[m
+[32m+[m[32m#ifndef XV6_PID_NS_H[m
+[32m+[m[32m#define XV6_PID_NS_H[m
+ #define MAX_PID_NS_DEPTH 4[m
+ [m
+ struct pid_ns {[m
+[36m@@ -15,3 +17,5 @@[m [mint pid_ns_next_pid(struct pid_ns* pid_ns);[m
+ struct pid_ns* pid_ns_new(struct pid_ns* parent);[m
+ struct pid_ns* pid_ns_dup(struct pid_ns* pid_ns);[m
+ int pid_ns_is_max_depth(struct pid_ns* pid_ns);[m
+[32m+[m
+[32m+[m[32m#endif /* XV6_PID_NS_H */[m
+\ No newline at end of file[m
+[1mdiff --git a/pouch.h b/pouch.h[m
+[1mindex 861d1bf..12d986b 100644[m
+[1m--- a/pouch.h[m
+[1m+++ b/pouch.h[m
+[36m@@ -2,8 +2,8 @@[m
+ *   Pouch.h[m
+ *   - pouch container commands[m
+ */[m
+[31m-#ifndef POUCH_H[m
+[31m-#define POUCH_H[m
+[32m+[m[32m#ifndef XV6_POUCH_H[m
+[32m+[m[32m#define XV6_POUCH_H[m
+ [m
+ typedef enum p_cmd {START, CONNECT, DISCONNECT, DESTROY, LIMIT, INFO, LIST} p_cmd;[m
+ #define CNTNAMESIZE 100[m
+[36m@@ -160,5 +160,5 @@[m [mstatic int print_cinfo(char* container_name, char * tty_name, int pid);[m
+ */[m
+ static int get_connected_cname(char * cname);[m
+ [m
+[31m-#endif // POUCH_H[m
+[32m+[m[32m#endif /* XV6_POUCH_H */[m
+ [m
+[1mdiff --git a/proc.h b/proc.h[m
+[1mindex 2cdd4c2..f3c47e6 100644[m
+[1m--- a/proc.h[m
+[1m+++ b/proc.h[m
+[36m@@ -1,10 +1,11 @@[m
+[32m+[m[32m#ifndef XV6_PROC_H[m
+[32m+[m[32m#define XV6_PROC_H[m
+[32m+[m
+ #include "types.h"[m
+ #include "mmu.h"[m
+ #include "param.h"[m
+ #include "vfs_file.h"[m
+ [m
+[31m-#ifndef XV6_PROC_H[m
+[31m-#define XV6_PROC_H[m
+ [m
+ struct cgroup;[m
+ [m
+[36m@@ -108,4 +109,4 @@[m [mstruct cgroup *proc_get_cgroup(void);[m
+ //   fixed-size stack[m
+ //   expandable heap[m
+ [m
+[31m-#endif[m
+[32m+[m[32m#endif /* XV6_PROC_H */[m
+[1mdiff --git a/string.h b/string.h[m
+[1mindex 01fa960..a7557e2 100644[m
+[1m--- a/string.h[m
+[1m+++ b/string.h[m
+[36m@@ -1,3 +1,5 @@[m
+[32m+[m[32m#ifndef XV6_STRING_H[m
+[32m+[m[32m#define XV6_STRING_H[m
+ #pragma once[m
+ [m
+ #include "types.h"[m
+[36m@@ -11,3 +13,5 @@[m [mint    strlen(const char*);[m
+ int    strcmp(const char*, const char*);[m
+ int    strncmp(const char*, const char*, uint);[m
+ char*  strncpy(char*, const char*, int);[m
+[32m+[m
+[32m+[m[32m#endif /* XV6_STRING_H */[m
+\ No newline at end of file[m
+[1mdiff --git a/syscall.h b/syscall.h[m
+[1mindex f1b49c6..b736681 100644[m
+[1m--- a/syscall.h[m
+[1m+++ b/syscall.h[m
+[36m@@ -1,3 +1,5 @@[m
+[32m+[m[32m#ifndef XV6_SYSCALL_H[m
+[32m+[m[32m#define XV6_SYSCALL_H[m
+ // System call numbers[m
+ #define SYS_fork    1[m
+ #define SYS_exit    2[m
+[36m@@ -31,3 +33,5 @@[m
+ #define SYS_getcpu 30[m
+ #define SYS_getmem 31[m
+ #define SYS_kmemtest 32[m
+[32m+[m
+[32m+[m[32m#endif /* XV6_SYSCALL_H */[m
+\ No newline at end of file[m
+[1mdiff --git a/sysnamespace.h b/sysnamespace.h[m
+[1mindex e69de29..afde12d 100644[m
+[1m--- a/sysnamespace.h[m
+[1m+++ b/sysnamespace.h[m
+[36m@@ -0,0 +1,4 @@[m
+[32m+[m[32m#ifndef XV6_SYSNAMESPACE_H[m
+[32m+[m[32m#define XV6_SYSNAMESPACE_H[m
+[32m+[m
+[32m+[m[32m#endif /* XV6_SYSNAMESPACE_H */[m
+\ No newline at end of file[m
+[1mdiff --git a/test.h b/test.h[m
+[1mindex 3b96ee5..527c115 100644[m
+[1m--- a/test.h[m
+[1m+++ b/test.h[m
+[36m@@ -1,3 +1,5 @@[m
+[32m+[m[32m#ifndef XV6_TEST_H[m
+[32m+[m[32m#define XV6_TEST_H[m
+ /**[m
+  Defines a simple test library.[m
+  To define a new test use `TEST`. For example:[m
+[36m@@ -113,3 +115,5 @@[m [mvoid print_error(const char* name, unsigned long int x, unsigned long int y,[m
+         failed = 1; \[m
+     }[m
+ [m
+[32m+[m
+[32m+[m[32m#endif /* XV6_TEST_H */[m
+\ No newline at end of file[m
+[1mdiff --git a/tester.h b/tester.h[m
+[1mindex 9d83189..cc610b6 100644[m
+[1m--- a/tester.h[m
+[1m+++ b/tester.h[m
+[36m@@ -1,3 +1,5 @@[m
+[32m+[m[32m#ifndef XV6_TESTER_H[m
+[32m+[m[32m#define XV6_TESTER_H[m
+ #include "wstatus.h"[m
+ [m
+ typedef int(*test_func_t)(void);[m
+[36m@@ -39,4 +41,5 @@[m [mvoid run_test(test_func_t func, const char *name) {[m
+     printf(stderr, "failed test - '%s'\n", name);[m
+     testsPassed = 1; /*Denotes some test has failed to pass*/[m
+   }[m
+[31m-}[m
+\ No newline at end of file[m
+[32m+[m[32m}[m
+[32m+[m[32m#endif /* XV6_TESTER_H */[m
+\ No newline at end of file[m
+[1mdiff --git a/traps.h b/traps.h[m
+[1mindex 0bd1fd8..40b3907 100644[m
+[1m--- a/traps.h[m
+[1m+++ b/traps.h[m
+[36m@@ -1,3 +1,5 @@[m
+[32m+[m[32m#ifndef XV6_TRAPS_H[m
+[32m+[m[32m#define XV6_TRAPS_H[m
+ // x86 trap and interrupt constants.[m
+ [m
+ // Processor-defined:[m
+[36m@@ -36,3 +38,5 @@[m
+ #define IRQ_ERROR       19[m
+ #define IRQ_SPURIOUS    31[m
+ [m
+[32m+[m
+[32m+[m[32m#endif /* XV6_TRAPS_H */[m
+\ No newline at end of file[m
+[1mdiff --git a/wstatus.h b/wstatus.h[m
+[1mindex 1cfe4a7..b7cdc9d 100644[m
+[1m--- a/wstatus.h[m
+[1m+++ b/wstatus.h[m
+[36m@@ -1,3 +1,5 @@[m
+[32m+[m[32m#ifndef XV6_WSTATUS_H[m
+[32m+[m[32m#define XV6_WSTATUS_H[m
+ /*[m
+  * This file holds definitions relevent to the wait4 system call[m
+  * and the alternate interfaces that use it (wait, wait3, waitpid).[m
+[36m@@ -22,3 +24,5 @@[m
+ [m
+ #define	W_EXITCODE(ret, sig)	((ret) << 8 | (sig))[m
+ #define	W_STOPCODE(sig)		((sig) << 8 | _WSTOPPED)[m
+[32m+[m
+[32m+[m[32m#endif /* XV6_WSTATUS_H */[m
+\ No newline at end of file[m
+[1mdiff --git a/x86.h b/x86.h[m
+[1mindex 07312a5..3ababf5 100644[m
+[1m--- a/x86.h[m
+[1m+++ b/x86.h[m
+[36m@@ -1,3 +1,5 @@[m
+[32m+[m[32m#ifndef XV6_X86_H[m
+[32m+[m[32m#define XV6_X86_H[m
+ // Routines to let C code use special x86 instructions.[m
+ [m
+ static inline uchar[m
+[36m@@ -181,3 +183,5 @@[m [mstruct trapframe {[m
+   ushort ss;[m
+   ushort padding6;[m
+ };[m
+[32m+[m
+[32m+[m[32m#endif /* XV6_X86_H */[m
+\ No newline at end of file[m
