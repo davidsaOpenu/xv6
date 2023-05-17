@@ -458,7 +458,7 @@ set running [ioctl_syscall_test $argv]
 set running [cgroupstests $argv]
 
 #basic tests
-#set running [pouch_start_test $argv]
+set running [pouch_start_test $argv]
 #set running [pouch_connect_test $argv]
 #set running [pouch_disconnect_test $argv]
 #set running [pouch_destroy_test $argv]
