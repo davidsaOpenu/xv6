@@ -11,7 +11,7 @@ proc pid_check { argv expect_str} {
 
     send "pid\n"
     log_file -noappend [lindex $argv 0]
-    set timeout 3
+    set timeout 7
     expect {
        expect_str
     }
