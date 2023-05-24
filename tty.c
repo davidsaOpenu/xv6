@@ -20,9 +20,9 @@ attach_tty(int tty_fd)
    if(ioctl(tty_fd, TTYSETS, DEV_ATTACH) < 0)
      return -1;
 
-    //close(0);
-    //close(1);
-    //close(2);
+    close(0);
+    close(1);
+    close(2);
     if(dup(tty_fd) < 0)
       return -1;
 
