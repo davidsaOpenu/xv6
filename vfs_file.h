@@ -7,11 +7,12 @@
 #include "sleeplock.h"
 #include "stat.h"
 #include "vfs_fs.h"
+#include "device.h"
 
 struct vfs_file;
 
 struct vfs_file {
-  enum { FD_NONE, FD_PIPE, FD_INODE, FD_CG } type;
+  enum { FD_NONE, FD_PIPE, FD_INODE, FD_CG, FD_PROC } type;
   int ref;  // reference count
   char readable;
   char writable;
@@ -94,6 +95,19 @@ struct vfs_file {
           } min;
         } mem;
       };
+    };
+
+    // FD_PROC
+    struct {
+      int filetype;
+      int filename_const;
+      char filename[MAX_PROC_FILE_NAME_LENGTH];
+      union {
+        uint mem;
+        struct mount_list * mount_entry;
+        struct device devs[NLOOPDEVS];
+      } proc;
+      uint count; /* Useful to count mount entries/devs, etc.. */
     };
   };
 };
