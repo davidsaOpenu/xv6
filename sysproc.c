@@ -209,6 +209,4 @@ int sys_getcpu(void) {
 
 // This is our solution for what can be found at the /proc
 // virtual filesystem in linux.
-int sys_getmem(void) { return myproc()->sz; }
-
 int sys_kmemtest(void) { return kmemtest(); }

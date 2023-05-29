@@ -10,4 +10,26 @@
 #define IS_LOOP_DEVICE(dev) (((dev) >> 16) == LOOP_DEVICE_DEV)
 #define IS_OBJ_DEVICE(dev) (((dev) >> 16) == OBJ_DEV)
 
+#define NLOOPDEVS (10)
+#define NIDEDEVS (2)
+#define NOBJDEVS (2)
+
+struct device {
+  struct superblock sb;
+  int ref;
+  struct vfs_inode *ip;
+};
+
+struct obj_device {
+  struct objsuperblock sb;
+  int ref;
+};
+
+struct {
+  struct spinlock lock;  // protects loopdevs
+  struct device loopdevs[NLOOPDEVS];
+  struct superblock idesb[NIDEDEVS];
+  struct obj_device objdev[NOBJDEVS];
+} dev_holder;
+
 #endif /* XV6_DEVICE_H */
