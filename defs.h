@@ -55,7 +55,6 @@ int getorcreatedevice(struct vfs_inode*);
 int getorcreateobjdevice();
 void deviceput(uint);
 void deviceget(uint);
-void printdevices(void);
 struct vfs_inode* getinodefordevice(uint);
 void objdevinit(uint dev);
 struct vfs_superblock* getsuperblock(uint);
@@ -99,7 +98,6 @@ int vfs_namecmp(const char*, const char*);
 
 // mount.c
 void mntinit(void);
-void printmounts(void);
 int mount(struct vfs_inode*, struct vfs_inode*, struct mount*);
 int objfs_mount(struct vfs_inode* mountpoint, struct vfs_inode* device,
                 struct mount* parent);
@@ -299,6 +297,9 @@ int intlen(int n);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x) / sizeof((x)[0]))
+
+// min between two numbers
+#define min(x, y) (x) > (y) ? (y) : (x)
 
 /** Return codes:
  * - RESULT_ERROR_OPERATION upon error related to the executed operation.
