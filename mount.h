@@ -1,6 +1,8 @@
 #ifndef XV6_MOUNT_H
 #define XV6_MOUNT_H
 
+#include "types.h"
+
 struct mount {
   struct mount *parent;
   struct vfs_inode *mountpoint;
