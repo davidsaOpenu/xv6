@@ -1108,8 +1108,6 @@ void createmanyfiles(uint number_of_files_to_create) {
 
 int main(int argc, char *argv[]) {
   printf(1, "objfstests starting\n");
-  printmounts();
-  printdevices();
 
   if (mkdir("new") != 0) {
     printf(2, "objtest: failed to create dir new\n");
