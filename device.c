@@ -2,35 +2,11 @@
 
 #include "defs.h"
 #include "file.h"
-#include "fs.h"
 #include "obj_disk.h"
-#include "obj_fs.h"
 #include "sleeplock.h"
-#include "spinlock.h"
 #include "types.h"
-#include "vfs_file.h"
 
-#define NLOOPDEVS (10)
-#define NIDEDEVS (2)
-#define NOBJDEVS (2)
-
-struct device {
-  struct superblock sb;
-  int ref;
-  struct vfs_inode *ip;
-};
-
-struct obj_device {
-  struct objsuperblock sb;
-  int ref;
-};
-
-struct {
-  struct spinlock lock;  // protects loopdevs
-  struct device loopdevs[NLOOPDEVS];
-  struct superblock idesb[NIDEDEVS];
-  struct obj_device objdev[NOBJDEVS];
-} dev_holder;
+struct dev_holder_s dev_holder = {0};
 
 void devinit(void) {
   int i = 0;
@@ -146,26 +122,6 @@ struct vfs_inode *getinodefordevice(uint dev) {
   }
 
   return dev_holder.loopdevs[dev].ip;
-}
-
-void printdevices(void) {
-  acquire(&dev_holder.lock);
-
-  cprintf("Printing devices:\n");
-  for (int i = 0; i < NLOOPDEVS; i++) {
-    if (dev_holder.loopdevs[i].ref != 0) {
-      cprintf("Device %d backed by inode %x with ref %d\n", i,
-              dev_holder.loopdevs[i].ip, dev_holder.loopdevs[i].ref);
-    }
-  }
-
-  for (int i = 0; i < NOBJDEVS; i++) {
-    if (dev_holder.objdev[i].ref != 0) {
-      cprintf("Device %d with storage_device_size of superblock %d\n", i,
-              dev_holder.objdev[i].sb.storage_device_size);
-    }
-  }
-  release(&dev_holder.lock);
 }
 
 struct vfs_superblock *getsuperblock(uint dev) {
