@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3fbad185_c4c47c5c",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-06-04T20:42:38Z",
+      "side": 1,
+      "message": "This change can not be verified ATM but is required to put all required CI checks in place.",
+      "revId": "47af0bc5e1520b6d87dd3351e5a64d2f3ef4fd30",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
