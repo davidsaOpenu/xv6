@@ -2,4 +2,3 @@
 #define XV6_SYSNAMESPACE_H
 
 #endif /* XV6_SYSNAMESPACE_H */
- 

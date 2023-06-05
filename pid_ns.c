@@ -1,22 +1,22 @@
-#include "types.h"
+#include "pid_ns.h"
+
 #include "defs.h"
-#include "param.h"
 #include "memlayout.h"
 #include "mmu.h"
-#include "x86.h"
+#include "namespace.h"
+#include "param.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "types.h"
 #include "wstatus.h"
-#include "pid_ns.h"
-#include "namespace.h"
+#include "x86.h"
 
 struct {
   struct spinlock lock;
   struct pid_ns namespaces[NNAMESPACE];
 } pidnstable;
 
-void pid_ns_init()
-{
+void pid_ns_init() {
   initlock(&pidnstable.lock, "pidns");
   for (int i = 0; i < NNAMESPACE; i++) {
     initlock(&pidnstable.namespaces[i].lock, "pidns");
@@ -24,18 +24,16 @@ void pid_ns_init()
   }
 }
 
-void pid_ns_put(struct pid_ns* pid_ns)
-{
+void pid_ns_put(struct pid_ns* pid_ns) {
   acquire(&pidnstable.lock);
   if (!pid_ns->ref) {
-      panic("pid_ns_put: ref == 0");
+    panic("pid_ns_put: ref == 0");
   }
   pid_ns->ref--;
   release(&pidnstable.lock);
 }
 
-void pid_ns_get(struct pid_ns* pid_ns)
-{
+void pid_ns_get(struct pid_ns* pid_ns) {
   acquire(&pidnstable.lock);
   pid_ns->ref++;
   release(&pidnstable.lock);
@@ -66,7 +64,7 @@ struct pid_ns* pid_ns_dup(struct pid_ns* pid_ns) {
 }
 
 struct pid_ns* pid_ns_new(struct pid_ns* parent) {
-  struct pid_ns * pid_ns = pid_ns_alloc();
+  struct pid_ns* pid_ns = pid_ns_alloc();
   pid_ns_init_ns(pid_ns, parent);
   return pid_ns;
 }

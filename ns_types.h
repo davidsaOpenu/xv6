@@ -5,4 +5,3 @@
 #define PID_NS (2)
 
 #endif /* XV6_NS_TYPES_H */
- 

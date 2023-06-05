@@ -8,16 +8,16 @@ set -uo # nounset,pipefail
 #########################################################################
 # clang-format
 # clang-format -style=google -dump-config > .clang-format
-changed_files=$(find . \( -iname "*.c" -o -iname "*.h" -o -iname "*.S" \) \
+# Clang-format doesn't work well with *.S files.
+changed_files=$(find . -regex ".*\\.[c|h]$" \
   -exec clang-format -i {} \; -exec git diff --name-only {} \;)
-
 
 if [ -n "$changed_files" ]; then
   echo "Files were changed by clang-format:"
   echo "$changed_files"
   git diff --color=always &> required_changes.txt
   cat required_changes.txt
-  false
+  exit 1
 fi
 
 #########################################################################
@@ -64,4 +64,4 @@ if [ $lines -ne 1 ]; then
 fi
 
 echo "SUCCESS"
-exit 0 
+exit 0

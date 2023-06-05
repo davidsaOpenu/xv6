@@ -1,9 +1,9 @@
 #ifndef XV6_OBJ_FS_H
 #define XV6_OBJ_FS_H
 
+#include "stat.h"
 #include "types.h"
 #include "vfs_fs.h"
-#include "stat.h"
 
 // Other parameters:
 #define MAX_OBJECT_NAME_LENGTH 20
@@ -13,16 +13,16 @@
 #define OBJ_ROOTINO 3
 
 struct objsuperblock {
-    uint storage_device_size;
-    uint objects_table_offset;
-    // the last inode added
-    uint last_inode;
-    // variables to trace the file-system state
-    uint bytes_occupied;
-    uint occupied_objects;
-    struct vfs_superblock vfs_sb;
-    // determines the limit between object table space and the store itself
-    uint store_offset;
+  uint storage_device_size;
+  uint objects_table_offset;
+  // the last inode added
+  uint last_inode;
+  // variables to trace the file-system state
+  uint bytes_occupied;
+  uint occupied_objects;
+  struct vfs_superblock vfs_sb;
+  // determines the limit between object table space and the store itself
+  uint store_offset;
 };
 
 /**
@@ -46,11 +46,10 @@ struct objsuperblock {
  * of the object.
  */
 struct obj_dinode {
-    struct vfs_dinode vfs_dinode;
-    // the object containning the data of this inode
-    char data_object_name[MAX_OBJECT_NAME_LENGTH];
+  struct vfs_dinode vfs_dinode;
+  // the object containning the data of this inode
+  char data_object_name[MAX_OBJECT_NAME_LENGTH];
 };
-
 
 /**
  * 5 is `strlen("inode")`
@@ -60,4 +59,3 @@ struct obj_dinode {
 #define INODE_NAME_LENGTH (5 + sizeof(uint) + 1 + 1)
 
 #endif /* XV6_OBJ_FS_H */
-

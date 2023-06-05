@@ -67,27 +67,26 @@
  *      TODO support more devices.
  */
 
-
-#include "types.h"
 #include "kvector.h"
-
+#include "types.h"
 
 void init_objects_cache();
 
-void _check(char * val);
+void _check(char* val);
 uint cache_add_object(const void* object, uint size, const char* name);
-uint cache_rewrite_entire_object(vector object, uint size, const char* name); 
-uint cache_rewrite_object(vector data, uint objectsize, uint offset, const char * name);
-uint cache_delete_object(const char* name); 
+uint cache_rewrite_entire_object(vector object, uint size, const char* name);
+uint cache_rewrite_object(vector data, uint objectsize, uint offset,
+                          const char* name);
+uint cache_delete_object(const char* name);
 uint cache_object_size(const char* name, uint* output);
-uint cache_get_object(const char* name, vector * outputvector, uint read_object_from_offset);
+uint cache_get_object(const char* name, vector* outputvector,
+                      uint read_object_from_offset);
 
 /**
  * Remove the object from the objects cache but not form the disk.
  * This function locks the cache lock and release it in the end.
  */
 uint cache_free_from_cache_safe(const char* name);
-
 
 /**
  * The following methods provides statistics about the cache layer. They can
@@ -100,4 +99,3 @@ uint objects_cache_misses();
 uint cache_max_object_size();
 
 #endif /* XV6_OBJ_CACHE_H */
-
