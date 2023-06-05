@@ -477,7 +477,8 @@ set running [pidns_tests $argv]
 set running [mounttest $argv]
 set running [mounttest_with_ls $argv]
 set running [objfstests $argv]
-set running [usertests $argv] # run last, prints "ALL TESTS PASSED"
+# run last, prints "ALL TESTS PASSED"
+set running [usertests $argv]
 
 log_file
 # just in case
