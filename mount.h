@@ -11,4 +11,3 @@ struct mount {
 #define NMOUNT (200)
 
 #endif /* XV6_MOUNT_H */
- 

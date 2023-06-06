@@ -1,7 +1,6 @@
 #ifndef XV6_OBJ_LOG_H
 #define XV6_OBJ_LOG_H
 
-
 /**
  * `obj_log.h` specify the third layer in the object file system. The purpose
  * of it is to ensure the validality of the disk in case of unexpected
@@ -59,7 +58,7 @@
  * there is not list as the one in the original xv6 implementation. The
  * logbook only use 1 objet with a constant name. If it is exists, there is an
  * unfinished operation, and if it doesn' there is no such one.
- * 
+ *
  * Add object requests:
  *     The risk when adding an object is an unfinished object written to the
  *     disk. To solve this, we can implement the following logic in the driver
@@ -183,8 +182,8 @@
  *  writing the new object to the disk.
  */
 
-#include "types.h"
 #include "kvector.h"
+#include "types.h"
 
 #define LOGBOOK_OBJECT_ID "\xfflogbook\xff"
 
@@ -192,8 +191,8 @@ void init_objfs_log();
 uint log_add_object(const void* object, uint size, const char* name);
 uint log_rewrite_object(const void* object, uint size, const char* name);
 uint log_delete_object(const char* name);
-uint log_get_object(const char* name, vector * outputvector, uint readfromoffset);
+uint log_get_object(const char* name, vector* outputvector,
+                    uint readfromoffset);
 uint log_object_size(const char* name, uint* output);
 
 #endif /* XV6_OBJ_LOG_H */
-

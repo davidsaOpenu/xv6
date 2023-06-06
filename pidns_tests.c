@@ -1,16 +1,16 @@
 #define _GNU_SOURCE
 #include "syscall.h"
+#include "tester.h"
 #include "types.h"
 #include "user.h"
-#include "tester.h"	
 
 #define ARRAY_SIZE(array) (sizeof(array) / sizeof(array[0]))
 
 #define CLONE_NEWPID 2
 #define NULL 0
 
-typedef   signed int          pid_t;
-typedef   signed int          size_t;
+typedef signed int pid_t;
+typedef signed int size_t;
 
 void assert_msg(int r, const char *msg) {
   if (r) {
@@ -188,7 +188,8 @@ int sleep_1s() {
   return 0;
 }
 
-/* Verify that when non init process in the namespace dies it’s children are reaped by init pid within the namespace
+/* Verify that when non init process in the namespace dies it’s children are
+  reaped by init pid within the namespace
   - Unshare pid ns
   - Fork (1)
   - Fork (2)
@@ -196,7 +197,8 @@ int sleep_1s() {
   - Child (2) process fork (4)
   - Child (2) process dies
   - Grandchildren (3) & (4) dies
-  - Verify that wait returns with correct pids for (2) and grandchildren (3) & (4)
+  - Verify that wait returns with correct pids for (2) and grandchildren (3) &
+  (4)
 */
 int test_children_reaped_by_nspid1() {
   check(unshare(CLONE_NEWPID), "failed to unshare");
@@ -240,7 +242,8 @@ int test_children_reaped_by_nspid1() {
   return 0;
 }
 
-/*Verify that when init process within the namespace dies all children are killed
+/*Verify that when init process within the namespace dies all children are
+  killed
   - Unshare pid ns
   - Fork (1)
   - Child process fork (2)
@@ -258,7 +261,7 @@ int test_all_children_kill_when_nspid1_dies() {
     // child is pid 1
     assert_msg(getpid() == 1, "pid not equal to 1");
 
-    //create_children(2, NULL, loop_forever);
+    // create_children(2, NULL, loop_forever);
 
     create_children(ARRAY_SIZE(child_pids), child_pids, loop_forever);
 
@@ -285,7 +288,6 @@ int test_calling_fork_after_nspid1_dies_fails() {
 
   int ret = check(fork(), "failed to fork");
   if (ret == 0) {
-
     // child is pid 1
     assert_msg(getpid() == 1, "pid not equal to 1");
 
@@ -325,7 +327,6 @@ int _test_unshare_recrusive_limit(int count) {
 
   int ret = check(fork(), "failed to fork");
   if (ret == 0) {
-
     // child is pid 1
     assert_msg(getpid() == 1, "pid not equal to 1");
 
@@ -344,7 +345,7 @@ int _test_unshare_recrusive_limit(int count) {
 
 int test_unshare_recrusive_limit() {
   // there's an init namespace so we start counting from 1
-  _test_unshare_recrusive_limit(MAX_RECURSION-1);
+  _test_unshare_recrusive_limit(MAX_RECURSION - 1);
   return 0;
 }
 
@@ -374,7 +375,6 @@ int test_calling_fork_twice_after_unshare() {
 
   int ret = check(fork(), "failed to fork");
   if (ret == 0) {
-
     // child is pid 1
     assert_msg(getpid() == 1, "pid not equal to 1");
 
@@ -386,7 +386,6 @@ int test_calling_fork_twice_after_unshare() {
 
   int ret2 = check(fork(), "failed to fork");
   if (ret2 == 0) {
-
     // child is pid 2
     assert_msg(getpid() == 2, "pid not equal to 2");
 
@@ -412,16 +411,18 @@ int main() {
   run_test(test_simple_pidns_fork, "test_simple_pidns_fork");
   run_test(test_nested_pidns_create, "test_nested_pidns_create");
   run_test(test_children_reaped_by_nspid1, "test_children_reaped_by_nspid1");
-  run_test(test_all_children_kill_when_nspid1_dies, "test_all_children_kill_when_nspid1_dies");
-  run_test(test_calling_fork_twice_after_unshare, "test_calling_fork_twice_after_unshare");
-  run_test(test_calling_fork_after_nspid1_dies_fails, "test_calling_fork_after_nspid1_dies_fails");
+  run_test(test_all_children_kill_when_nspid1_dies,
+           "test_all_children_kill_when_nspid1_dies");
+  run_test(test_calling_fork_twice_after_unshare,
+           "test_calling_fork_twice_after_unshare");
+  run_test(test_calling_fork_after_nspid1_dies_fails,
+           "test_calling_fork_after_nspid1_dies_fails");
   run_test(test_unshare_recrusive_limit, "test_unshare_recrusive_limit");
 
   if (testsPassed == 0) {
     printf(stderr, "Pidns tests passed successfully\n");
     exit(0);
-  }
-  else {
+  } else {
     printf(stderr, "Pidns tests failed to pass\n");
     exit(1);
   }

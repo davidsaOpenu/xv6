@@ -1,8 +1,8 @@
 #ifndef XV6_USER_H
 #define XV6_USER_H
 
-#include "types.h"
 #include "ioctl_request.h"
+#include "types.h"
 
 struct stat;
 struct rtcdate;
@@ -38,7 +38,7 @@ int getcpu(void);
 int getmem(void);
 int kmemtest(void);
 
-int mount(const char*, const char*, const char *);
+int mount(const char*, const char*, const char*);
 int umount(const char*);
 int printmounts(void);
 int printdevices(void);
@@ -47,7 +47,7 @@ int unshare(int);
 // ulib.c
 int stat(const char*, struct stat*);
 char* strcpy(char*, const char*);
-void *memmove(void*, const void*, int);
+void* memmove(void*, const void*, int);
 char* strchr(const char*, char c);
 int strcmp(const char*, const char*);
 int strncmp(const char*, const char*, int);
@@ -58,7 +58,7 @@ void* memset(void*, int, uint);
 void* malloc(uint);
 void free(void*);
 int atoi(const char*);
-int itoa(char *, int);
+int itoa(char*, int);
 char* strcat(char* dest, const char* source);
 
 int attach_tty(int tty_fd);
@@ -68,6 +68,4 @@ int is_attached_tty(int tty_fd);
 int disconnect_tty(int tty_fd);
 int is_connected_tty(int tty_fd);
 
-
 #endif /* XV6_USER_H */
-

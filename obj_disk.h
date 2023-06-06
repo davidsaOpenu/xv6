@@ -1,9 +1,9 @@
 #ifndef XV6_OBJ_DISK_H
 #define XV6_OBJ_DISK_H
 
+#include "kvector.h"
 #include "obj_fs.h"
 #include "types.h"
-#include "kvector.h"
 
 /**
  * `obj_disk` specify the most lower level in the object file system.
@@ -35,7 +35,7 @@
  * Hardware Mock
  * =============
  * In the current implementation, we use a "mock" storage device which saves
- * the data in the RAM. In future projcets, we can integrate with real 
+ * the data in the RAM. In future projcets, we can integrate with real
  * hardware and only this file would change. It would become asynchrony and
  * handle hardware interrupts. The output interface this layer exports is
  * object based only. Hence, it doesn't matter for upper layers, if the
@@ -86,21 +86,20 @@
 #define OBJECTS_TABLE_FULL 4
 #define NO_DISK_SPACE_FOUND 5
 
-
 // In the future, this can be set the size of SHA256 digest.
 #define OBJECT_ID_LENGTH MAX_OBJECT_NAME_LENGTH
 
 extern char memory_storage[STORAGE_DEVICE_SIZE];
 
 typedef struct {
-    /*
-     * If the object's name is exactly `MAX_OBJECT_NAME_LENGTH` we don't store
-     * the null terminator.
-     */
-    char object_id[OBJECT_ID_LENGTH];
-    uint disk_offset;
-    uint size;
-    int occupied;
+  /*
+   * If the object's name is exactly `MAX_OBJECT_NAME_LENGTH` we don't store
+   * the null terminator.
+   */
+  char object_id[OBJECT_ID_LENGTH];
+  uint disk_offset;
+  uint size;
+  int occupied;
 } ObjectsTableEntry;
 
 int obj_id_cmp(const char* p, const char* q);
@@ -127,7 +126,6 @@ void init_obj_fs();
  */
 uint add_object(const void* object, uint size, const char* name);
 
-
 /**
  * This functions receives an object of size 'objectsize'
  * and rewrites some of its content which is specified
@@ -143,8 +141,8 @@ uint add_object(const void* object, uint size, const char* name);
  *   NO_ERR            - no error occured.
  *   OBJECT_NOT_EXISTS - object with this name already exists.
  */
-uint rewrite_object(vector object, uint objectsize, uint write_starting_offset, const char* name);
-
+uint rewrite_object(vector object, uint objectsize, uint write_starting_offset,
+                    const char* name);
 
 /**
  * Delete the specific object from the objects table. The bytes on the disk
@@ -155,7 +153,6 @@ uint rewrite_object(vector object, uint objectsize, uint write_starting_offset, 
  */
 uint delete_object(const char* name);
 
-
 /**
  * Returns the size in bytes of the obejct with name `name`.
  * The method returns a code indicates the error occured.
@@ -164,7 +161,6 @@ uint delete_object(const char* name);
  */
 uint object_size(const char* name, uint* output);
 
-
 /**
  * Copy the desired object from the device storage to the output buffer.
  * The method assumes enough storage is given.
@@ -172,9 +168,7 @@ uint object_size(const char* name, uint* output);
  *   NO_ERR            - no error occured.
  *   OBJECT_NOT_EXISTS - no object with this name exists.
  */
-uint get_object(const char* name, void* output, vector * outputvector);
-
-
+uint get_object(const char* name, void* output, vector* outputvector);
 
 /**
  * The following methods are utility methods to help restore the disk in case
@@ -191,7 +185,6 @@ uint get_object(const char* name, void* output, vector * outputvector);
  */
 uint get_objects_table_index(const char* name, uint* output);
 
-
 /**
  * Returns the specific entry from the objects table.
  */
@@ -201,8 +194,6 @@ ObjectsTableEntry* objects_table_entry(uint offset);
  * Writes a specfic objects table entry to the disk.
  */
 uint flush_objects_table_entry(uint offset);
-
-
 
 /**
  * Validation methods to ensure safe operations. They are automaticaly used by
@@ -225,7 +216,6 @@ uint new_inode_number();
  * as `df`.
  */
 
-
 /**
  * The maximum possible objects in the file system. This amount includes the
  * file-system used objects such as inodes and the super block.
@@ -236,23 +226,21 @@ uint get_object_table_size();
 /**
  * Specify how many objects are currently occupied in the table.
  */
-uint occupied_objects(); 
+uint occupied_objects();
 
 /**
  * Setter function to update the occupied objects counter in the super block.
  * Note: This value should be changed only by the functions in this file and
  * applications which fix failures in the disk.
  */
-void set_occupied_objects(uint value); 
-
+void set_occupied_objects(uint value);
 
 /**
  * Returns the total size in bytes of the device. This value doesn't is not
  * related to the maximum objects supported by the device. Although it does
  * give it an upper limit.
  */
-uint device_size(); 
-
+uint device_size();
 
 /**
  * Returns the total size in bytes of the occupied objects including the
@@ -261,7 +249,6 @@ uint device_size();
  */
 uint occupied_bytes();
 
-
 /**
  * Resize the object table and the store itself
  * by setting the limit between them to a specified value.
@@ -269,4 +256,3 @@ uint occupied_bytes();
 void set_store_offset(uint new_offset);
 
 #endif /* XV6_OBJ_DISK_H */
-
