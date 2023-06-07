@@ -131,8 +131,8 @@ void panic(char *s) {
   getcallerpcs(&s, pcs);
   for (i = 0; i < 10; i++) cprintf(" %p", pcs[i]);
   panicked = 1;  // freeze other CPU
-  for (;;)
-    ;
+  for (;;) {
+  }
 }
 
 static void cgaputc(int c) {
@@ -171,8 +171,8 @@ void consoleclear(void) {
 void consputc(int c) {
   if (panicked) {
     cli();
-    for (;;)
-      ;
+    for (;;) {
+    }
   }
 
   if (c == BACKSPACE) {

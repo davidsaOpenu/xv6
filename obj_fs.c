@@ -368,7 +368,7 @@ int obj_readi(struct vfs_inode *vfs_ip, uint off, uint n, vector *dstvector) {
 
   vector datavector = newvector(size, 1);
   if (log_get_object(ip->data_object_name, &datavector, off) !=
-      NO_ERR) {  // TODO: add support for vector
+      NO_ERR) {  // TODO(unknown): add support for vector
     panic("obj_readi failed reading object content");
   }
   copysubvector(dstvector, &datavector, off, n);

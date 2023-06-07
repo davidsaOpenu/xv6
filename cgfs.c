@@ -6,6 +6,7 @@
 #include "fs.h"
 #include "param.h"
 #include "spinlock.h"
+#include "string.h"
 #include "types.h"
 
 #define MAX_PID_LENGTH 5

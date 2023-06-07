@@ -41,8 +41,8 @@ static void unsafe_set_cgroup_dir_path(struct cgroup* cgroup, char* path) {
   if (*fpathp != 0)
     for (int i = 0; (i < sizeof(cgroup->cgroup_dir_path)) &&
                     ((*cgroup_dir_path++ = *fpathp++) != 0);
-         i++)
-      ;
+         i++) {
+    }
 }
 
 static void unsafe_cgroup_erase(struct cgroup* cgroup, struct proc* proc) {

@@ -8,8 +8,8 @@ char *strcpy(char *s, const char *t) {
   char *os;
 
   os = s;
-  while ((*s++ = *t++) != 0)
-    ;
+  while ((*s++ = *t++) != 0) {
+  }
   return os;
 }
 
@@ -26,8 +26,8 @@ int strncmp(const char *p, const char *q, int n) {
 uint strlen(const char *s) {
   int n;
 
-  for (n = 0; s[n]; n++)
-    ;
+  for (n = 0; s[n]; n++) {
+  }
   return n;
 }
 
@@ -112,10 +112,11 @@ int itoa(char *buf, int n) {
 char *strcat(char *dest, const char *source) {
   int i, j;
 
-  for (i = 0; dest[i] != '\0'; i++)
-    ;
-
-  for (j = 0; source[j] != '\0'; j++) dest[i + j] = source[j];
+  for (i = 0; dest[i] != '\0'; i++) {
+  }
+  for (j = 0; source[j] != '\0'; j++) {
+    dest[i + j] = source[j];
+  }
 
   dest[i + j] = '\0';
 

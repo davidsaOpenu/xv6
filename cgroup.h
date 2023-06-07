@@ -5,90 +5,102 @@
 #include "param.h"
 #include "proc.h"
 
-#define MAX_DECS_SIZE \
-  3  // Max length of string representation of descendants number. (the value is
-     // a number of at most two digits + null terminator)
-#define MAX_DEPTH_SIZE \
-  3  // Max length of string representation of depth number. (the value is a
-     // number of at most two digits + null terminator)
+/* Max length of string representation of descendants number. (the value is
+ * a number of at most two digits + null terminator) */
+#define MAX_DECS_SIZE 3
 
-#define MAX_CONTROLLER_NAME_LENGTH \
-  16  // Max length allowed for controller names
+/* Max length of string representation of depth number. (the value is a
+ * number of at most two digits + null terminator) */
+#define MAX_DEPTH_SIZE 3
+
+/* Max length allowed for controller names. */
+#define MAX_CONTROLLER_NAME_LENGTH 16
 
 typedef enum { CG_FILE, CG_DIR } cg_file_type;
 
-/**
+/*
  * Control group, contains up to NPROC processes.
  */
 struct cgroup {
-  char cgroup_dir_path[MAX_PATH_LENGTH]; /* Path of the cgroup
-                                            directory.*/
+  /* Path of the cgroup directory. */
+  char cgroup_dir_path[MAX_PATH_LENGTH];
 
-  int ref_count; /* Reference count.*/
+  /* Reference count. */
+  int ref_count;
 
-  struct proc* proc[NPROC]; /* Array of all processes in the cgroup.*/
-  int num_of_procs;         /* Number of processes in the cgroup subtree
-                               (including processes in this cgroup).*/
+  /* Array of all processes in the cgroup. */
+  struct proc* proc[NPROC];
+  /* Number of processes in the cgroup subtree
+   * (including processes in this cgroup). */
+  int num_of_procs;
 
-  struct cgroup* parent; /* The parent cgroup.*/
+  /* The parent cgroup. */
+  struct cgroup* parent;
 
-  char cpu_controller_avalible; /* Is 1 if cpu controller may be enabled,
-                                   otherwise 0.*/
-  char cpu_controller_enabled;  /* Is 1 if cpu controller is enabled,
-                                   otherwise 0.*/
+  /* Is 1 if cpu controller may be enabled, otherwise 0. */
+  char cpu_controller_avalible;
+  /* Is 1 if cpu controller is enabled, otherwise 0. */
+  char cpu_controller_enabled;
 
-  char pid_controller_avalible; /* Is 1 if pid controller may be enabled,
-                                   otherwise 0.*/
-  char pid_controller_enabled;  /* Is 1 if pid controller is enabled,
-                                   otherwise 0.*/
+  /* Is 1 if pid controller may be enabled, otherwise 0. */
+  char pid_controller_avalible;
+  /* Is 1 if pid controller is enabled, otherwise 0. */
+  char pid_controller_enabled;
 
-  char set_controller_avalible; /* Is 1 if cpu set controller may be enabled,
-                                   otherwise 0.*/
-  char set_controller_enabled;  /* Is 1 if cpu set controller is enabled,
-                                   otherwise 0.*/
+  /* Is 1 if cpu set controller may be enabled, otherwise 0. */
+  char set_controller_avalible;
+  /* Is 1 if cpu set controller is enabled, otherwise 0. */
+  char set_controller_enabled;
 
-  char mem_controller_avalible; /* Is 1 if memory controller may be enabled,
-                            otherwise 0.*/
-  char mem_controller_enabled;  /* Is 1 if memory controller is enabled,
-                                otherwise 0.*/
+  /* Is 1 if memory controller may be enabled, otherwise 0. */
+  char mem_controller_avalible;
+  /* Is 1 if memory controller is enabled, otherwise 0. */
+  char mem_controller_enabled;
 
-  char populated; /* Is 1 if subtree has at least one process in it,
-                     otherise 0.*/
+  /* Is 1 if subtree has at least one process in it, otherise 0. */
+  char populated;
 
-  unsigned int max_descendants_value; /* Number of maximum descendant
-                                cgroups allowed in subtree.*/
+  /* Number of maximum descendant cgroups allowed in subtree. */
+  unsigned int max_descendants_value;
 
-  unsigned int max_depth_value; /*Number of maximum depth allowed in subtree.*/
+  /* Number of maximum depth allowed in subtree. */
+  unsigned int max_depth_value;
 
-  unsigned int depth; /*Current depth of the cgroup.*/
+  /* Current depth of the cgroup. */
+  unsigned int depth;
 
-  unsigned int nr_descendants; /* Current number of descendant cgroups.*/
+  /* Current number of descendant cgroups. */
+  unsigned int nr_descendants;
 
-  unsigned int
-      nr_dying_descendants; /*Current number of dying descendant cgroups.*/
+  /* Current number of dying descendant cgroups. */
+  unsigned int nr_dying_descendants;
 
-  int max_num_of_procs; /*The maximum number of processes that are allowed in
-                          the cgroup. Used by pid controller.*/
+  /* The maximum number of processes that are allowed in the cgroup.
+   * Used by pid controller. */
+  int max_num_of_procs;
 
-  uchar cpu_to_use; /*Which cpu id to use for cpu set controller.*/
+  /* Which cpu id to use for cpu set controller. */
+  uchar cpu_to_use;
 
-  int is_frozen; /*Indicates whether cgroup is frozen. */
+  /* Indicates whether cgroup is frozen. */
+  int is_frozen;
 
-  unsigned int current_mem; /*The current amount of memory used by the group.*/
-  unsigned int max_mem;     /*The maximum memory allowed for a group to use.*/
-  unsigned int
-      mem_stat_file_dirty; /* Amount of cached filesystem data that was modified
-                              but not yet written back to disk */
-  unsigned int
-      mem_stat_file_dirty_aggregated; /* Total number of cached filesystem data
-                                         that was modified and written back to
-                                         disk */
-  unsigned int
-      mem_stat_pgfault; /*Number of page faults incurred when the kernel dos not
-                           needs to read the data from disk*/
-  unsigned int
-      mem_stat_pgmajfault; /*Number of page faults incurred and the kernel
-                              actually needs to read the data from disk*/
+  /* The current amount of memory used by the group. */
+  unsigned int current_mem;
+  /* The maximum memory allowed for a group to use. */
+  unsigned int max_mem;
+  /* Amount of cached filesystem data that was modified
+   * but not yet written back to disk. */
+  unsigned int mem_stat_file_dirty;
+  /* Total number of cached filesystem data that was modified
+   * and written back to disk. */
+  unsigned int mem_stat_file_dirty_aggregated;
+  /* Number of page faults incurred when the kernel does not needs to read
+   * the data from disk. */
+  unsigned int mem_stat_pgfault;
+  /* Number of page faults incurred and the kernel actually needs to read
+   * the data from disk. */
+  unsigned int mem_stat_pgmajfault;
 
   unsigned long long cpu_time;
   unsigned int cpu_period_time;

@@ -72,8 +72,8 @@ static struct mount_list *allocmntlist(void) {
   acquire(&mount_holder.mnt_list_lock);
   int i;
   // Find empty mount struct
-  for (i = 0; i < NMOUNT && mount_holder.mnt_list[i].mnt.ref != 0; i++)
-    ;
+  for (i = 0; i < NMOUNT && mount_holder.mnt_list[i].mnt.ref != 0; i++) {
+  }
 
   if (i == NMOUNT) {
     // error - no available mount memory.
