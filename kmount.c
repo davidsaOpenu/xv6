@@ -72,8 +72,8 @@ static struct mount_list *allocmntlist(void) {
   acquire(&mount_holder.mnt_list_lock);
   int i;
   // Find empty mount struct
-  for (i = 0; i < NMOUNT && mount_holder.mnt_list[i].mnt.ref != 0; i++)
-    ;
+  for (i = 0; i < NMOUNT && mount_holder.mnt_list[i].mnt.ref != 0; i++) {
+  }
 
   if (i == NMOUNT) {
     // error - no available mount memory.
@@ -267,7 +267,7 @@ static struct mount_list *shallowcopyactivemounts(struct mount **newcwdmount) {
       head = newentry;
     }
     newentry->mnt.ref = 1;
-   	newentry->mnt.mountpoint =
+    newentry->mnt.mountpoint =
         entry->mnt.mountpoint->i_op.idup(entry->mnt.mountpoint);
     newentry->mnt.parent = 0;
     newentry->mnt.dev = entry->mnt.dev;

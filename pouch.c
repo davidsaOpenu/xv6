@@ -173,9 +173,8 @@ static int init_pouch_conf() {
   // Not including the console tty
   for (i = 0; i < (MAX_TTY - 1); i++) {
     ttyc[5] = '0' + i;
-    //check if cname ttys already created
-    if(open(ttyc, O_RDWR) > 0)
-        continue;
+    // check if cname ttys already created
+    if (open(ttyc, O_RDWR) > 0) continue;
     if ((ttyc_fd = open(ttyc, O_CREATE | O_RDWR)) < 0) {
       printf(stderr, "cannot open %s fd\n", ttyc);
       return -1;
@@ -391,7 +390,7 @@ static int pouch_fork(char* container_name) {
           exit(1);
         }
 
-        //"Child process - setting up namespaces for the container
+        // "Child process - setting up namespaces for the container
         // Set up mount namespace.
         if (unshare(MOUNT_NS) < 0) {
           printf(1, "Cannot create mount namespace\n");
@@ -404,7 +403,7 @@ static int pouch_fork(char* container_name) {
         printf(stderr, "Error connecting tty\n");
       }
     } else {
-      //"Parent process - waiting for child
+      // "Parent process - waiting for child
 
       // Move the current process to "/cgroup/<cname>" cgroup.
       strcat(cg_cname, "/cgroup.procs");
@@ -492,7 +491,7 @@ static int create_pouch_cgroup(char* cg_cname, char* cname) {
 
 static int init_pouch_cgroup() {
   int cgroup_fd = -1;
-  //check if cgoup filesystem already created
+  // check if cgoup filesystem already created
   if ((cgroup_fd = open("/cgroup", O_RDWR)) < 0) {
     if (mkdir("/cgroup") != 0) {
       printf(1, "Pouch: Failed to create root cgroup.\n");

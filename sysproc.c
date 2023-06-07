@@ -1,3 +1,4 @@
+#include "console.h"
 #include "date.h"
 #include "defs.h"
 #include "fcntl.h"
@@ -120,7 +121,7 @@ int sys_ioctl(void) {
   ioctls.
   Best practice is to test inode minor in the driver itself.
   */
-  if(ip->minor <= CONSOLE_MINOR){
+  if (ip->minor <= CONSOLE_MINOR) {
     return -1;
   }
 

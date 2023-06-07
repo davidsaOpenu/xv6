@@ -2,6 +2,8 @@
 // Input is from the keyboard or serial port.
 // Output is written to the screen and serial port.
 
+#include "console.h"
+
 #include "defs.h"
 #include "fcntl.h"
 #include "file.h"
@@ -18,9 +20,8 @@
 #include "types.h"
 #include "vfs_file.h"
 #include "x86.h"
-#include "console.h"
 
-static ushort *crt = (ushort*)P2V(0xb8000);  // CGA memory
+static ushort *crt = (ushort *)P2V(0xb8000);  // CGA memory
 static int panicked = 0;
 
 tty tty_table[MAX_TTY];
@@ -29,8 +30,7 @@ static device_lock cons;
 
 static void consputc(int);
 
-static inline void update_pos(int pos)
-{
+static inline void update_pos(int pos) {
   outb(CRTPORT, 14);
   outb(CRTPORT + 1, pos >> 8);
   outb(CRTPORT, 15);
@@ -122,8 +122,8 @@ void panic(char *s) {
   getcallerpcs(&s, pcs);
   for (i = 0; i < 10; i++) cprintf(" %p", pcs[i]);
   panicked = 1;  // freeze other CPU
-  for (;;)
-    ;
+  for (;;) {
+  }
 }
 
 static void cgaputc(int c) {
@@ -162,8 +162,8 @@ void consoleclear(void) {
 void consputc(int c) {
   if (panicked) {
     cli();
-    for (;;)
-      ;
+    for (;;) {
+    }
   }
 
   if (c == BACKSPACE) {
@@ -269,12 +269,11 @@ int ttyread(struct vfs_inode *ip, int n, vector *dstvector) {
     return consoleread(ip, n, dstvector);
   }
 
-  if(tty_table[ip->minor].flags & DEV_ATTACH)
-  {
+  if (tty_table[ip->minor].flags & DEV_ATTACH) {
     ip->i_op.iunlock(ip);
     acquire(&tty_table[ip->minor].lock);
     sleep(&tty_table[ip->minor], &tty_table[ip->minor].lock);
-    //after wakeup has been called
+    // after wakeup has been called
     release(&tty_table[ip->minor].lock);
     ip->i_op.ilock(ip);
   }
@@ -308,8 +307,8 @@ void consoleinit(void) {
   devsw[CONSOLE_MAJOR].read = ttyread;
   tty_table[CONSOLE_MINOR].flags = DEV_CONNECT;
 
-  //To state that the console tty is also attached
-  //this will make the console sleep whilre we are connected to another tty.
+  // To state that the console tty is also attached
+  // this will make the console sleep whilre we are connected to another tty.
   tty_table[CONSOLE_MINOR].flags |= DEV_ATTACH;
   initlock(&tty_table[CONSOLE_MINOR].lock, "ttyconsole");
 
@@ -330,7 +329,7 @@ void tty_disconnect(struct vfs_inode *ip) {
   tty_table[ip->minor].flags &= ~(DEV_CONNECT);
   tty_table[CONSOLE_MINOR].flags |= DEV_CONNECT;
 
-  //wakeup the console (it is sleeping now while being attached)
+  // wakeup the console (it is sleeping now while being attached)
   wakeup(&tty_table[CONSOLE_MINOR]);
 
   consoleclear();
@@ -342,13 +341,13 @@ void tty_connect(struct vfs_inode *ip) {
   for (int i = CONSOLE_MINOR; i < MAX_TTY; i++) {
     if (ip->minor != i) {
       tty_table[i].flags &= ~(DEV_CONNECT);
+    }
   }
- }
- consoleclear();
- cprintf("\ntty%d connected\n",ip->minor-(CONSOLE_MINOR+1));
+  consoleclear();
+  cprintf("\ntty%d connected\n", ip->minor - (CONSOLE_MINOR + 1));
 
- //Wakeup the processes that slept on ttyread()
- wakeup(&tty_table[ip->minor]);
+  // Wakeup the processes that slept on ttyread()
+  wakeup(&tty_table[ip->minor]);
 }
 
 void tty_attach(struct vfs_inode *ip) {

@@ -26,34 +26,31 @@
 #define CGFS_MEM_MIN "memory.min"
 #define CGFS_MEM_STAT "memory.stat"
 
+typedef enum cgroup_file_name_e {
+  CG_FILE_NAME_START = 0,
+  CGROUP_PROCS,
+  CGROUP_SUBTREE_CONTROL,
+  CGROUP_MAX_DESCENDANTS,
+  CGROUP_MAX_DEPTH,
+  CPU_WEIGHT,
+  CPU_MAX,
+  PID_MAX,
+  SET_CPU,
+  SET_FRZ,
+  MEM_MAX,
+  MEM_MIN,
 
-typedef enum cgroup_file_name_e
-{
-    CG_FILE_NAME_START = 0,
-    CGROUP_PROCS,
-    CGROUP_SUBTREE_CONTROL,
-    CGROUP_MAX_DESCENDANTS,
-    CGROUP_MAX_DEPTH,
-    CPU_WEIGHT,
-    CPU_MAX,
-    PID_MAX,
-    SET_CPU,
-    SET_FRZ,
-    MEM_MAX,
-    MEM_MIN,
+  NON_WRITABLE,
 
-    NON_WRITABLE,
-
-    CGROUP_CONTROLLERS,
-    CGROUP_EVENTS,
-    CGROUP_STAT,
-    CPU_STAT,
-    PID_CUR,
-    MEM_CUR,
-    MEM_STAT,
-    INVALID_TYPE
+  CGROUP_CONTROLLERS,
+  CGROUP_EVENTS,
+  CGROUP_STAT,
+  CPU_STAT,
+  PID_CUR,
+  MEM_CUR,
+  MEM_STAT,
+  INVALID_TYPE
 } cgroup_file_name_t;
-
 
 /**
  * This function opens a cgroup filesystem file or directory.
@@ -86,7 +83,8 @@ typedef enum cgroup_file_name_e
  *    17)   "memory.min"
  * *  18)    cgroup directories
  */
-int unsafe_cg_open(cg_file_type type, char * filename, struct cgroup * cgp, int omode);
+int unsafe_cg_open(cg_file_type type, char* filename, struct cgroup* cgp,
+                   int omode);
 
 /**
  * This function reads from cgroup filesystem file or directory.
@@ -115,7 +113,6 @@ int unsafe_cg_open(cg_file_type type, char * filename, struct cgroup * cgp, int 
  **   18)    cgroup directories
  */
 int unsafe_cg_read(cg_file_type type, struct vfs_file* f, char* addr, int n);
-
 
 /**
  * This function writes to cgroup filesystem file.
