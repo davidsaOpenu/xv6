@@ -121,14 +121,14 @@ extern uchar ioapicid;
 void ioapicinit(void);
 
 // kalloc.c
-char*           kalloc(void);
-void            kfree(char*);
-void            kinit1(void*, void*);
-void            kinit2(void*, void*);
-int             kmemtest(void);
-int             increse_protect_counter(int num);
-int             decrese_protect_counter(int num);
-uint            get_total_memory();
+char* kalloc(void);
+void kfree(char*);
+void kinit1(void*, void*);
+void kinit2(void*, void*);
+int kmemtest(void);
+int increse_protect_counter(int num);
+int decrese_protect_counter(int num);
+uint get_total_memory();
 
 // kvector.c
 vector newvector(unsigned int, unsigned int);
@@ -269,7 +269,7 @@ void seginit(void);
 void kvmalloc(void);
 pde_t* setupkvm(void);
 char* uva2ka(pde_t*, char*);
-int             allocuvm(pde_t*, uint, uint, struct cgroup* cgroup);
+int allocuvm(pde_t*, uint, uint, struct cgroup* cgroup);
 int deallocuvm(pde_t*, uint, uint);
 void freevm(pde_t*);
 void inituvm(pde_t*, char*, uint);
@@ -279,8 +279,8 @@ void switchuvm(struct proc*);
 void switchkvm(void);
 int copyout(pde_t*, uint, void*, uint);
 void clearpteu(pde_t* pgdir, char* uva);
-void            inc_protect_mem(struct cgroup* cgroup, int n);
-int             dec_protect_mem(struct cgroup* cgroup);
+void inc_protect_mem(struct cgroup* cgroup, int n);
+int dec_protect_mem(struct cgroup* cgroup);
 
 // cgroup.c
 void cginit(void);

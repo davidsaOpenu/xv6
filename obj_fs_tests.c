@@ -88,9 +88,11 @@ TEST(add_single_object) {
   uint size;
   ASSERT_NO_ERR(object_size("simple_string", &size));
   ASSERT_UINT_EQ(strlen(my_string) + 1, size);
-  char actual[strlen(my_string) + 1];
+  char* actual = (char*)malloc(strlen(my_string) + 1);
+  ASSERT_TRUE(actual != NULL);
   ASSERT_NO_ERR(get_object("simple_string", actual));
   ASSERT_UINT_EQ(0, strcmp(actual, my_string));
+  free(actual);
 }
 
 TEST(add_object_already_exist) {
@@ -132,9 +134,11 @@ TEST(rewrite_existing_object_with_shorter_data) {
   // validate the new size and data
   ASSERT_NO_ERR(object_size("rewrite_shorter", &size));
   ASSERT_UINT_EQ(strlen(second_string) + 1, size);
-  char actual[strlen(second_string) + 1];
+  char* actual = (char*)malloc(strlen(second_string) + 1);
+  ASSERT_TRUE(actual != NULL);
   ASSERT_NO_ERR(get_object("rewrite_shorter", actual));
   ASSERT_UINT_EQ(0, strcmp(actual, second_string));
+  free(actual);
 }
 
 TEST(rewrite_existing_object_with_longer_data) {
@@ -155,9 +159,11 @@ TEST(rewrite_existing_object_with_longer_data) {
   // validate the new size and data
   ASSERT_NO_ERR(object_size("rewrite_longer", &size));
   ASSERT_UINT_EQ(strlen(second_string) + 1, size);
-  char actual[strlen(second_string) + 1];
+  char* actual = (char*)malloc(strlen(second_string) + 1);
+  ASSERT_TRUE(actual != NULL);
   ASSERT_NO_ERR(get_object("rewrite_longer", actual));
   ASSERT_UINT_EQ(0, strcmp(actual, second_string));
+  free(actual);
 }
 
 TEST(writing_multiple_objects) {
@@ -175,9 +181,11 @@ TEST(writing_multiple_objects) {
     uint size;
     ASSERT_NO_ERR(object_size(objects_name[i], &size));
     ASSERT_UINT_EQ(strlen(objects_data[i]) + 1, size);
-    char actual_data[size];
+    char* actual_data = (char*)malloc(size);
+    ASSERT_TRUE(actual_data != NULL);
     ASSERT_NO_ERR(get_object(objects_name[i], actual_data));
     ASSERT_TRUE(strcmp(objects_data[i], actual_data) == 0);
+    free(actual_data);
   }
 }
 
@@ -243,13 +251,16 @@ TEST(get_object_in_cache) {
   uint hits_at_start = objects_cache_hits();
 
   // validate correctness
-  char actual[strlen(my_string) + 1];
+  char* actual = (char*)malloc(strlen(my_string) + 1);
+  ASSERT_TRUE(actual != 0);
   ASSERT_NO_ERR(cache_get_object(name, actual));
   ASSERT_UINT_EQ(0, strcmp(actual, my_string));
 
   // valiadte hits and misses
   EXPECT_UINT_EQ(0, objects_cache_misses() - misses_at_start);
   EXPECT_UINT_EQ(1, objects_cache_hits() - hits_at_start);
+
+  free(actual);
 }
 
 TEST(get_object_not_in_cache) {
@@ -262,7 +273,8 @@ TEST(get_object_not_in_cache) {
   uint hits_at_start = objects_cache_hits();
 
   // validate correctness
-  char actual[strlen(my_string) + 1];
+  char* actual = (char*)malloc(strlen(my_string) + 1);
+  ASSERT_TRUE(actual != 0);
   ASSERT_NO_ERR(cache_get_object(obj_name, actual));
   ASSERT_UINT_EQ(0, strcmp(actual, my_string));
 
@@ -275,6 +287,7 @@ TEST(get_object_not_in_cache) {
   ASSERT_NO_ERR(cache_get_object(obj_name, actual));
   EXPECT_UINT_EQ(1, objects_cache_misses() - misses_at_start);
   ASSERT_UINT_EQ(1, objects_cache_hits() - hits_at_start);
+  free(actual);
 }
 
 TEST(get_object_size_in_cache) {
@@ -317,7 +330,8 @@ TEST(get_object_size_not_in_cache_and_doesnt_add_to_cache) {
 }
 
 TEST(object_too_large_not_inserted_to_cache) {
-  char large_data[cache_max_object_size() * 2];
+  char* large_data = (char*)malloc(cache_max_object_size() * 2);
+  ASSERT_TRUE(large_data != 0);
   const char* obj_name = "object_no_cache_03";
 
   for (uint i = 0; i < sizeof(large_data); ++i) {
@@ -339,6 +353,8 @@ TEST(object_too_large_not_inserted_to_cache) {
   // valiadte hits and misses
   EXPECT_UINT_EQ(1, objects_cache_misses() - misses_at_start);
   ASSERT_UINT_EQ(0, objects_cache_hits() - hits_at_start);
+
+  free(large_data);
 }
 
 /**
@@ -352,9 +368,12 @@ TEST(logbook_add_object_regular_flow) {
   uint size;
   ASSERT_NO_ERR(cache_object_size(obj_name, &size));
   ASSERT_UINT_EQ(strlen(my_string) + 1, size);
-  char actual[strlen(my_string) + 1];
+  char* actual = (char*)malloc(strlen(my_string) + 1);
+  ASSERT_TRUE(actual != NULL);
   ASSERT_NO_ERR(cache_get_object(obj_name, actual));
   ASSERT_UINT_EQ(0, strcmp(actual, my_string));
+
+  free(actual);
 }
 
 TEST(logbook_rewrite_object_regular_flow) {
@@ -375,8 +394,10 @@ TEST(logbook_rewrite_object_regular_flow) {
   uint size;
   ASSERT_NO_ERR(cache_object_size(obj_name, &size));
   ASSERT_UINT_EQ(strlen(second_string) + 1, size);
-  char actual[strlen(second_string) + 1];
+  char* actual = (char*)malloc(strlen(second_string) + 1);
+  ASSERT_TRUE(actual != NULL);
   ASSERT_NO_ERR(cache_get_object(obj_name, actual));
+  free(actual);
 }
 
 TEST(logbook_delete_object_regular_flow) {

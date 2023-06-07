@@ -24,7 +24,7 @@
 
 #define KVEC_ERR 0
 
-// TODO:
+// TODO(unknown):
 //  int addelement(vector v, char* data)
 //  int foreach(int (f*)(vector *, char*))
 //  int foreachinrange(unsigned int from, unsigned int to, int (f*)(vector *,

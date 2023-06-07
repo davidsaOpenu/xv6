@@ -154,7 +154,7 @@ struct segdesc {
 #define PTE_FLAGS(pte) ((uint)(pte)&0xFFF)
 
 #ifndef __ASSEMBLER__
-#include "types.h"
+// types.h included
 
 typedef uint pte_t;
 
