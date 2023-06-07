@@ -85,8 +85,8 @@ struct vfs_file {
             unsigned int max;
           } max;
           struct {
-              char active;
-              unsigned int min;
+            char active;
+            unsigned int min;
           } min;
         } mem;
       };

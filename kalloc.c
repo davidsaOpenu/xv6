@@ -21,8 +21,8 @@ struct {
   struct spinlock lock;
   int use_lock;
   int page_cnt;
-  int page_protect;//protected memory for cgroup that declerat mem_min
-  struct run* freelist;
+  int page_protect;  // protected memory for cgroup that declerat mem_min
+  struct run *freelist;
 } kmem;
 
 // Initialization happens in two phases.
@@ -69,52 +69,41 @@ void kfree(char *v) {
 }
 
 int increse_protect_counter(int num) {
+  if (num < 0) {
+    num *= -1;
+    return decrese_protect_counter(num);
+  }
 
-    if (num < 0) {
-        num *= -1;
-        return decrese_protect_counter(num);
-    }
+  int ret = 1;
+  if (kmem.use_lock) acquire(&kmem.lock);
 
-    int ret = 1;
-    if (kmem.use_lock)
-        acquire(&kmem.lock);
+  if (num + kmem.page_protect <= kmem.page_cnt) {
+    kmem.page_protect += num;
+    ret = 0;  // success
+  }
 
-    if (num + kmem.page_protect <= kmem.page_cnt) {
-        kmem.page_protect += num;
-        ret = 0;// success
-    }
+  if (kmem.use_lock) release(&kmem.lock);
 
-    if (kmem.use_lock)
-        release(&kmem.lock);
-
-    return ret;
+  return ret;
 }
 
 int decrese_protect_counter(int num) {
+  if (kmem.use_lock) acquire(&kmem.lock);
+  kmem.page_protect -= num;
+  if (kmem.use_lock) release(&kmem.lock);
 
-    if (kmem.use_lock)
-        acquire(&kmem.lock);
-    kmem.page_protect -= num;
-    if (kmem.use_lock)
-        release(&kmem.lock);
-
-    return 0;
-
+  return 0;
 }
 
-//Returns the number of available memory in the kernel
-uint get_total_memory()
-{
-  return kmem.page_cnt;
-}
+// Returns the number of available memory in the kernel
+uint get_total_memory() { return kmem.page_cnt; }
 
 // Allocate one 4096-byte page of physical memory.
 // Returns a pointer that the kernel can use.
 // Returns 0 if the memory cannot be allocated.
 char *kalloc(void) {
   struct run *r;
-  if(kmem.page_cnt <= kmem.page_protect)
-   return 0;
+  if (kmem.page_cnt <= kmem.page_protect) return 0;
 
   if (kmem.use_lock) acquire(&kmem.lock);
   r = kmem.freelist;

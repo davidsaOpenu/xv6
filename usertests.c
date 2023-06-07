@@ -342,13 +342,13 @@ void preempt(void) {
   printf(1, "preempt: ");
   pid1 = fork();
   if (pid1 == 0)
-    for (;;)
-      ;
+    for (;;) {
+    }
 
   pid2 = fork();
   if (pid2 == 0)
-    for (;;)
-      ;
+    for (;;) {
+    }
 
   pipe(pfds);
   pid3 = fork();
@@ -356,8 +356,8 @@ void preempt(void) {
     close(pfds[0]);
     if (write(pfds[1], "x", 1) != 1) printf(1, "preempt write error");
     close(pfds[1]);
-    for (;;)
-      ;
+    for (;;) {
+    }
   }
 
   close(pfds[1]);
@@ -1627,8 +1627,9 @@ void uio() {
   pid = fork();
   if (pid == 0) {
     port = RTC_ADDR;
-    val = 0x09; /* year */
-    /* http://wiki.osdev.org/Inline_Assembly/Examples */
+    val = 0x09;  // year
+
+    // http://wiki.osdev.org/Inline_Assembly/Examples
     asm volatile("outb %0,%1" ::"a"(val), "d"(port));
     port = RTC_DATA;
     asm volatile("inb %1,%0" : "=a"(val) : "d"(port));

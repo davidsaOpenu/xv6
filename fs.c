@@ -196,8 +196,8 @@ void fsinit(uint dev) {
 
   readsb(dev, sb);
   cprintf(
-      "sb: size %d nblocks %d ninodes %d nlog %d logstart %d\
- inodestart %d bmap start %d\n",
+      "sb: size %d nblocks %d ninodes %d nlog %d logstart %d "
+      "inodestart %d bmap start %d\n",
       sb->size, sb->nblocks, sb->vfs_sb.ninodes, sb->nlog, sb->logstart,
       sb->inodestart, sb->bmapstart);
 }
@@ -616,7 +616,7 @@ int dirlink(struct vfs_inode *vfs_dp, char *name, uint inum) {
   strncpy(de.name, name, DIRSIZ);
   de.inum = inum;
   if (writei(&dp->vfs_inode, (char *)&de, off, sizeof(de)) !=
-      sizeof(de))  // TODO: write from vector
+      sizeof(de))  // TODO(unknown): write from vector
     panic("dirlink");
 
   freevector(&direntryvec);

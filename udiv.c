@@ -100,8 +100,8 @@ du_int __udivmoddi4(du_int a, du_int b, du_int* rem) {
      * ---
      * K 0
      */
-    if ((d.s.high & (d.s.high - 1)) == 0) /* if d is a power of 2 */
-    {
+    if ((d.s.high & (d.s.high - 1)) == 0) {
+      /* if d is a power of 2 */
       if (rem) {
         r.s.low = n.s.low;
         r.s.high = n.s.high & (d.s.high - 1);
@@ -127,15 +127,15 @@ du_int __udivmoddi4(du_int a, du_int b, du_int* rem) {
     /* r.all = n.all >> sr; */
     r.s.high = n.s.high >> sr;
     r.s.low = (n.s.high << (n_uword_bits - sr)) | (n.s.low >> sr);
-  } else /* d.s.low != 0 */
-  {
+  } else {
+    /* d.s.low != 0 */
     if (d.s.high == 0) {
       /* K X
        * ---
        * 0 K
        */
-      if ((d.s.low & (d.s.low - 1)) == 0) /* if d is a power of 2 */
-      {
+      if ((d.s.low & (d.s.low - 1)) == 0) {
+        /* if d is a power of 2 */
         if (rem) *rem = n.s.low & (d.s.low - 1);
         if (d.s.low == 1) return n.all;
         sr = __builtin_ctz(d.s.low);
@@ -157,14 +157,14 @@ du_int __udivmoddi4(du_int a, du_int b, du_int* rem) {
         q.s.high = n.s.low;
         r.s.high = 0;
         r.s.low = n.s.high;
-      } else if (sr < n_uword_bits)  // 2 <= sr <= n_uword_bits - 1
-      {
+      } else if (sr < n_uword_bits) {
+        /* 2 <= sr <= n_uword_bits - 1 */
         q.s.low = 0;
         q.s.high = n.s.low << (n_uword_bits - sr);
         r.s.high = n.s.high >> sr;
         r.s.low = (n.s.high << (n_uword_bits - sr)) | (n.s.low >> sr);
-      } else  // n_uword_bits + 1 <= sr <= n_udword_bits - 1
-      {
+      } else {
+        /* n_uword_bits + 1 <= sr <= n_udword_bits - 1 */
         q.s.low = n.s.low << (n_udword_bits - sr);
         q.s.high = (n.s.high << (n_udword_bits - sr)) |
                    (n.s.low >> (sr - n_uword_bits));

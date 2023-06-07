@@ -30,15 +30,15 @@ int main(void) {
   while (!gdb_attached) {
   }
 #endif
-  kinit1(end, P2V(4 * 1024 * 1024));  // phys page allocator
-  kvmalloc();                         // kernel page table
-  mpinit();                           // detect other processors
-  lapicinit();                        // interrupt controller
-  seginit();                          // segment descriptors
-  picinit();                          // disable pic
-  ioapicinit();                       // another interrupt controller
-  consoleinit();                      // console hardware
-  ttyinit();                          // create additional ttys
+  kinit1(end, P2V(4 * 1024 * 1024));           // phys page allocator
+  kvmalloc();                                  // kernel page table
+  mpinit();                                    // detect other processors
+  lapicinit();                                 // interrupt controller
+  seginit();                                   // segment descriptors
+  picinit();                                   // disable pic
+  ioapicinit();                                // another interrupt controller
+  consoleinit();                               // console hardware
+  ttyinit();                                   // create additional ttys
   uartinit();                                  // serial port
   pinit();                                     // process table
   tvinit();                                    // trap vectors
@@ -103,8 +103,8 @@ static void startothers(void) {
     lapicstartap(c->apicid, V2P(code));
 
     // wait for cpu to finish mpmain()
-    while (c->started == 0)
-      ;
+    while (c->started == 0) {
+    }
   }
 }
 

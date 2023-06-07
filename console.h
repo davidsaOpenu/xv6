@@ -4,7 +4,7 @@
 
 #include "spinlock.h"
 
-//PAGEBREAK: 50
+// PAGEBREAK: 50
 #define BACKSPACE 0x100
 #define CRTPORT 0x3d4
 
@@ -21,6 +21,5 @@ typedef struct tty {
   int flags;
   struct spinlock lock;
 } tty;
-
 
 #endif
