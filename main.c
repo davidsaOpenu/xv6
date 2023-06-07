@@ -103,8 +103,8 @@ static void startothers(void) {
     lapicstartap(c->apicid, V2P(code));
 
     // wait for cpu to finish mpmain()
-    while (c->started == 0)
-      ;
+    while (c->started == 0) {
+    }
   }
 }
 

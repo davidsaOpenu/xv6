@@ -100,7 +100,7 @@ void bubble_sort(uint* arr, uint n) {
  * address in the disk. Then, we check the space between every 2 consecutive
  * entries. We also check the space left between the end of the last element
  * and the end of the disk.
- * Notice that there are at least 2 obejcts in the table at every moment: the
+ * Notice that there are at least 2 objects in the table at every moment: the
  * super block and the objects table itself. Also, the super block is located
  * at address 0, hence we don't check the "empty space" before it because
  * there is no such space.
@@ -115,7 +115,8 @@ static void* find_empty_space(uint size) {
           STORAGE_DEVICE_SIZE) /
       sizeof(ObjectsTableEntry);
   const uint entries_arr_size = current_table_size - 2;
-  uint entries_indices[entries_arr_size];
+  /* Be aware: Variable-length arrays are usually bad habit */
+  uint entries_indices[entries_arr_size];  // NOLINT
   uint* current = entries_indices;
   uint populated_size = 0;
   for (uint i = 2; i < get_object_table_size(); ++i) {
@@ -215,12 +216,12 @@ void init_obj_fs() {
       sizeof(super_block) +
       INITIAL_OBJECT_TABLE_SIZE * sizeof(ObjectsTableEntry);
   super_block.occupied_objects = 2;
-  super_block.last_inode =
-      2;  // Inode counter starts from 3, when 3 reserved to root dir object.
-  sb.ninodes =
-      get_object_table_size();  // TODO: remove it? it is now meaningless since
-                                // inode number can grow and shrink. analyze
-                                // effect over vfs.
+  // Inode counter starts from 3, when 3 reserved to root dir object.
+  super_block.last_inode = 2;
+  /* TODO(unknown): remove it? it is now meaningless since
+   * inode number can grow and shrink. analyze
+   * effect over vfs. */
+  sb.ninodes = get_object_table_size();
   super_block.vfs_sb = sb;
   // Inode initializing
 
@@ -307,9 +308,9 @@ uint rewrite_object(vector data, uint objectsize, uint write_starting_offset,
     // 3.A - the new object written is smaller or equals the the original.
     void* address =
         (void*)memory_storage + entry->disk_offset + write_starting_offset;
-    memmove_from_vector(address, data, 0,
-                        data.vectorsize);  // TODO? instead of data.vectorsize
-                                           // add parameter 'datasize'
+    /* TODO(unknown)? instead of data.vectorsize
+     * add parameter 'datasize' */
+    memmove_from_vector(address, data, 0, data.vectorsize);
     entry->size = objectsize;
   } else {
     // 3.B - the new object is larger

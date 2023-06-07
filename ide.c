@@ -38,8 +38,8 @@ static void idestart(struct buf *);
 static int idewait(int checkerr) {
   int r;
 
-  while (((r = inb(0x1f7)) & (IDE_BSY | IDE_DRDY)) != IDE_DRDY)
-    ;
+  while (((r = inb(0x1f7)) & (IDE_BSY | IDE_DRDY)) != IDE_DRDY) {
+  }
   if (checkerr && (r & (IDE_DF | IDE_ERR)) != 0) return -1;
   return 0;
 }
@@ -133,8 +133,8 @@ void iderw(struct buf *b) {
 
   // Append b to idequeue.
   b->qnext = 0;
-  for (pp = &idequeue; *pp; pp = &(*pp)->qnext)  // DOC:insert-queue
-    ;
+  for (pp = &idequeue; *pp; pp = &(*pp)->qnext) {
+  }  // DOC:insert-queue
   *pp = b;
 
   // Start disk if necessary.

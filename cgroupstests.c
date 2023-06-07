@@ -263,9 +263,11 @@ int get_val(char* buf, char* entry) {
     if (strncmp(buf, entry, strlen(entry)) == 0) {
       buf += strlen(entry);
       return atoi(buf);
-    } else
-      while (*buf++ != '\n')  // go to next line
-        ;
+    } else {
+      /* go to next line. */
+      while (*buf++ != '\n') {
+      }
+    }
   } while (*buf != '\0');
   return -1;  // Assuming all values are supposed to be non-negative
 }
@@ -639,8 +641,9 @@ TEST(test_no_run) {
   int sum = 0;
   int wstatus;
 
-  // Child
   if (pid == 0) {
+    // Child
+
     pidToMove = getpid();
 
     // Save the pid of child in temp file.
@@ -658,9 +661,9 @@ TEST(test_no_run) {
     // Save sum into temp file.
     temp_write(sum);
     exit(0);
-  }
-  // Father
-  else {
+  } else {
+    // Father
+
     sleep(5);
     // Read the child pid from temp file.
     pidToMove = temp_read(0);
@@ -740,8 +743,9 @@ TEST(test_frozen_not_running) {
   int sum = 0;
   int wstatus;
 
-  // Child
   if (pid == 0) {
+    // Child
+
     pidToMove = getpid();
     // Save the pid of child in temp file.
     ASSERT_TRUE(temp_write(pidToMove));
@@ -755,9 +759,9 @@ TEST(test_frozen_not_running) {
     // Save sum into temp file.
     ASSERT_TRUE(temp_write(sum));
     exit(0);
-  }
-  // Father
-  else {
+  } else {
+    // Father
+
     sleep(5);
     // Read the child pid from temp file.
     pidToMove = temp_read(0);
@@ -1061,8 +1065,9 @@ TEST(test_cpu_stat) {
   int sum = 0;
   int wstatus;
 
-  // Child
   if (pid == 0) {
+    // Child
+
     pidToMove = getpid();
 
     // Save the pid of child in temp file.
@@ -1084,9 +1089,9 @@ TEST(test_cpu_stat) {
     // Go to sleep to ensure we cen return the child to root cgroup
     sleep(25);
     exit(0);
-  }
-  // Father
-  else {
+  } else {
+    // Father
+
     sleep(5);
 
     // Read the child pid from temp file.
@@ -1149,8 +1154,9 @@ TEST(test_mem_stat) {
   // affect the values.
   int pid = fork();
   int pidToMove = 0;
-  // Child
   if (pid == 0) {
+    // Child
+
     pidToMove = getpid();
     // Save the pid of child in temp file.
     ASSERT_TRUE(temp_write(pidToMove));
@@ -1175,7 +1181,8 @@ TEST(test_mem_stat) {
 
     exit(0);
 
-  } else {  // Father
+  } else {
+    // Father
 
     sleep(5);
     // Read the child pid from temp file.

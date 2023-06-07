@@ -389,10 +389,10 @@ void exit(int status) {
     kill_all_pid_ns(curproc, curproc->parent,
                     curpidns);  // Documentation for this command see above
 
-  } else {  // The current process does not hold pid 1 within its namespace
-
-    // Pass the child processes of the current process to pid 1 process within
-    // the namespace
+  } else {
+    /* The current process does not hold pid 1 within its namespace
+     * Pass the child processes of the current process to pid 1 process within
+     * the namespace. */
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
       if (p->parent == curproc) {
         p->parent = procpid1;

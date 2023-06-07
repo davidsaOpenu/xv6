@@ -158,7 +158,7 @@ static uint cache_free_from_cache(const char* name) {
     if (obj_id_cmp(name, e->object_id) == 0) {
       move_to_back(e);
       e->object_id[0] = 0;
-      // TODO: remove?
+      // TODO(unknown): remove?
       releasesleep(&cachelock);
       return NO_ERR;
     }

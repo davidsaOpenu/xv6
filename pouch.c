@@ -388,7 +388,7 @@ static int pouch_fork(char* container_name) {
           exit(1);
         }
 
-        //"Child process - setting up namespaces for the container
+        // "Child process - setting up namespaces for the container
         // Set up mount namespace.
         if (unshare(MOUNT_NS) < 0) {
           printf(1, "Cannot create mount namespace\n");
@@ -401,7 +401,7 @@ static int pouch_fork(char* container_name) {
         printf(stderr, "Error connecting tty\n");
       }
     } else {
-      //"Parent process - waiting for child
+      // "Parent process - waiting for child
 
       // Move the current process to "/cgroup/<cname>" cgroup.
       strcat(cg_cname, "/cgroup.procs");
