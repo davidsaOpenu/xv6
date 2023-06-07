@@ -33,6 +33,23 @@
       "message": "recheck",
       "revId": "08cc1effb2ed9bf85cfde35888822e31181c4f55",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "583f2e98_63efc8ec",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-06-07T19:39:55Z",
+      "side": 1,
+      "message": "Well done! \n\nNote: added a non voting job that runs linters and it reports 3 issues left.",
+      "revId": "08cc1effb2ed9bf85cfde35888822e31181c4f55",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
