@@ -24,7 +24,7 @@ int exec(char *path, char **argv) {
   struct proc *curproc = myproc();
   elfv = newvector(sizeof(elf), 1);
   phv = newvector(sizeof(ph), 1);
-  struct cgroup* cgroup = curproc->cgroup;
+  struct cgroup *cgroup = curproc->cgroup;
 
   begin_op();
 
@@ -67,9 +67,8 @@ int exec(char *path, char **argv) {
   // Allocate two pages at the next page boundary.
   // Make the first inaccessible.  Use the second as the user stack.
   sz = PGROUNDUP(sz);
-  if((sz = allocuvm(pgdir, sz, sz + 2*PGSIZE, cgroup)) == 0)
-    goto bad;
-  clearpteu(pgdir, (char*)(sz - 2*PGSIZE));
+  if ((sz = allocuvm(pgdir, sz, sz + 2 * PGSIZE, cgroup)) == 0) goto bad;
+  clearpteu(pgdir, (char *)(sz - 2 * PGSIZE));
   sp = sz;
 
   // Push argument strings, prepare rest of stack in ustack.

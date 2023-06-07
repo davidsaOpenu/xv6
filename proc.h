@@ -55,8 +55,8 @@ struct proc {
   pde_t *pgdir;          // Page table
   char *kstack;          // Bottom of kernel stack for this process
   enum procstate state;  // Process state
-  /* int pid;                     // Process ID */
-  int ns_pid;
+  // int pid;
+  int ns_pid;  // Process ID
   struct pid_entry pids[4];
   struct proc *parent;             // Parent process
   struct trapframe *tf;            // Trap frame for current syscall
@@ -106,7 +106,7 @@ struct cgroup *proc_get_cgroup(void);
 /**
  * Update number of memory pages to protect for cgroup after dealloc memory .
  */
-void update_protect_mem(struct cgroup* cgroup, int oldsz, int newsz);
+void update_protect_mem(struct cgroup *cgroup, int oldsz, int newsz);
 
 // Process memory is laid out contiguously, low addresses first:
 //   text
