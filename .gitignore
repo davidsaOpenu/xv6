@@ -18,3 +18,4 @@ internal_fs_*
 *.swp
 *.orig
 .vscode
+.testci

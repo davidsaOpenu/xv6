@@ -5,8 +5,9 @@
 #include "wstatus.h"
 
 typedef int (*test_func_t)(void);
-int testsPassed = 0; /*In case all tests passed, this value will remain 0, else
-                        it will become 1*/
+/* In case all tests passed, this value will remain 0,
+ * else it will become 1. */
+int testsPassed = 0;
 
 int check(int r, const char *msg) {
   if (r < 0) {

@@ -84,8 +84,8 @@ void lapicinit(void) {
   // Send an Init Level De-Assert to synchronise arbitration ID's.
   lapicw(ICRHI, 0);
   lapicw(ICRLO, BCAST | INIT | LEVEL);
-  while (lapic[ICRLO] & DELIVS)
-    ;
+  while (lapic[ICRLO] & DELIVS) {
+  }
 
   // Enable interrupts on the APIC (but not on the processor).
   lapicw(TPR, 0);
