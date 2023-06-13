@@ -83,6 +83,10 @@ void print_error(const char *name, unsigned long int x, unsigned long int y,
            __FILE__, __LINE__);                                           \
     failed = 1;                                                           \
   }
+
+#define ASSERT_EQ(x, y) ASSERT_TRUE(x == y)
+#define ASSERT_NE(x, y) ASSERT_FALSE(x == y)
+
 /**
  * OBJECT FILE SYSTEM SPECIFIC VALIDATIONS
  */
