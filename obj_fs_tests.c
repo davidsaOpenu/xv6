@@ -184,7 +184,7 @@ TEST(writing_multiple_objects) {
     char* actual_data = (char*)malloc(size);
     ASSERT_TRUE(actual_data != NULL);
     ASSERT_NO_ERR(get_object(objects_name[i], actual_data));
-    ASSERT_TRUE(strcmp(objects_data[i], actual_data) == 0);
+    ASSERT_EQ(strcmp(objects_data[i], actual_data), 0);
     free(actual_data);
   }
 }
@@ -222,7 +222,7 @@ TEST(reusing_freed_space) {
   uint data = 0;
   ASSERT_NO_ERR(add_object(&data, sizeof(data), "reusing object 1"));
   uint obj_1_offset = find_object_offset("reusing object 1");
-  ASSERT_TRUE(obj_1_offset != -1);
+  ASSERT_NE(obj_1_offset, -1);
 
   ASSERT_NO_ERR(delete_object("reusing object 1"));
   ASSERT_NO_ERR(add_object(&data, sizeof(data), "reusing object 2"));
@@ -252,7 +252,7 @@ TEST(get_object_in_cache) {
 
   // validate correctness
   char* actual = (char*)malloc(strlen(my_string) + 1);
-  ASSERT_TRUE(actual != 0);
+  ASSERT_NE(actual, 0);
   ASSERT_NO_ERR(cache_get_object(name, actual));
   ASSERT_UINT_EQ(0, strcmp(actual, my_string));
 
@@ -274,7 +274,7 @@ TEST(get_object_not_in_cache) {
 
   // validate correctness
   char* actual = (char*)malloc(strlen(my_string) + 1);
-  ASSERT_TRUE(actual != 0);
+  ASSERT_NE(actual, 0);
   ASSERT_NO_ERR(cache_get_object(obj_name, actual));
   ASSERT_UINT_EQ(0, strcmp(actual, my_string));
 
@@ -331,7 +331,7 @@ TEST(get_object_size_not_in_cache_and_doesnt_add_to_cache) {
 
 TEST(object_too_large_not_inserted_to_cache) {
   char* large_data = (char*)malloc(cache_max_object_size() * 2);
-  ASSERT_TRUE(large_data != 0);
+  ASSERT_NE(large_data, 0);
   const char* obj_name = "object_no_cache_03";
 
   for (uint i = 0; i < sizeof(large_data); ++i) {

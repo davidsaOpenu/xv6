@@ -10,8 +10,8 @@
 /*
  *   Helper functions
  */
-static void empty_string(char* string, int length) {
-  for (int i = 0; i < length; i++) string[i] = 0;
+static void empty_string(char* s, int length) {
+  for (int i = 0; i < length; i++) s[i] = 0;
 }
 
 void panic(char* s) {

@@ -111,6 +111,10 @@ void print_error(const char* name, unsigned long int x, unsigned long int y,
     return;                                                                 \
   }
 
+#define ASSERT_EQ(x, y) ASSERT_TRUE(x == y)
+#define ASSERT_NE(x, y) ASSERT_FALSE(x == y)
+#define ASSERT_GE(x, y) ASSERT_TRUE(x >= y)
+
 #define EXPECT_FALSE(x)                                                     \
   if (x) {                                                                  \
     for (int i = 0;                                                         \
