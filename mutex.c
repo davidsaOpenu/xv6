@@ -8,7 +8,11 @@
 /* Init a unique mutex. */
 int mutex_init(mutex_t *mutex_var) {
   int timeid;
-  char *buffer = mutex_var->buffer;
+  char *buffer = NULL;
+
+  if (NULL == mutex_var) return MUTEX_INVALID_PARAMETER;
+
+  buffer = mutex_var->buffer;
 
   // Using uptime() to have a unique mutex filename as
   //    xv6 doesn't support nanoseconds resolution.
@@ -27,7 +31,9 @@ int mutex_init(mutex_t *mutex_var) {
 
 /* Locks a mutex if unlocked, sleep otherwise - res might indicates an error. */
 int mutex_lock(mutex_t *mutex_var) {
-  int res = -1;
+  int res = MUTEX_FAILURE;
+
+  if (NULL == mutex_var) return MUTEX_INVALID_PARAMETER;
 
   // pathname already exists and O_CREAT and O_EXCL were used
   while ((res = open(mutex_var->buffer, O_CREATE | O_EXCL)) == EEXIST) {
@@ -39,4 +45,8 @@ int mutex_lock(mutex_t *mutex_var) {
 }
 
 /* Unlocks a mutex - returns according to unlink return values */
-int mutex_unlock(mutex_t *mutex_var) { return unlink(mutex_var->buffer); }
+int mutex_unlock(mutex_t *mutex_var) {
+  if (NULL == mutex_var) return MUTEX_INVALID_PARAMETER;
+
+  return unlink(mutex_var->buffer);
+}

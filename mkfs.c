@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
   sb.bmapstart = xint(2 + nlog + ninodeblocks);
 
   printf(
-      "nmeta %d (boot, super, log blocks %u inode blocks %u, bitmap blocks %u) "
+      "nmeta %d (boot, super, log blocks %d inode blocks %d, bitmap blocks %d) "
       "blocks %d total %d\n",
       nmeta, nlog, ninodeblocks, nbitmap, nblocks, fssize);
 
@@ -242,7 +242,8 @@ void balloc(int used) {
   for (i = 0; i < used; i++) {
     buf[i / 8] = buf[i / 8] | (0x1 << (i % 8));
   }
-  printf("balloc: write bitmap block at sector %d\n", sb.bmapstart);
+  // printf doesn't support %u.
+  printf("balloc: write bitmap block at sector 0x%x\n", sb.bmapstart);
   wsect(sb.bmapstart, buf);
 }
 
