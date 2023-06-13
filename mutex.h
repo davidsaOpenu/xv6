@@ -3,10 +3,12 @@
 #define MUTEX_SIZE sizeof(MUTEX_PREFIX) + sizeof(int)
 
 enum mutex_e {
-  MUTEX_UPTIME_ERROR = -2,
-  MUTEX_FAILURE = -1,
-
   MUTEX_SUCCESS = 0,
+
+  MUTEX_INVALID_PARAMETER,
+  MUTEX_UPTIME_ERROR,
+
+  MUTEX_FAILURE,
 };
 
 typedef struct mutex_s {

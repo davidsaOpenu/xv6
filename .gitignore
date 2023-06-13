@@ -19,3 +19,9 @@ internal_fs_*
 *.orig
 .vscode
 .testci
+<<<<<<< HEAD
+cppcheck-report/
+cppcheck.xml
+=======
+cppcheck*
+>>>>>>> a5a7344 (Cppcheck)

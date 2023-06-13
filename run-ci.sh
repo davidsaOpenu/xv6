@@ -48,21 +48,21 @@ if [ $? -eq 0 ]; then
     exit 1
 fi
 
-
-# TODO: remove when run-ci.sh passes all tests
-if false; then
 ########################################################################
 # run static analyzer
 ERROR_CODE=20
-cppcheck --error-exitcode=${ERROR_CODE} \
+cppcheck --error-exitcode=${ERROR_CODE} --inline-suppr \
         --enable=portability,information,performance,warning \
-    --inconclusive --xml --xml-version=2 . 2> cppcheck.xml
+    --inconclusive --suppress=missingIncludeSystem --suppress=objectIndex \
+    -DSTORAGE_DEVICE_SIZE=1 --xml --xml-version=2 . 2> cppcheck.xml
 if [ $? -eq  $ERROR_CODE ]; then
     cppcheck-htmlreport --file=cppcheck.xml --report-dir=cppcheck-report \
         --source-dir=. --title="Cppcheck Report"
+    echo "##### Cppcheck.xml #####"
+    cat cppcheck.xml
+    exit 1
 fi
 
-fi #if false
 ########################################################################
 # compile
 make clean
