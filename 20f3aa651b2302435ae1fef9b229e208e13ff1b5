@@ -24,6 +24,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "21d55c9d_c1a64043",
+        "filename": "run-ci.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1021013
+      },
+      "writtenOn": "2023-06-13T10:11:46Z",
+      "side": 1,
+      "message": "Clang-format messes up the .S files results in uncompiled code.",
+      "parentUuid": "0e2e5f2f_1bbcef23",
+      "range": {
+        "startLine": 11,
+        "startChar": 36,
+        "endLine": 11,
+        "endChar": 40
+      },
+      "revId": "20f3aa651b2302435ae1fef9b229e208e13ff1b5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "4085476e_d0d1ed5e",
