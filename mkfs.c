@@ -1,3 +1,4 @@
+#include <arpa/inet.h>
 #include <assert.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -45,24 +46,6 @@ uint ialloc(ushort type);
 void iappend(uint inum, void *p, int n);
 
 // convert to intel byte order
-ushort xshort(ushort x) {
-  ushort y;
-  uchar *a = (uchar *)&y;
-  a[0] = x;
-  a[1] = x >> 8;
-  return y;
-}
-
-uint xint(uint x) {
-  uint y;
-  uchar *a = (uchar *)&y;
-  a[0] = x;
-  a[1] = x >> 8;
-  a[2] = x >> 16;
-  a[3] = x >> 24;
-  return y;
-}
-
 void printusageexit(void) {
   fprintf(stderr, "Usage: mkfs fs.img <is_internal (0/1)> files...\n");
   exit(1);
@@ -103,16 +86,16 @@ int main(int argc, char *argv[]) {
   nmeta = 2 + nlog + ninodeblocks + nbitmap;
   nblocks = fssize - nmeta;
 
-  sb.size = xint(fssize);
-  sb.nblocks = xint(nblocks);
-  sb.vfs_sb.ninodes = xint(NINODES);
-  sb.nlog = xint(nlog);
-  sb.logstart = xint(2);
-  sb.inodestart = xint(2 + nlog);
-  sb.bmapstart = xint(2 + nlog + ninodeblocks);
+  sb.size = (uint)fssize;
+  sb.nblocks = (uint)nblocks;
+  sb.vfs_sb.ninodes = (uint)NINODES;
+  sb.nlog = (uint)nlog;
+  sb.logstart = (uint)2;
+  sb.inodestart = (uint)(2 + nlog);
+  sb.bmapstart = (uint)(2 + nlog + ninodeblocks);
 
   printf(
-      "nmeta %d (boot, super, log blocks %u inode blocks %u, bitmap blocks %u) "
+      "nmeta %d (boot, super, log blocks %d inode blocks %d, bitmap blocks %d) "
       "blocks %d total %d\n",
       nmeta, nlog, ninodeblocks, nbitmap, nblocks, fssize);
 
@@ -128,12 +111,12 @@ int main(int argc, char *argv[]) {
   assert(rootino == ROOTINO);
 
   bzero(&de, sizeof(de));
-  de.inum = xshort(rootino);
+  de.inum = (ushort)rootino;
   strcpy(de.name, ".");
   iappend(rootino, &de, sizeof(de));
 
   bzero(&de, sizeof(de));
-  de.inum = xshort(rootino);
+  de.inum = (ushort)rootino;
   strcpy(de.name, "..");
   iappend(rootino, &de, sizeof(de));
 
@@ -154,7 +137,7 @@ int main(int argc, char *argv[]) {
     inum = ialloc(T_FILE);
 
     bzero(&de, sizeof(de));
-    de.inum = xshort(inum);
+    de.inum = (ushort)inum;
     strncpy(de.name, argv[i], DIRSIZ);
     iappend(rootino, &de, sizeof(de));
 
@@ -165,9 +148,9 @@ int main(int argc, char *argv[]) {
 
   // fix size of root inode dir
   rinode(rootino, &din);
-  off = xint(din.size);
+  off = (uint)din.size;
   off = ((off / BSIZE) + 1) * BSIZE;
-  din.size = xint(off);
+  din.size = (uint)off;
   winode(rootino, &din);
 
   balloc(freeblock);
@@ -225,9 +208,9 @@ uint ialloc(ushort type) {
   struct dinode din;
 
   bzero(&din, sizeof(din));
-  din.vfs_dinode.type = xshort(type);
-  din.vfs_dinode.nlink = xshort(1);
-  din.size = xint(0);
+  din.vfs_dinode.type = (ushort)type;
+  din.vfs_dinode.nlink = (ushort)1;
+  din.size = (uint)0;
   winode(inum, &din);
   return inum;
 }
@@ -242,7 +225,7 @@ void balloc(int used) {
   for (i = 0; i < used; i++) {
     buf[i / 8] = buf[i / 8] | (0x1 << (i % 8));
   }
-  printf("balloc: write bitmap block at sector %d\n", sb.bmapstart);
+  printf("balloc: write bitmap block at sector 0x%x\n", sb.bmapstart);
   wsect(sb.bmapstart, buf);
 }
 
@@ -257,26 +240,26 @@ void iappend(uint inum, void *xp, int n) {
   uint x;
 
   rinode(inum, &din);
-  off = xint(din.size);
+  off = (uint)din.size;
   // printf("append inum %d at off %d sz %d\n", inum, off, n);
   while (n > 0) {
     fbn = off / BSIZE;
     assert(fbn < MAXFILE);
     if (fbn < NDIRECT) {
-      if (xint(din.addrs[fbn]) == 0) {
-        din.addrs[fbn] = xint(freeblock++);
+      if ((uint)din.addrs[fbn] == 0) {
+        din.addrs[fbn] = (uint)freeblock++;
       }
-      x = xint(din.addrs[fbn]);
+      x = (uint)din.addrs[fbn];
     } else {
-      if (xint(din.addrs[NDIRECT]) == 0) {
-        din.addrs[NDIRECT] = xint(freeblock++);
+      if ((uint)din.addrs[NDIRECT] == 0) {
+        din.addrs[NDIRECT] = (uint)freeblock++;
       }
-      rsect(xint(din.addrs[NDIRECT]), (char *)indirect);
+      rsect((uint)din.addrs[NDIRECT], (char *)indirect);
       if (indirect[fbn - NDIRECT] == 0) {
-        indirect[fbn - NDIRECT] = xint(freeblock++);
-        wsect(xint(din.addrs[NDIRECT]), (char *)indirect);
+        indirect[fbn - NDIRECT] = (uint)freeblock++;
+        wsect((uint)din.addrs[NDIRECT], (char *)indirect);
       }
-      x = xint(indirect[fbn - NDIRECT]);
+      x = (uint)indirect[fbn - NDIRECT];
     }
     n1 = min(n, (fbn + 1) * BSIZE - off);
     rsect(x, buf);
@@ -286,6 +269,6 @@ void iappend(uint inum, void *xp, int n) {
     off += n1;
     p += n1;
   }
-  din.size = xint(off);
+  din.size = (uint)off;
   winode(inum, &din);
 }

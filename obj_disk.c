@@ -85,7 +85,7 @@ void bubble_sort(uint* arr, uint n) {
       for (uint j = 0; j < n - i - 1; j++) {
         if (objects_table_entry(arr[j])->disk_offset >
             objects_table_entry(arr[j + 1])->disk_offset) {
-          swap(&arr[j], &arr[j + 1]);
+          swap(&arr[j], &arr[j + 1]);  // NOLINT(build/include_what_you_use)
         }
       }
     }
@@ -111,7 +111,8 @@ void bubble_sort(uint* arr, uint n) {
 static void* find_empty_space(uint size) {
   // 1. put all occupied entries in an array
   uint current_table_size =
-      min((super_block.store_offset - super_block.objects_table_offset),
+      min((super_block.store_offset -  // NOLINT(build/include_what_you_use)
+           super_block.objects_table_offset),
           STORAGE_DEVICE_SIZE) /
       sizeof(ObjectsTableEntry);
   const uint entries_arr_size = current_table_size - 2;
@@ -306,8 +307,8 @@ uint rewrite_object(vector data, uint objectsize, uint write_starting_offset,
   super_block.bytes_occupied -= entry->size;
   if (entry->size >= objectsize) {
     // 3.A - the new object written is smaller or equals the the original.
-    void* address =
-        (void*)memory_storage + entry->disk_offset + write_starting_offset;
+    void* address = (void*)((uint)memory_storage + entry->disk_offset +
+                            write_starting_offset);
     /* TODO(unknown)? instead of data.vectorsize
      * add parameter 'datasize' */
     memmove_from_vector(address, data, 0, data.vectorsize);
@@ -317,15 +318,16 @@ uint rewrite_object(vector data, uint objectsize, uint write_starting_offset,
     entry->occupied = 0;
     super_block.occupied_objects -= 1;
     void* new_object_address = find_empty_space(objectsize);
-    void* data_destination_address = new_object_address + write_starting_offset;
+    void* data_destination_address =
+        (void*)((uint)new_object_address + write_starting_offset);
     entry->occupied = 1;
     super_block.occupied_objects += 1;
     if (!new_object_address) {
       releasesleep(&disklock);
       return NO_DISK_SPACE_FOUND;
     }
-    memmove(new_object_address, (void*)memory_storage + entry->disk_offset,
-            entry->size);
+    memmove(new_object_address,
+            (void*)((uint)memory_storage + entry->disk_offset), entry->size);
     memmove_from_vector(data_destination_address, data, 0, data.vectorsize);
     entry->size = objectsize;
     entry->disk_offset = new_object_address - (void*)memory_storage;
@@ -370,7 +372,7 @@ uint get_object(const char* name, void* output, vector* outputvector) {
   // 3. read the objects offset in disk, then read the object into
   // output address and vector
   ObjectsTableEntry* entry = objects_table_entry(i);
-  void* address = (void*)memory_storage + entry->disk_offset;
+  void* address = (void*)((uint)memory_storage + entry->disk_offset);
   if (output != NULL) memmove(output, address, entry->size);
   if (outputvector != NULL)
     memmove_into_vector_bytes(*outputvector, 0, address, entry->size);
