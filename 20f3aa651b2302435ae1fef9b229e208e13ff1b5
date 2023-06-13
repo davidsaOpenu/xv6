@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0e2e5f2f_1bbcef23",
+        "filename": "run-ci.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-06-13T04:05:50Z",
+      "side": 1,
+      "message": "and |S",
+      "range": {
+        "startLine": 11,
+        "startChar": 36,
+        "endLine": 11,
+        "endChar": 40
+      },
+      "revId": "20f3aa651b2302435ae1fef9b229e208e13ff1b5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4085476e_d0d1ed5e",
+        "filename": "run-ci.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-06-13T04:05:50Z",
+      "side": 1,
+      "message": "let\u0027s add #TODO remove this check when all run-ci.sh passes all tests",
+      "range": {
+        "startLine": 32,
+        "startChar": 0,
+        "endLine": 35,
+        "endChar": 2
+      },
+      "revId": "20f3aa651b2302435ae1fef9b229e208e13ff1b5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
