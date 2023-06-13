@@ -30,7 +30,8 @@ struct vfs_dinode {
 // Directory is a file containing a sequence of dirent structures.
 #define DIRSIZ 14
 
-#define offsetof(TYPE, MEMBER) ((unsigned int)(&((TYPE *)0)->MEMBER))
+#define offsetof(TYPE, MEMBER) \
+  ((unsigned int)(&((TYPE *)0)->MEMBER))  // NOLINT(runtime/casting)
 
 #define container_of(ptr, type, member)                \
   ({                                                   \

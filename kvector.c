@@ -249,16 +249,17 @@ unsigned int vectormemcmp(char* label, vector v, unsigned int vectorstartoffset,
 
   unsigned int byteindex = 0;
   // int identical = 1;
+  // Format string with 0x%x because cprintf formating doesn't support %u.
   for (byteindex = 0; byteindex < bytes; byteindex++) {
     char* elementpointer = getelementpointer(v, byteindex + vectorstartoffset);
     if (elementpointer == NULL) {
-      cprintf("Vector is %d bytes, could not access byte number %d.",
+      cprintf("Vector is 0x%x bytes, could not access byte number 0x%x.",
               byteindex + 1, byteindex + 2);
-      cprintf("Vector actual length is: %d.\n", v.vectorsize);
+      cprintf("Vector actual length is: 0x%x.\n", v.vectorsize);
       return 0;
     } else if (m[byteindex] !=
                *getelementpointer(v, byteindex + vectorstartoffset)) {
-      cprintf("Diff in v[%d]=%d vs. m[%d]=%d. offset=%d\n",
+      cprintf("Diff in v[0x%x]=%d vs. m[0x%x]=%d. offset=0x%x\n",
               byteindex + vectorstartoffset,
               *getelementpointer(v, byteindex + vectorstartoffset), byteindex,
               m[byteindex], vectorstartoffset);

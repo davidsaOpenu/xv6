@@ -1,9 +1,6 @@
 #!/bin/bash
 
-#set -euo # errexit,nounset,pipefail
-# TODO: uncomment -euo when run-ci.sh passes all tests
-set -uo # nounset,pipefail
-
+set -euo # errexit,nounset,pipefail
 
 #########################################################################
 # clang-format
@@ -21,48 +18,42 @@ fi
 
 #########################################################################
 # install and run cpp style checker
-python3 -m venv /tmp/myenv
-. /tmp/myenv/bin/activate
+python3 -m venv ~/.venv/myenv
+. ~/.venv/myenv/bin/activate
 pip install cpplint
+# build/include_what_you_use relates to libc headers - see NOLINT() in files.
+# runtime/printf recommands to choose the right one out of libc s/n/printf/c.
 FILTERS=-legal/copyright,-readability/casting,-build/include_subdir,
-FILTERS+=-build/header_guard,-runtime/int,-readability/braces,
-FILTERS+=-build/include_what_you_use,-runtime/printf,-readability/check,
-FILTERS+=-build/include,-runtime/casting
+FILTERS+=-build/header_guard,-runtime/int,-readability/braces,-runtime/printf
 find . -regex ".*\.[c|h]$" | xargs cpplint --filter=$FILTERS
-
-# TODO: remove when run-ci.sh passes all tests
-if [ $? -ne 0 ]; then
-    echo "Cpplint comments are not completed."
-    exit 1
-fi
 
 ########################################################################
 # install and run bashate
 pip install bashate
-find . -iname "*.sh" -exec bashate {} \; > /tmp/bashate-out
-cat /tmp/bashate-out
+find . -iname "*.sh" -exec bashate {} \; > ~/.venv/bashate-out
+cat ~/.venv/bashate-out
 
-grep "warning(s) found" /tmp/bashate-out 1>/dev/null
-if [ $? -eq 0 ]; then
-    echo "Bashate comments are not completed."
-    exit 1
-fi
+# Grep returns 0 if the string was found and 1 otherwise.
+# ! negate the return value of grep to fail the tests if
+#  warnings/errors were found.
+! grep "warning(s) found" ~/.venv/bashate-out 1>/dev/null
+! grep "error(s) found" ~/.venv/bashate-out 1>/dev/null
 
+# Check whitespaces in .sh files
+# Second grep is a cheat for the return value together with "!" for set -euo.
+! find . -type f -name "*.sh" -exec \
+    grep -nHE "[[:space:]]+$" {} \; | grep -e ".*"
 
-# TODO: remove when run-ci.sh passes all tests
-if false; then
 ########################################################################
 # run static analyzer
 ERROR_CODE=20
-cppcheck --error-exitcode=${ERROR_CODE} \
-        --enable=portability,information,performance,warning \
-    --inconclusive --xml --xml-version=2 . 2> cppcheck.xml
-if [ $? -eq  $ERROR_CODE ]; then
-    cppcheck-htmlreport --file=cppcheck.xml --report-dir=cppcheck-report \
-        --source-dir=. --title="Cppcheck Report"
-fi
+cppcheck --error-exitcode=${ERROR_CODE} --inline-suppr \
+    --enable=portability,information,performance,warning --inconclusive \
+    -DSTORAGE_DEVICE_SIZE=1 --xml --xml-version=2 . 2> cppcheck.xml
+# Gerrit pluging creates htmlreports automatically from cppcheck.
+# cppcheck-htmlreport --file=cppcheck.xml --report-dir=cppcheck-report \
+#    --source-dir=. --title="Cppcheck Report"
 
-fi #if false
 ########################################################################
 # compile
 make clean
