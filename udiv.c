@@ -80,8 +80,8 @@ du_int __udivmoddi4(du_int a, du_int b, du_int* rem) {
        * ---
        * 0 0
        */
-      if (rem) *rem = n.s.high % d.s.low;
-      return n.s.high / d.s.low;
+      if (rem) *rem = n.s.high % d.s.low;  // cppcheck-suppress zerodivcond
+      return n.s.high / d.s.low;           // cppcheck-suppress zerodivcond
     }
     /* d.s.high != 0 */
     if (n.s.low == 0) {
@@ -217,6 +217,7 @@ du_int __udivmoddi4(du_int a, du_int b, du_int* rem) {
      *      carry = 1;
      * }
      */
+    // cppcheck-suppress shiftTooManyBitsSigned
     const di_int s = (di_int)(d.all - r.all - 1) >> (n_udword_bits - 1);
     carry = s & 1;
     r.all -= d.all & s;

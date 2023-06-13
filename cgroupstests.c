@@ -181,8 +181,7 @@ int verify_controller_enabled(int type) {
 
   char* contents = read_file(TEST_1_CGROUP_SUBTREE_CONTROL, 0);
 
-  int i;
-  for (i = 0; contents[i] != 0 && i < sizeof(contents) - 2; i++) {
+  for (int i = 0; i < sizeof(contents) - 2 && contents[i] != 0; i++) {
     if (contents[i] == buf[0] && contents[i + 1] == buf[1] &&
         contents[i + 2] == buf[2]) {
       return 1;
@@ -1041,7 +1040,7 @@ TEST(test_release_protected_memory_after_delete_cgroup) {
     mem_str_buf = read_file(TEST_1_MEM_STAT, 0);
     kernel_total_mem = get_kernel_total_memory(mem_str_buf);
 
-    memset(buf, 12, 0);
+    memset(buf, 0, 12);
     itoa(buf, kernel_total_mem * memory_reservations[i]);
 
     // Protect portion of memory for tmpcgroup
@@ -1058,7 +1057,7 @@ TEST(test_release_protected_memory_after_delete_cgroup) {
       - +1 is used in case X is a round value (of 4k page size) so addinf PGSIZE
       won't exceed the available memory space.This is a special case where +1
       will overflow it for sure.*/
-    memset(buf, 12, 0);
+    memset(buf, 0, 12);
     itoa(buf, kernel_total_mem - (kernel_total_mem * memory_reservations[i]) +
                   PGSIZE + 1);
 
@@ -1544,7 +1543,7 @@ TEST(test_nested_cgroups) {
      because it's not propagated from the parent cgroup */
   for (depth_cnt = 1; depth_cnt < 10; depth_cnt++) {
     /* define the min-max values for the current cgroup */
-    memset(min_val, 12, 0);
+    memset(min_val, 0, 12);
     itoa(min_val, kernel_total_mem / 10);
 
     // Protect portion of memory for the current nested cgroup
@@ -1575,11 +1574,11 @@ TEST(test_nested_cgroups) {
 
   // allocate 25% of kernel space - should fail (this should also fail for
   // lesser values)
-  memset(min_val, 12, 0);
+  memset(min_val, 0, 12);
   itoa(min_val, kernel_total_mem / 4);
   ASSERT_FALSE(write_file(temp_path_g, min_val));
 
-  memset(min_val, 12, 0);
+  memset(min_val, 0, 12);
   itoa(min_val, 0);
   current_nested_cgroup_length = strlen(current_nested_cgroup);
 

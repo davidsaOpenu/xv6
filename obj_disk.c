@@ -306,8 +306,8 @@ uint rewrite_object(vector data, uint objectsize, uint write_starting_offset,
   super_block.bytes_occupied -= entry->size;
   if (entry->size >= objectsize) {
     // 3.A - the new object written is smaller or equals the the original.
-    void* address =
-        (void*)memory_storage + entry->disk_offset + write_starting_offset;
+    void* address = (void*)((uint)memory_storage + entry->disk_offset +
+                            write_starting_offset);
     /* TODO(unknown)? instead of data.vectorsize
      * add parameter 'datasize' */
     memmove_from_vector(address, data, 0, data.vectorsize);
@@ -317,15 +317,16 @@ uint rewrite_object(vector data, uint objectsize, uint write_starting_offset,
     entry->occupied = 0;
     super_block.occupied_objects -= 1;
     void* new_object_address = find_empty_space(objectsize);
-    void* data_destination_address = new_object_address + write_starting_offset;
+    void* data_destination_address =
+        (void*)((uint)new_object_address + write_starting_offset);
     entry->occupied = 1;
     super_block.occupied_objects += 1;
     if (!new_object_address) {
       releasesleep(&disklock);
       return NO_DISK_SPACE_FOUND;
     }
-    memmove(new_object_address, (void*)memory_storage + entry->disk_offset,
-            entry->size);
+    memmove(new_object_address,
+            (void*)((uint)memory_storage + entry->disk_offset), entry->size);
     memmove_from_vector(data_destination_address, data, 0, data.vectorsize);
     entry->size = objectsize;
     entry->disk_offset = new_object_address - (void*)memory_storage;
@@ -370,7 +371,7 @@ uint get_object(const char* name, void* output, vector* outputvector) {
   // 3. read the objects offset in disk, then read the object into
   // output address and vector
   ObjectsTableEntry* entry = objects_table_entry(i);
-  void* address = (void*)memory_storage + entry->disk_offset;
+  void* address = (void*)((uint)memory_storage + entry->disk_offset);
   if (output != NULL) memmove(output, address, entry->size);
   if (outputvector != NULL)
     memmove_into_vector_bytes(*outputvector, 0, address, entry->size);
