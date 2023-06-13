@@ -494,7 +494,8 @@ int readi(struct vfs_inode *vfs_ip, uint off, uint n, vector *dstvector) {
   unsigned int dstoffset = 0;
   for (tot = 0; tot < n; tot += m, off += m, dstoffset += m) {
     bp = bread(ip->vfs_inode.dev, bmap(ip, off / BSIZE));
-    m = min(n - tot, BSIZE - off % BSIZE);
+    m = min(n - tot,
+            BSIZE - off % BSIZE);  // NOLINT(build/include_what_you_use)
     memmove_into_vector_bytes(*dstvector, dstoffset,
                               (char *)(bp->data + off % BSIZE), m);
     // vectormemcmp("readi", *dstvector, dstoffset, (char*)(bp->data + off %
@@ -525,7 +526,8 @@ int writei(struct vfs_inode *vfs_ip, char *src, uint off, uint n) {
 
   for (tot = 0; tot < n; tot += m, off += m, src += m) {
     bp = bread(ip->vfs_inode.dev, bmap(ip, off / BSIZE));
-    m = min(n - tot, BSIZE - off % BSIZE);
+    m = min(n - tot,  // NOLINT(build/include_what_you_use)
+            BSIZE - off % BSIZE);
     memmove(bp->data + off % BSIZE, src, m);
     log_write(bp);
     brelse(bp);

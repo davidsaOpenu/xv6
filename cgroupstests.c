@@ -52,8 +52,8 @@ char* get_controller_name(int controller_type) {
 void set_suppress(char _suppress) { suppress = _suppress; }
 
 // Set the given string length to empty.
-static void empty_string(char* string, int length) {
-  memset(string, 0, length);
+static void empty_string(char* s, int length) {
+  memset(s, 0, length);  // NOLINT(build/include_what_you_use)
 }
 
 // Open given file.
@@ -181,8 +181,7 @@ int verify_controller_enabled(int type) {
 
   char* contents = read_file(TEST_1_CGROUP_SUBTREE_CONTROL, 0);
 
-  int i;
-  for (i = 0; contents[i] != 0 && i < sizeof(contents) - 2; i++) {
+  for (int i = 0; i < sizeof(contents) - 2 && contents[i] != 0; i++) {
     if (contents[i] == buf[0] && contents[i + 1] == buf[1] &&
         contents[i + 2] == buf[2]) {
       return 1;
@@ -1041,7 +1040,7 @@ TEST(test_release_protected_memory_after_delete_cgroup) {
     mem_str_buf = read_file(TEST_1_MEM_STAT, 0);
     kernel_total_mem = get_kernel_total_memory(mem_str_buf);
 
-    memset(buf, 12, 0);
+    memset(buf, 0, 12);
     itoa(buf, kernel_total_mem * memory_reservations[i]);
 
     // Protect portion of memory for tmpcgroup
@@ -1058,7 +1057,7 @@ TEST(test_release_protected_memory_after_delete_cgroup) {
       - +1 is used in case X is a round value (of 4k page size) so addinf PGSIZE
       won't exceed the available memory space.This is a special case where +1
       will overflow it for sure.*/
-    memset(buf, 12, 0);
+    memset(buf, 0, 12);
     itoa(buf, kernel_total_mem - (kernel_total_mem * memory_reservations[i]) +
                   PGSIZE + 1);
 
@@ -1096,12 +1095,12 @@ TEST(test_cant_move_under_mem_limit) {
   int proc_mem = getmem();
   int grow = MEM_SIZE - proc_mem;
 
-  ASSERT_FALSE((int)sbrk(grow) == -1);
+  ASSERT_NE((int)sbrk(grow), -1);
 
   // Try return the process to root cgroup this heve to faile
   ASSERT_FALSE(move_proc(ROOT_CGROUP_PROCS, getpid()));
 
-  ASSERT_FALSE((int)sbrk(-grow) == -1);
+  ASSERT_NE((int)sbrk(-grow), -1);
   ASSERT_TRUE(move_proc(ROOT_CGROUP_PROCS, getpid()));
 
   // Disable memory controllers
@@ -1478,7 +1477,7 @@ TEST(test_mem_stat) {
     // check the effect of pgmajfault
     int pgmajfault_befor = get_val(befor_all, "pgmajfault - ");
     int pgmajfault_after = get_val(effect_write_second_file, "pgmajfault - ");
-    ASSERT_TRUE(pgmajfault_after - pgmajfault_befor >= 2);
+    ASSERT_GE(pgmajfault_after - pgmajfault_befor, 2);
 
     // check the effect of pgfault
     // The second write to file c was before closing and file d was after
@@ -1500,7 +1499,7 @@ TEST(test_mem_stat) {
     int dirty_after =
         get_val(effect_write_second_file, "file_dirty - ") +
         get_val(effect_write_second_file, "file_dirty_aggregated - ");
-    ASSERT_TRUE(dirty_after - dirty_befor >= 2);
+    ASSERT_GE(dirty_after - dirty_befor, 2);
     // Wait for child to exit.
     wait(&wstatus);
     ASSERT_TRUE(wstatus);
@@ -1544,7 +1543,7 @@ TEST(test_nested_cgroups) {
      because it's not propagated from the parent cgroup */
   for (depth_cnt = 1; depth_cnt < 10; depth_cnt++) {
     /* define the min-max values for the current cgroup */
-    memset(min_val, 12, 0);
+    memset(min_val, 0, 12);
     itoa(min_val, kernel_total_mem / 10);
 
     // Protect portion of memory for the current nested cgroup
@@ -1575,11 +1574,11 @@ TEST(test_nested_cgroups) {
 
   // allocate 25% of kernel space - should fail (this should also fail for
   // lesser values)
-  memset(min_val, 12, 0);
+  memset(min_val, 0, 12);
   itoa(min_val, kernel_total_mem / 4);
   ASSERT_FALSE(write_file(temp_path_g, min_val));
 
-  memset(min_val, 12, 0);
+  memset(min_val, 0, 12);
   itoa(min_val, 0);
   current_nested_cgroup_length = strlen(current_nested_cgroup);
 

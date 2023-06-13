@@ -122,7 +122,9 @@ static inline void copy_and_move_buffer(char** buffer, char* string, int size) {
  * In addition "buffer" index is advanced by "MAX_CGROUP_FILE_NAME_LENGTH".
  */
 static inline void copy_and_move_buffer_max_len(char** buffer, char* string) {
-  strncpy(*buffer, string, strlen(string));
+  // Cpplint requires #include <string> which is not suitable here.
+  strncpy(*buffer, string,
+          strlen(string));  // NOLINT(build/include_what_you_use)
   *buffer += MAX_CGROUP_FILE_NAME_LENGTH;
 }
 
@@ -680,7 +682,7 @@ static int read_file_mem_min(struct vfs_file* f, char* addr, int n) {
 static int read_file_io_stat(struct vfs_file* f, char* addr, int n) {
   char* stattext = buf;
   char* stattextp = stattext;
-  uint stattext_size = min(n + f->off, sizeof(buf) / sizeof(char));
+  uint stattext_size = 0;
   cgroup_io_device_statistics_t* dev_stat = (void*)0;
   char rbytes_buff[8] = {0};
   char wbytes_buff[8] = {0};
@@ -690,6 +692,8 @@ static int read_file_io_stat(struct vfs_file* f, char* addr, int n) {
 
   if (f == (void*)0 || f->cgp == (void*)0)
     panic("Can't read file io stat. file structure invalid (NULL)");
+
+  stattext_size = min(n + f->off, sizeof(buf) / sizeof(char));
 
   /* set the io stats in the file structure (f->cgp should be already set with
       the io inodes, if there are any)
@@ -823,7 +827,8 @@ static int unsafe_cg_read_file(struct vfs_file* f, char* addr, int n) {
       memset(buf, '\0', MAX_DEPTH_SIZE);
       itoa(buf, f->cgp->max_depth_value);
       r = copy_buffer_up_to_end_replace_end_with_newline(
-          buf, min(sizeof(buf), n), addr);
+          buf, min(sizeof(buf), n),  // NOLINT(build/include_what_you_use)
+          addr);
       break;
 
     case CGROUP_STAT:
@@ -1061,7 +1066,8 @@ static int write_file_cpu_max(struct vfs_file* f, char* addr, int n) {
   // argument so we will use special format, this also allows to parse zeroes
   // inside a value
 
-  while (*addr && *addr != ',' && *addr != '\0' && i < sizeof(max_string)) {
+  while (*addr && *addr != ',' && *addr != '\0' &&
+         i < (sizeof(max_string) - 1)) {
     max_string[i] = *addr;
     i++;
     addr++;
@@ -1070,7 +1076,7 @@ static int write_file_cpu_max(struct vfs_file* f, char* addr, int n) {
   i = 0;
   addr++;
 
-  while (*addr && *addr != '\0' && i < sizeof(period_string)) {
+  while (*addr && *addr != '\0' && i < (sizeof(period_string) - 1)) {
     period_string[i] = *addr;
     i++;
     addr++;
@@ -1107,7 +1113,8 @@ static int write_file_pid_max(struct vfs_file* f, char* addr, int n) {
   int max = -1;
   int i = 0;
 
-  while (*addr && *addr != ',' && *addr != '\0' && i < sizeof(max_string)) {
+  while (*addr && *addr != ',' && *addr != '\0' &&
+         i < (sizeof(max_string) - 1)) {
     max_string[i] = *addr;
     i++;
     addr++;
@@ -1134,14 +1141,14 @@ static int write_file_set_cpu(struct vfs_file* f, char* addr, int n) {
   int set = -1;
   int i = 0;
 
-  while (*addr && *addr != ',' && *addr != '\0' && i < sizeof(set_string)) {
+  while (*addr && *addr != ',' && *addr != '\0' &&
+         i < (sizeof(set_string) - 1)) {
     set_string[i] = *addr;
     i++;
     addr++;
   }
   set_string[i] = '\0';
   i = 0;
-  addr++;
 
   // Update set parameter.
   set = atoi(set_string);
@@ -1162,14 +1169,14 @@ static int write_file_set_frz(struct vfs_file* f, char* addr, int n) {
   int set_freeze = -1;
   int i = 0;
 
-  while (*addr && *addr != ',' && *addr != '\0' && i < sizeof(set_string)) {
+  while (*addr && *addr != ',' && *addr != '\0' &&
+         i < (sizeof(set_string) - 1)) {
     set_string[i] = *addr;
     i++;
     addr++;
   }
   set_string[i] = '\0';
   i = 0;
-  addr++;
 
   // Update freeze parameter.
   set_freeze = atoi(set_string);
@@ -1190,7 +1197,8 @@ static int write_file_mem_max(struct vfs_file* f, char* addr, int n) {
   unsigned int max = -1;
   int i = 0;
 
-  while (*addr && *addr != ',' && *addr != '\0' && i < sizeof(max_string)) {
+  while (*addr && *addr != ',' && *addr != '\0' &&
+         i < (sizeof(max_string) - 1)) {
     max_string[i] = *addr;
     i++;
     addr++;
@@ -1217,7 +1225,8 @@ static int write_file_mem_min(struct vfs_file* f, char* addr, int n) {
   unsigned int min = -1;
   int i = 0;
 
-  while (*addr && *addr != ',' && *addr != '\0' && i < sizeof(min_string)) {
+  while (*addr && *addr != ',' && *addr != '\0' &&
+         i < (sizeof(min_string) - 1)) {
     min_string[i] = *addr;
     i++;
     addr++;
