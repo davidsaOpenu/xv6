@@ -1,4 +1,4 @@
-#include "user.h"
+#include "user.h"  // NOLINT(build/include)
 
 int main(int argc, const char* const argv[]) {
   const char usage[] =
