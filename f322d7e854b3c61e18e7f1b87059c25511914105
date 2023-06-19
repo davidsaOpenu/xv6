@@ -1,0 +1,211 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a54f5b05_88d70d9b",
+        "filename": ".gitignore",
+        "patchSetId": 4
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-06-19T15:01:21Z",
+      "side": 1,
+      "message": "leftover from the merge conflict",
+      "range": {
+        "startLine": 22,
+        "startChar": 0,
+        "endLine": 27,
+        "endChar": 26
+      },
+      "revId": "f322d7e854b3c61e18e7f1b87059c25511914105",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2dcb93e9_6ce23f28",
+        "filename": "cgfs.c",
+        "patchSetId": 4
+      },
+      "lineNbr": 1114,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-06-19T15:01:21Z",
+      "side": 1,
+      "message": "if we have  \"i \u003c (sizeof(max_string)\" why to make it less one more time?",
+      "range": {
+        "startLine": 1114,
+        "startChar": 8,
+        "endLine": 1114,
+        "endChar": 36
+      },
+      "revId": "f322d7e854b3c61e18e7f1b87059c25511914105",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "81519df3_67789ca8",
+        "filename": "mkfs.c",
+        "patchSetId": 4
+      },
+      "lineNbr": 245,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-06-19T15:01:21Z",
+      "side": 1,
+      "message": "it does support",
+      "range": {
+        "startLine": 245,
+        "startChar": 2,
+        "endLine": 245,
+        "endChar": 31
+      },
+      "revId": "f322d7e854b3c61e18e7f1b87059c25511914105",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9a19c592_351c6f72",
+        "filename": "run-ci.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-06-19T15:01:21Z",
+      "side": 1,
+      "message": "lets revert back to \"set -euo\"",
+      "range": {
+        "startLine": 4,
+        "startChar": 0,
+        "endLine": 5,
+        "endChar": 26
+      },
+      "revId": "f322d7e854b3c61e18e7f1b87059c25511914105",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ecf18021_636cf475",
+        "filename": "run-ci.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-06-19T15:01:21Z",
+      "side": 1,
+      "message": "lets remove this one as well",
+      "range": {
+        "startLine": 33,
+        "startChar": 0,
+        "endLine": 37,
+        "endChar": 2
+      },
+      "revId": "f322d7e854b3c61e18e7f1b87059c25511914105",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ada1dcb3_386663ce",
+        "filename": "run-ci.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-06-19T15:01:21Z",
+      "side": 1,
+      "message": "let\u0027s remove those as well",
+      "range": {
+        "startLine": 42,
+        "startChar": 41,
+        "endLine": 49,
+        "endChar": 2
+      },
+      "revId": "f322d7e854b3c61e18e7f1b87059c25511914105",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2e956809_aefb5df0",
+        "filename": "run-ci.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-06-19T15:01:21Z",
+      "side": 1,
+      "message": "what is the reason for this?",
+      "range": {
+        "startLine": 56,
+        "startChar": 51,
+        "endLine": 56,
+        "endChar": 73
+      },
+      "revId": "f322d7e854b3c61e18e7f1b87059c25511914105",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4429c58a_25b47ecd",
+        "filename": "run-ci.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-06-19T15:01:21Z",
+      "side": 1,
+      "message": "what is the reason for this?",
+      "range": {
+        "startLine": 56,
+        "startChar": 19,
+        "endLine": 56,
+        "endChar": 50
+      },
+      "revId": "f322d7e854b3c61e18e7f1b87059c25511914105",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "16c8a143_1709e44f",
+        "filename": "run-ci.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-06-19T15:01:21Z",
+      "side": 1,
+      "message": "let\u0027s remove those lines as well. cppcheck plugin on Jenkins will generate html report. Alternatively, we can leave only \n\ncppcheck-htmlreport --file\u003dcppcheck.xml --report-dir\u003dcppcheck-report \\\n        --source-dir\u003d. --title\u003d\"Cppcheck Report\" \n        \ncommented out in case one want to run it locally",
+      "range": {
+        "startLine": 58,
+        "startChar": 0,
+        "endLine": 64,
+        "endChar": 2
+      },
+      "revId": "f322d7e854b3c61e18e7f1b87059c25511914105",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
