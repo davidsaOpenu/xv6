@@ -24,6 +24,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "e4555068_ef5fe056",
+        "filename": ".gitignore",
+        "patchSetId": 4
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1021013
+      },
+      "writtenOn": "2023-06-20T10:48:32Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a54f5b05_88d70d9b",
+      "range": {
+        "startLine": 22,
+        "startChar": 0,
+        "endLine": 27,
+        "endChar": 26
+      },
+      "revId": "f322d7e854b3c61e18e7f1b87059c25511914105",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "2dcb93e9_6ce23f28",
@@ -37,6 +61,30 @@
       "writtenOn": "2023-06-19T15:01:21Z",
       "side": 1,
       "message": "if we have  \"i \u003c (sizeof(max_string)\" why to make it less one more time?",
+      "range": {
+        "startLine": 1114,
+        "startChar": 8,
+        "endLine": 1114,
+        "endChar": 36
+      },
+      "revId": "f322d7e854b3c61e18e7f1b87059c25511914105",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2d910fba_7e9ec003",
+        "filename": "cgfs.c",
+        "patchSetId": 4
+      },
+      "lineNbr": 1114,
+      "author": {
+        "id": 1021013
+      },
+      "writtenOn": "2023-06-20T10:48:32Z",
+      "side": 1,
+      "message": "There is a possible bug.\n1. As you can see sizeof(max_string)\u003d32.\n2. In each while loop if i\u003c32 we increment i.\n3. In case of i\u003d31, the loop body is called then i++ and i\u003d32.\n4. Now i\u003d32.\n5. After the loop we call max_string[i]\u003dmax_string[32] but arrays start from 0 so max_string[32] is not defined and we set a value overflowing the scope of max_string.\n\nTo fix that, in each place we increment i inside a loop then using it *after* the loop, we have to loop until i\u003csizeof()-1.\n\nSame for every fix.\n\nNote that, you are right if we don\u0027t use i *after* the loop we can loop until i\u003csizeof().",
+      "parentUuid": "2dcb93e9_6ce23f28",
       "range": {
         "startLine": 1114,
         "startChar": 8,
@@ -70,6 +118,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "932f5ac7_c2fd5820",
+        "filename": "mkfs.c",
+        "patchSetId": 4
+      },
+      "lineNbr": 245,
+      "author": {
+        "id": 1021013
+      },
+      "writtenOn": "2023-06-20T10:48:32Z",
+      "side": 1,
+      "message": "Removed the comment.",
+      "parentUuid": "81519df3_67789ca8",
+      "range": {
+        "startLine": 245,
+        "startChar": 2,
+        "endLine": 245,
+        "endChar": 31
+      },
+      "revId": "f322d7e854b3c61e18e7f1b87059c25511914105",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "9a19c592_351c6f72",
@@ -83,6 +155,30 @@
       "writtenOn": "2023-06-19T15:01:21Z",
       "side": 1,
       "message": "lets revert back to \"set -euo\"",
+      "range": {
+        "startLine": 4,
+        "startChar": 0,
+        "endLine": 5,
+        "endChar": 26
+      },
+      "revId": "f322d7e854b3c61e18e7f1b87059c25511914105",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "479c4a8c_436d31ef",
+        "filename": "run-ci.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 1021013
+      },
+      "writtenOn": "2023-06-20T10:48:32Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9a19c592_351c6f72",
       "range": {
         "startLine": 4,
         "startChar": 0,
@@ -116,6 +212,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "79853e74_92f2c2f6",
+        "filename": "run-ci.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 1021013
+      },
+      "writtenOn": "2023-06-20T10:48:32Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "97cc6b3d_6888efc0",
+      "range": {
+        "startLine": 29,
+        "startChar": 9,
+        "endLine": 29,
+        "endChar": 36
+      },
+      "revId": "f322d7e854b3c61e18e7f1b87059c25511914105",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "ecf18021_636cf475",
@@ -139,6 +259,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "88d99f60_b740d821",
+        "filename": "run-ci.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 1021013
+      },
+      "writtenOn": "2023-06-20T10:48:32Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ecf18021_636cf475",
+      "range": {
+        "startLine": 33,
+        "startChar": 0,
+        "endLine": 37,
+        "endChar": 2
+      },
+      "revId": "f322d7e854b3c61e18e7f1b87059c25511914105",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "ada1dcb3_386663ce",
@@ -152,6 +296,30 @@
       "writtenOn": "2023-06-19T15:01:21Z",
       "side": 1,
       "message": "let\u0027s remove those as well",
+      "range": {
+        "startLine": 42,
+        "startChar": 41,
+        "endLine": 49,
+        "endChar": 2
+      },
+      "revId": "f322d7e854b3c61e18e7f1b87059c25511914105",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9a55a7d9_c206b55a",
+        "filename": "run-ci.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 1021013
+      },
+      "writtenOn": "2023-06-20T10:48:32Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ada1dcb3_386663ce",
       "range": {
         "startLine": 42,
         "startChar": 41,
@@ -221,6 +389,30 @@
       "writtenOn": "2023-06-19T15:01:21Z",
       "side": 1,
       "message": "let\u0027s remove those lines as well. cppcheck plugin on Jenkins will generate html report. Alternatively, we can leave only \n\ncppcheck-htmlreport --file\u003dcppcheck.xml --report-dir\u003dcppcheck-report \\\n        --source-dir\u003d. --title\u003d\"Cppcheck Report\" \n        \ncommented out in case one want to run it locally",
+      "range": {
+        "startLine": 58,
+        "startChar": 0,
+        "endLine": 64,
+        "endChar": 2
+      },
+      "revId": "f322d7e854b3c61e18e7f1b87059c25511914105",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9ff9562c_82c9b4e6",
+        "filename": "run-ci.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 1021013
+      },
+      "writtenOn": "2023-06-20T10:48:32Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "16c8a143_1709e44f",
       "range": {
         "startLine": 58,
         "startChar": 0,
