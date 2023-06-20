@@ -402,6 +402,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "89412983_d01e7fba",
+        "filename": "run-ci.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 1021013
+      },
+      "writtenOn": "2023-06-20T13:31:15Z",
+      "side": 1,
+      "message": "In mkfs.c, as in every xv6 implementation I found, they changing endianity of variables using uchar* to ushort variable and change the value byte by byte.\nCppcheck doesn\u0027t like as it is very hacky.\nI\u0027m not sure we want to change this as this implementation is widely used and changing it requires lots of tests with little value.",
+      "parentUuid": "2e956809_aefb5df0",
+      "range": {
+        "startLine": 56,
+        "startChar": 51,
+        "endLine": 56,
+        "endChar": 73
+      },
+      "revId": "f322d7e854b3c61e18e7f1b87059c25511914105",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "16c8a143_1709e44f",
         "filename": "run-ci.sh",
         "patchSetId": 4
