@@ -376,6 +376,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "fd5ca1a5_07c9ae57",
+        "filename": "run-ci.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 1021013
+      },
+      "writtenOn": "2023-06-20T13:28:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4429c58a_25b47ecd",
+      "range": {
+        "startLine": 56,
+        "startChar": 19,
+        "endLine": 56,
+        "endChar": 50
+      },
+      "revId": "f322d7e854b3c61e18e7f1b87059c25511914105",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "16c8a143_1709e44f",
