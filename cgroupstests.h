@@ -10,10 +10,16 @@ enum controller_types { CPU_CNT, PID_CNT, SET_CNT, MEM_CNT };
 #define KERNBASE \
   "2147483648"  // KERNBASE defined in memlayout.h as 0x80000000 == 2147483648
 #define MORE_THEN_KERNBASE "2147483649"
+
 // This is the minimum memory size as initialized in mein.c line 43 kinit2, from
 // 4 * 1024 * 1024 to PHYSTOP. [PHYSTOP == 0xE000000 as defined in memlayout.h],
 // 230686720 == 0xE000000 - (4 * 1024 * 1024)
-#define MEM_SIZE 230686720
+// #define MEM_SIZE 230686720
+
+// The const was calculated in an old state of the project.
+// The fix that I needed to subtract 64k bytes.
+// TODO(unknown): Calculated dynamically.
+#define MEM_SIZE 230424576
 
 #define CGROUP "cgroup"
 #define ROOT_CGROUP "/cgroup"
