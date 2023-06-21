@@ -1635,7 +1635,7 @@ int main(int argc, char* argv[]) {
   run_test(test_ensure_mem_min_is_less_then_mem_max);
   run_test(test_cant_use_protected_memory);
   run_test(test_release_protected_memory_after_delete_cgroup);
-  // run_test(test_cant_move_under_mem_limit);
+  run_test(test_cant_move_under_mem_limit);
   run_test(test_nested_cgroups);
   run_test(test_mem_limit_negative_and_over_kernelbase);
   run_test(test_cant_move_over_mem_limit);
