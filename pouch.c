@@ -273,20 +273,25 @@ static int get_connected_cname(char* cname) {
   int tty_fd;
   char tty[] = "/ttyX";
   char buf[CNTNAMESIZE] = {0};
+  bool found = false;
 
   // Not including the console tty
-  for (i = 0; i < (MAX_TTY - 1); i++) {
+  for (i = 0; i < (MAX_TTY - 1) && !found; i++) {
     tty[4] = '0' + i;
     if ((tty_fd = open(tty, O_RDWR)) < 0) {
       printf(stderr, "cannot open %s fd\n", tty);
       return -1;
     }
-    read_from_pconf(tty, buf);
+
     if (is_connected_tty(tty_fd)) {
+      read_from_pconf(tty, buf);
       strcpy(cname, buf);
+      found = true;
     }
+
     close(tty_fd);
   }
+
   if (!buf[0]) {
     return -1;
   }

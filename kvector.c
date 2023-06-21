@@ -158,6 +158,7 @@ void constructarray(char** head, char** tail, unsigned int numberofelements,
        currentpageindex++) {
     char* p = kalloc();
     if (p != 0) {
+      memset(p, 0, PGSIZE);
       switch (currentpageindex) {
         case 0: {
           setprev(p, NULL);
