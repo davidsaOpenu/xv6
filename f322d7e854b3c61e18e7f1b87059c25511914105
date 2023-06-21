@@ -95,6 +95,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "e8f7df77_4f9df72d",
+        "filename": "cgfs.c",
+        "patchSetId": 4
+      },
+      "lineNbr": 1114,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-06-21T07:44:24Z",
+      "side": 1,
+      "message": "thanks. Missed max_string[i] \u003d \u0027\\0\u0027; outside of the loop",
+      "parentUuid": "2d910fba_7e9ec003",
+      "range": {
+        "startLine": 1114,
+        "startChar": 8,
+        "endLine": 1114,
+        "endChar": 36
+      },
+      "revId": "f322d7e854b3c61e18e7f1b87059c25511914105",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "81519df3_67789ca8",
@@ -414,6 +438,30 @@
       "side": 1,
       "message": "In mkfs.c, as in every xv6 implementation I found, they changing endianity of variables using uchar* to ushort variable and change the value byte by byte.\nCppcheck doesn\u0027t like as it is very hacky.\nI\u0027m not sure we want to change this as this implementation is widely used and changing it requires lots of tests with little value.",
       "parentUuid": "2e956809_aefb5df0",
+      "range": {
+        "startLine": 56,
+        "startChar": 51,
+        "endLine": 56,
+        "endChar": 73
+      },
+      "revId": "f322d7e854b3c61e18e7f1b87059c25511914105",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "471f6016_c3920797",
+        "filename": "run-ci.sh",
+        "patchSetId": 4
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-06-21T07:44:24Z",
+      "side": 1,
+      "message": "-1 for suppressing the check for the entire project. That means 2 options left: suppressing the working locally or rewriting 5 lines of code in a portable way.",
+      "parentUuid": "89412983_d01e7fba",
       "range": {
         "startLine": 56,
         "startChar": 51,
