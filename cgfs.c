@@ -1066,8 +1066,7 @@ static int write_file_cpu_max(struct vfs_file* f, char* addr, int n) {
   // argument so we will use special format, this also allows to parse zeroes
   // inside a value
 
-  while (*addr && *addr != ',' && *addr != '\0' &&
-         i < (sizeof(max_string) - 1)) {
+  while (*addr != ',' && *addr != '\0' && i < (sizeof(max_string) - 1)) {
     max_string[i] = *addr;
     i++;
     addr++;
@@ -1113,8 +1112,7 @@ static int write_file_pid_max(struct vfs_file* f, char* addr, int n) {
   int max = -1;
   int i = 0;
 
-  while (*addr && *addr != ',' && *addr != '\0' &&
-         i < (sizeof(max_string) - 1)) {
+  while (*addr != ',' && *addr != '\0' && i < (sizeof(max_string) - 1)) {
     max_string[i] = *addr;
     i++;
     addr++;
@@ -1141,8 +1139,7 @@ static int write_file_set_cpu(struct vfs_file* f, char* addr, int n) {
   int set = -1;
   int i = 0;
 
-  while (*addr && *addr != ',' && *addr != '\0' &&
-         i < (sizeof(set_string) - 1)) {
+  while (*addr != ',' && *addr != '\0' && i < (sizeof(set_string) - 1)) {
     set_string[i] = *addr;
     i++;
     addr++;
@@ -1169,8 +1166,7 @@ static int write_file_set_frz(struct vfs_file* f, char* addr, int n) {
   int set_freeze = -1;
   int i = 0;
 
-  while (*addr && *addr != ',' && *addr != '\0' &&
-         i < (sizeof(set_string) - 1)) {
+  while (*addr != ',' && *addr != '\0' && i < (sizeof(set_string) - 1)) {
     set_string[i] = *addr;
     i++;
     addr++;
@@ -1197,8 +1193,7 @@ static int write_file_mem_max(struct vfs_file* f, char* addr, int n) {
   unsigned int max = -1;
   int i = 0;
 
-  while (*addr && *addr != ',' && *addr != '\0' &&
-         i < (sizeof(max_string) - 1)) {
+  while (*addr != ',' && *addr != '\0' && i < (sizeof(max_string) - 1)) {
     max_string[i] = *addr;
     i++;
     addr++;
@@ -1225,8 +1220,7 @@ static int write_file_mem_min(struct vfs_file* f, char* addr, int n) {
   unsigned int min = -1;
   int i = 0;
 
-  while (*addr && *addr != ',' && *addr != '\0' &&
-         i < (sizeof(min_string) - 1)) {
+  while (*addr != ',' && *addr != '\0' && i < (sizeof(min_string) - 1)) {
     min_string[i] = *addr;
     i++;
     addr++;
