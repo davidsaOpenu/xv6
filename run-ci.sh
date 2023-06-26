@@ -1,7 +1,11 @@
 #!/bin/bash
 
 set -euo # errexit,nounset,pipefail
-if false; then
+
+VENV=/tmp/xv6-venv
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
 #########################################################################
 # clang-format
 # clang-format -style=google -dump-config > .clang-format
@@ -18,8 +22,8 @@ fi
 
 #########################################################################
 # install and run cpp style checker
-python3 -m venv ~/.venv/myenv
-. ~/.venv/myenv/bin/activate
+python3 -m venv $VENV
+. $VENV/bin/activate
 pip install cpplint
 # build/include_what_you_use relates to libc headers - see NOLINT() in files.
 # runtime/printf recommands to choose the right one out of libc s/n/printf/c.
@@ -30,31 +34,38 @@ find . -regex ".*\.[c|h]$" | xargs cpplint --filter=$FILTERS
 ########################################################################
 # install and run bashate
 pip install bashate
-find . -iname "*.sh" -exec bashate {} \; > ~/.venv/bashate-out
-cat ~/.venv/bashate-out
+find . -iname "*.sh" -exec bashate {} \; > $VENV/bashate-out
+cat $VENV/bashate-out
 
 # Grep returns 0 if the string was found and 1 otherwise.
 # ! negate the return value of grep to fail the tests if
 #  warnings/errors were found.
-! grep "warning(s) found" ~/.venv/bashate-out 1>/dev/null
-! grep "error(s) found" ~/.venv/bashate-out 1>/dev/null
+! grep "warning(s) found" $VENV/bashate-out 1>/dev/null || exit 1
+! grep "error(s) found" $VENV/bashate-out 1>/dev/null || exit 1
 
 # Check whitespaces in .sh files
 # Second grep is a cheat for the return value together with "!" for set -euo.
-! find . -type f -name "*.sh" -exec \
-    grep -nHE "[[:space:]]+$" {} \; | grep -e ".*"
+! find . -type f -name "*.sh" -exec grep -nHE "[[:space:]]+$" {} \; \
+    | grep -e ".*" || exit 1
 
 ########################################################################
+# TODO(David): Check why cppcheck plugin skips html report creation from
+#              time to time
+
 # run static analyzer
 ERROR_CODE=20
-# TODO(David): Check why cppcheck gerrit plugin doesn't create html report.
-cppcheck --error-exitcode=${ERROR_CODE} --inline-suppr \
+
+# suppress finding standard include headers, scan only custom header files.
+cppcheck --error-exitcode=${ERROR_CODE} \
+    --inline-suppr --suppress=missingIncludeSystem \
     --enable=portability,information,performance,warning --inconclusive \
-    -DSTORAGE_DEVICE_SIZE=1 --xml --xml-version=2 . 2> cppcheck.xml
+    -DSTORAGE_DEVICE_SIZE=1 --xml --xml-version=2 . 2> cppcheck.xml || \
+    { echo "${RED}Failed: please check cppcheck.xml for details.${NC}"; \
+    exit 1; }
 # Gerrit pluging creates htmlreports automatically from cppcheck.
 # cppcheck-htmlreport --file=cppcheck.xml --report-dir=cppcheck-report \
 #    --source-dir=. --title="Cppcheck Report"
-fi
+
 ########################################################################
 # compile
 make clean
