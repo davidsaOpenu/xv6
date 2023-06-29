@@ -15,8 +15,6 @@
 #define MAX_STR 64
 #define MAX_BUF 4096
 
-// TODO(unknown): refactor - move to defs.h
-#define min(x, y) (x) > (y) ? (y) : (x)
 // TODO(unknown): refactor - move to defs.h (also change the name)
 #define abs(x) (x) > 0 ? (x) : (0)
 

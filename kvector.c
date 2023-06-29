@@ -223,6 +223,9 @@ void memmove_into_vector_elements(vector dstvec, unsigned int dstelementoffset,
   }
 }
 
+/* Usually used with freevector(&vec) afterwards.
+ * Very important to not miss free if the vector is no longer needed.
+ * This comment was written as result of a bug that was hard to debug. */
 void memmove_from_vector(char* dst, vector vec, unsigned int elementoffset,
                          unsigned int elementcount) {
   int counter;

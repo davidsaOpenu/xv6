@@ -72,11 +72,14 @@ int sys_read(void) {
       return cg_read(CG_DIR, f, p, n);
     else
       return cg_read(CG_FILE, f, p, n);
+  } else if (f->type == FD_PROC) {
+    return proc_read(f, p, n);
   } else {
     vector pv;
     pv = newvector(n, 1);
     int vfs_read_result = vfs_fileread(f, n, &pv);
     memmove_from_vector(p, pv, 0, n);
+    freevector(&pv);
     return vfs_read_result;
   }
 }
@@ -114,7 +117,10 @@ int sys_fstat(void) {
 
   if (argfd(0, 0, &f) < 0 || argptr(1, (void *)&st, sizeof(*st)) < 0) return -1;
 
-  if (f->type == FD_CG) return cg_stat(f, st);
+  if (f->type == FD_CG)
+    return cg_stat(f, st);
+  else if (f->type == FD_PROC)
+    return proc_stat(f, st);
 
   return vfs_filestat(f, st);
 }
@@ -304,9 +310,8 @@ int sys_open(void) {
 
   begin_op();
 
-  fd = cg_sys_open(path, omode);
-
-  if (fd >= 0) {
+  if ((fd = cg_sys_open(path, omode)) >= 0 ||
+      (fd = proc_sys_open(path, omode)) >= 0) {
     end_op();
     return fd;
   }

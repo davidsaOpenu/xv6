@@ -12,11 +12,6 @@
 #include "stat.h"
 #include "types.h"
 
-struct mount_list {
-  struct mount mnt;
-  struct mount_list *next;
-};
-
 struct {
   struct spinlock mnt_list_lock;  // protects mnt_list
   struct mount_list mnt_list[NMOUNT];
@@ -223,23 +218,6 @@ struct mount *mntlookup(struct vfs_inode *mountpoint, struct mount *parent) {
 
   release(&myproc()->nsproxy->mount_ns->lock);
   return 0;
-}
-
-void printmounts(void) {
-  acquire(&myproc()->nsproxy->mount_ns->lock);
-
-  struct mount_list *entry = getactivemounts();
-  int i = 0;
-  cprintf("Printing mounts:\n");
-  while (entry != 0) {
-    i++;
-    cprintf("%d: Mount %x attached to %x, child of %x, with ref %d\n", i,
-            &entry->mnt, entry->mnt.mountpoint, entry->mnt.parent,
-            entry->mnt.ref);
-    entry = entry->next;
-  }
-
-  release(&myproc()->nsproxy->mount_ns->lock);
 }
 
 void umountall(struct mount_list *mounts) {

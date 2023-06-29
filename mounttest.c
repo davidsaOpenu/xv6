@@ -71,6 +71,51 @@ static int verifyfilecontents(char *path, char *contents) {
   return 0;
 }
 
+static int countlines(char *path, int *lines) {
+  int fd;
+  int res;
+  char buf[100] = {0};
+  const char *bufp;
+  int count = 0;
+
+  if ((fd = open(path, 0)) < 0) {
+    printf(1, "countlines: cannot open %s\n", path);
+    return -1;
+  }
+
+  while ((res = read(fd, buf, sizeof(buf) - 1)) > 0) {
+    bufp = (const char *)&buf;
+    while ((bufp = strchr(bufp, '\n')) != 0) {
+      count++;
+      bufp++;
+    }
+    memset(buf, 0, sizeof(buf));
+  }
+
+  close(fd);
+  *lines = count;
+
+  return 0;
+}
+
+static int verifylines(char *path, int expected) {
+  int lines = 0;
+  if (countlines(path, &lines) != 0) {
+    printf(1, "verifylines: failed to count lines of %s\n", path);
+    return -1;
+  }
+
+  if (lines != expected) {
+    printf(1,
+           "verifylines: %s - expected %d lines, "
+           "read %d lines\n",
+           path, expected, lines);
+    return -1;
+  }
+
+  return 0;
+}
+
 static int testfile(char *path) {
   if (createfile(path, "aaa") != 0) {
     return -1;
@@ -468,9 +513,46 @@ static int cdinthenouttest(void) {
   return 0;
 }
 
+static int procfiletest(char *func_name, char *path, int initial_lines_count) {
+  if (verifylines(path, initial_lines_count) != 0) {
+    printf(1, "%s: failed to verify lines for %s\n", func_name, path);
+    return 1;
+  }
+
+  if (mounta() != 0) {
+    return 1;
+  }
+
+  if (verifylines(path, initial_lines_count + 1) != 0) {
+    printf(1, "%s: failed to verify lines for %s\n", path, func_name);
+    return 1;
+  }
+
+  if (umounta() != 0) {
+    return 1;
+  }
+
+  if (verifylines(path, initial_lines_count) != 0) {
+    printf(1, "%s: failed to verify lines for %s\n", path, func_name);
+    return 1;
+  }
+
+  return 0;
+}
+
+static int procmountstest(void) {
+  return procfiletest("procmountstest", "/proc/mounts", 1);
+}
+
+static int procdevicestest(void) {
+  return procfiletest("procdevicestest", "/proc/devices", 0);
+}
+
 int main(int argc, char *argv[]) {
   printf(stderr, "Running all mounttest\n");
   run_test(mounttest, "mounttest");
+  run_test(procmountstest, "procmounttest");
+  run_test(procdevicestest, "procdevicestest");
   run_test(statroottest, "statroottest");
   run_test(invalidpathtest, "invalidpathtest");
   run_test(doublemounttest, "doublemounttest");
@@ -481,6 +563,10 @@ int main(int argc, char *argv[]) {
   run_test(devicefilestoretest, "devicefilestoretest");
   run_test(umountwithopenfiletest, "umountwithopenfiletest");
   run_test(errorondeletedevicetest, "errorondeletedevicetest");
+
+  /* Tests that might leaves open mounts - leaves for last.
+   * Other test might check how many open mounts there are
+   *  and find unexpected value. */
   run_test(namespacetest, "namespacetest");
   run_test(namespacefiletest, "namespacefiletest");
   run_test(cdinthenouttest, "cdinthenouttest");
