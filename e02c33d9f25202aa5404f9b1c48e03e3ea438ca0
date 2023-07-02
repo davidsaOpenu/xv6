@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3b00c946_8ec8d386",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-07-02T21:53:10Z",
+      "side": 1,
+      "message": "Rebase is required. \nPlease add trello card link to the commit message.",
+      "revId": "e02c33d9f25202aa5404f9b1c48e03e3ea438ca0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
