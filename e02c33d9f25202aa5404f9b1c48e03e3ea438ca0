@@ -1,6 +1,29 @@
 {
   "comments": [
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "fffa3357_ff8fb241",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-07-03T06:46:53Z",
+      "side": 1,
+      "message": "Please rebase the patch and add a link to the corresponding trello card.",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 59
+      },
+      "revId": "e02c33d9f25202aa5404f9b1c48e03e3ea438ca0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "3b00c946_8ec8d386",
