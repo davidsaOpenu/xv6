@@ -33,6 +33,23 @@
       "message": "LGTM, fire away.",
       "revId": "ee114e692fceda4b19ed20d4b27d4d7062509ce5",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "659f6c96_955bff26",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-07-03T06:16:23Z",
+      "side": 1,
+      "message": "Those changes might be obsolete. Please look at run-ci.sh and Dockerfile.",
+      "revId": "ee114e692fceda4b19ed20d4b27d4d7062509ce5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
