@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1211f9dc_052e1951",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-07-03T06:04:44Z",
+      "side": 1,
+      "message": "please leave only one change-id at the last line of the commit message.\nRebase the patch and add a link to the corresponding trello card.",
+      "range": {
+        "startLine": 10,
+        "startChar": 0,
+        "endLine": 20,
+        "endChar": 52
+      },
+      "revId": "9c5ce6e43d114143cf68ff0a4724311400235790",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
