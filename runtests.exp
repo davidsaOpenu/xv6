@@ -411,6 +411,7 @@ proc cgroup_io_states_test {} {
     }
 
     send "echo 12345678901234567890\n"
+    sleep 1
     send "cat /cgroup/temp/io.stat\n"
     expect {
         "1:1 rbytes=76 wbytes=64 rios=76 wios=7"
