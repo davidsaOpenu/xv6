@@ -76,6 +76,9 @@ USER $USERNAME
 # Set the working directory inside the container
 WORKDIR /home/$USERNAME/xv6
 
+#make $(USER) own the working directory (so there won't be any collisions with git)
+RUN chown -R $USERNAME:$USERNAME /home/$USERNAME/xv6
+
 # Set the default command to start the container
 CMD ["/bin/bash"]
 
