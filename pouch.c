@@ -2,6 +2,7 @@
 
 #include "fcntl.h"
 #include "ns_types.h"
+#include "mutex.h"
 #include "param.h"
 #include "stat.h"
 #include "types.h"
@@ -341,13 +342,22 @@ static int write_to_cconf(char* container_name, char* tty_name, int pid) {
 }
 
 static int pouch_fork(char* container_name) {
-  int tty_fd;
+  int tty_fd = -1;
   int pid = -1;
   int pid2 = -1;
   char tty_name[10];
   char cg_cname[256];
   int daemonize = 1;
-
+  mutex_t parent_mutex;
+   
+  //initialize the mutex for the parent (it will release the lock only when its done)
+  if(MUTEX_SUCCESS != mutex_init(&parent_mutex))
+  {
+    printf(1, "Pouch: failed to create synchronization for container\n");
+    exit(1);
+  }
+  mutex_lock(&parent_mutex);
+    
   // Find tty name
   if (find_tty(tty_name) < 0) {
     printf(1, "Pouch: cannot create more containers\n");
@@ -374,7 +384,7 @@ static int pouch_fork(char* container_name) {
     return -1;
   }
 
-  // Parent process forking child process
+  // if daemonize=1, daemonize the container process (so it won't be realted to the sh process)
   if (!daemonize || (daemonize && (pid2 = fork()) == 0)) {
     // Set up pid namespace before fork
     if (unshare(PID_NS) != 0) {
@@ -382,32 +392,31 @@ static int pouch_fork(char* container_name) {
       return -1;
     }
 
+    // create the container with new PID namespace
     pid = fork();
-    if (pid == -1) {
-      panic("fork");
+    if(pid == -1)
+    {
+        panic("fork");
     }
-
-    if (pid == 0) {
-      if (tty_fd != -1) {
-        // attach stderr stdin stdout
-        if (attach_tty(tty_fd) < 0) {
-          printf(stderr, "attach failed");
-          exit(1);
+    if(pid == 0)
+    {
+        //wait till the parent process finishes and releases the lock
+        mutex_lock(&parent_mutex);
+        //attach stderr stdin stdout
+        if(attach_tty(tty_fd) < 0){
+            printf(stderr,"attach failed - error in connecting to tty: %d\n", tty_fd);
+            exit(1);
         }
-
-        // "Child process - setting up namespaces for the container
+        //"Child process - setting up namespaces for the container
         // Set up mount namespace.
-        if (unshare(MOUNT_NS) < 0) {
-          printf(1, "Cannot create mount namespace\n");
-          exit(1);
+        if(unshare(MOUNT_NS) < 0) {
+            printf(1, "Cannot create mount namespace\n");
+            exit(1);
         }
-
-        printf(stderr, "Entering container\n");
+        printf(stderr,"Entering container\n");
         exec("sh", argv);
-      } else {
-        printf(stderr, "Error connecting tty\n");
-      }
-    } else {
+    }
+    else {
       // "Parent process - waiting for child
 
       // Move the current process to "/cgroup/<cname>" cgroup.
@@ -418,7 +427,12 @@ static int pouch_fork(char* container_name) {
       if (write(cgroup_procs_fd, cur_pid_buf, sizeof(cur_pid_buf)) < 0)
         return -1;
       if (close(cgroup_procs_fd) < 0) return -1;
-      if (write_to_cconf(container_name, tty_name, pid) >= 0) wait(0);
+      if (write_to_cconf(container_name, tty_name, pid) >= 0)
+      {
+        //let the child process run
+        mutex_unlock(&parent_mutex);
+        wait(0);
+      }
 
       exit(0);
     }
