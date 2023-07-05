@@ -1,0 +1,588 @@
+[1mdiff --git a/Dockerfile b/Dockerfile[m
+[1mindex 58b73ba..65e815b 100644[m
+[1m--- a/Dockerfile[m
+[1m+++ b/Dockerfile[m
+[36m@@ -76,6 +76,9 @@[m [mUSER $USERNAME[m
+ # Set the working directory inside the container[m
+ WORKDIR /home/$USERNAME/xv6[m
+ [m
+[32m+[m[32m#make $(USER) own the working directory (so there won't be any collisions with git)[m
+[32m+[m[32mRUN chown -R $USERNAME:$USERNAME /home/$USERNAME/xv6[m
+[32m+[m
+ # Set the default command to start the container[m
+ CMD ["/bin/bash"][m
+ [m
+[1mdiff --git a/cgroup.c b/cgroup.c[m
+[1mindex d4178d4..71ed820 100644[m
+[1m--- a/cgroup.c[m
+[1m+++ b/cgroup.c[m
+[36m@@ -317,11 +317,10 @@[m [mvoid cgroup_initialize(struct cgroup* cgroup, char* path,[m
+ [m
+   // By default a group has limit of KERNBASE memory, if parent set[m
+   // its max value to something else, we pass it accordingly[m
+[31m-  if(parent_cgroup == 0)[m
+[31m-      set_max_mem(cgroup, KERNBASE);[m
+[31m-  else[m
+[31m-  {[m
+[31m-      set_max_mem(cgroup, parent_cgroup->max_mem);[m
+[32m+[m[32m  if (parent_cgroup == 0)[m
+[32m+[m[32m    set_max_mem(cgroup, KERNBASE);[m
+[32m+[m[32m  else {[m
+[32m+[m[32m    set_max_mem(cgroup, parent_cgroup->max_mem);[m
+   }[m
+ [m
+   // By default a group has minimum 0 memory.[m
+[1mdiff --git a/cgroupstests.c b/cgroupstests.c[m
+[1mindex 2094cbc..8eaa0a9 100644[m
+[1m--- a/cgroupstests.c[m
+[1m+++ b/cgroupstests.c[m
+[36m@@ -223,22 +223,18 @@[m [mint move_proc(const char* file, int pid) {[m
+ }[m
+ [m
+ /* Returns buffer of pids (integers) the last entry will be null */[m
+[31m-int * get_cgroup_pids(const char * cgroup_proc_file)[m
+[31m-{[m
+[31m-  int * pids = 0;[m
+[31m-  char * pids_buffer;[m
+[32m+[m[32mint* get_cgroup_pids(const char* cgroup_proc_file) {[m
+[32m+[m[32m  int* pids = 0;[m
+[32m+[m[32m  char* pids_buffer;[m
+   int i = 0;[m
+   pids_buffer = read_file(cgroup_proc_file, 0);[m
+[31m-  if(!pids_buffer)[m
+[31m-    return (int *)0;[m
+[32m+[m[32m  if (!pids_buffer) return (int*)0;[m
+   pids = malloc(strlen(pids_buffer) + 4);[m
+[31m-  if(pids == 0)[m
+[31m-    return pids;[m
+[31m-  while(*pids_buffer != 0)[m
+[31m-  {[m
+[32m+[m[32m  if (pids == 0) return pids;[m
+[32m+[m[32m  while (*pids_buffer != 0) {[m
+     pids[i] = atoi(pids_buffer);[m
+     pids_buffer += 3;[m
+[31m-    i ++;[m
+[32m+[m[32m    i++;[m
+   }[m
+   pids[i] = 0;[m
+   return pids;[m
+[36m@@ -1627,55 +1623,50 @@[m [mTEST(test_nested_cgroups) {[m
+   }[m
+ }[m
+ [m
+[31m-int create_and_move_proc(char * cgroup_path, int mem_allocation)[m
+[31m-{[m
+[32m+[m[32mint create_and_move_proc(char* cgroup_path, int mem_allocation) {[m
+   int new_proc_pid = fork();[m
+ [m
+[31m-    if(new_proc_pid == 0)[m
+[31m-    {[m
+[31m-      //allocate memory to the process[m
+[31m-      if(mem_allocation > 0)[m
+[31m-      {[m
+[31m-        malloc(mem_allocation);[m
+[31m-      }[m
+[31m-[m
+[31m-      //sleep for enough time so the test will finish (2 seconds is a reasonable time)[m
+[31m-      usleep(2 * 1000 * 1000);[m
+[31m-      exit(0);[m
+[32m+[m[32m  if (new_proc_pid == 0) {[m
+[32m+[m[32m    // allocate memory to the process[m
+[32m+[m[32m    if (mem_allocation > 0) {[m
+[32m+[m[32m      malloc(mem_allocation);[m
+     }[m
+ [m
+[31m-    // move process to the current neset cgroup[m
+[31m-    memset(temp_path_g, 0 , MAX_PATH_LENGTH);[m
+[31m-    strcpy(temp_path_g, cgroup_path);[m
+[31m-    strcat(temp_path_g, TEST_NESTED_PROCS);[m
+[32m+[m[32m    // sleep for enough time so the test will finish (2 seconds is a reasonable[m
+[32m+[m[32m    // time)[m
+[32m+[m[32m    usleep(2 * 1000 * 1000);[m
+[32m+[m[32m    exit(0);[m
+[32m+[m[32m  }[m
+ [m
+[31m-    if(move_proc(temp_path_g, new_proc_pid) <= 0)[m
+[31m-    {[m
+[31m-      return 0;[m
+[31m-    }[m
+[32m+[m[32m  // move process to the current neset cgroup[m
+[32m+[m[32m  memset(temp_path_g, 0, MAX_PATH_LENGTH);[m
+[32m+[m[32m  strcpy(temp_path_g, cgroup_path);[m
+[32m+[m[32m  strcat(temp_path_g, TEST_NESTED_PROCS);[m
+ [m
+[31m-    if(is_pid_in_group(temp_path_g, new_proc_pid) == 0)[m
+[31m-    {[m
+[31m-      return 0;[m
+[31m-    }[m
+[32m+[m[32m  if (move_proc(temp_path_g, new_proc_pid) <= 0) {[m
+[32m+[m[32m    return 0;[m
+[32m+[m[32m  }[m
+ [m
+[31m-    return new_proc_pid;[m
+[32m+[m[32m  if (is_pid_in_group(temp_path_g, new_proc_pid) == 0) {[m
+[32m+[m[32m    return 0;[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  return new_proc_pid;[m
+ }[m
+ [m
+[31m-int reset_nested_memory_controllers(char * top_nested_cgroup_path , int nesting_level)[m
+[31m-{[m
+[32m+[m[32mint reset_nested_memory_controllers(char* top_nested_cgroup_path,[m
+[32m+[m[32m                                    int nesting_level) {[m
+   uint top_nested_cgroup_path_length = 0;[m
+   int depth_cnt = 0;[m
+   char min_value[2] = {'0', 0};[m
+[31m-  int * nested_cgroup_procs_pids;[m
+[32m+[m[32m  int* nested_cgroup_procs_pids;[m
+   int i = 0;[m
+ [m
+   top_nested_cgroup_path_length = strlen(top_nested_cgroup_path);[m
+ [m
+   /* disable memory controllers, set min back to 0 and delete cgroups[m
+     Here we do it backwards - reversed tro the last loop */[m
+[31m-  for(depth_cnt = 0; depth_cnt < nesting_level; depth_cnt++)[m
+[31m-  {[m
+[32m+[m[32m  for (depth_cnt = 0; depth_cnt < nesting_level; depth_cnt++) {[m
+     // set min value to 0 (just in case)[m
+     memset(temp_path_g, 0, MAX_PATH_LENGTH);[m
+     strcpy(temp_path_g, top_nested_cgroup_path);[m
+[36m@@ -1694,12 +1685,10 @@[m [mint reset_nested_memory_controllers(char * top_nested_cgroup_path , int nesting_[m
+     strcat(temp_path_g, TEST_NESTED_PROCS);[m
+ [m
+     nested_cgroup_procs_pids = get_cgroup_pids(temp_path_g);[m
+[31m-    if(nested_cgroup_procs_pids != 0)[m
+[31m-    {[m
+[31m-      while(nested_cgroup_procs_pids[i] != 0)[m
+[31m-      {[m
+[32m+[m[32m    if (nested_cgroup_procs_pids != 0) {[m
+[32m+[m[32m      while (nested_cgroup_procs_pids[i] != 0) {[m
+         kill(nested_cgroup_procs_pids[i]);[m
+[31m-        //wait for the child process to exit so it won't be zombie[m
+[32m+[m[32m        // wait for the child process to exit so it won't be zombie[m
+         wait(0);[m
+         i++;[m
+       }[m
+[36m@@ -1707,9 +1696,8 @@[m [mint reset_nested_memory_controllers(char * top_nested_cgroup_path , int nesting_[m
+       free(nested_cgroup_procs_pids);[m
+     }[m
+ [m
+[31m-    //delete nested cgroup[m
+[31m-    if(unlink(top_nested_cgroup_path) < 0)[m
+[31m-    {[m
+[32m+[m[32m    // delete nested cgroup[m
+[32m+[m[32m    if (unlink(top_nested_cgroup_path) < 0) {[m
+       return 0;[m
+     }[m
+     top_nested_cgroup_path_length -= sizeof(TESTED_NESTED_CGROUP_CHILD);[m
+[36m@@ -1719,59 +1707,60 @@[m [mint reset_nested_memory_controllers(char * top_nested_cgroup_path , int nesting_[m
+   return 1;[m
+ }[m
+ [m
+[31m-[m
+ /* ##################################################################[m
+ Scenario 1 - allocate 10 nested cgroups, set min value to 10% of total[m
+ kernel's memory and create process in each. Make sure that we can't[m
+ allocate more memory than available on each nesting level.[m
+ ####################################################################*/[m
+[31m-void nested_cgroup_mem_recalc_scenario1(int kernel_total_mem, char * min_value)[m
+[31m-{[m
+[32m+[m[32mvoid nested_cgroup_mem_recalc_scenario1(int kernel_total_mem, char* min_value) {[m
+   int depth_cnt = 0;[m
+   int current_nesting_index = '0';[m
+   char current_nested_cgroup[MAX_PATH_LENGTH] = {0};[m
+   // maximum available memory to allocate[m
+   char exceeding_mem_value[12] = {0};[m
+[31m-  char * name = "nested_cgroup_mem_recalc_scenario1";[m
+[32m+[m[32m  char* name = "nested_cgroup_mem_recalc_scenario1";[m
+ [m
+[31m-  //initialize the nested cgroup path[m
+[32m+[m[32m  // initialize the nested cgroup path[m
+   strcpy(current_nested_cgroup, ROOT_CGROUP);[m
+ [m
+[31m-  for(depth_cnt = 0; depth_cnt < 10; depth_cnt++)[m
+[31m-  {[m
+[32m+[m[32m  for (depth_cnt = 0; depth_cnt < 10; depth_cnt++) {[m
+     /* Create the root nested cgroup and enable the memory controller*/[m
+     strcat(current_nested_cgroup, TESTED_NESTED_CGROUP_CHILD);[m
+[31m-    current_nested_cgroup[strlen(current_nested_cgroup)] = current_nesting_index;[m
+[32m+[m[32m    current_nested_cgroup[strlen(current_nested_cgroup)] =[m
+[32m+[m[32m        current_nesting_index;[m
+     ASSERT_FALSE(mkdir(current_nested_cgroup));[m
+     strcpy(temp_path_g, current_nested_cgroup);[m
+     strcat(temp_path_g, TEST_NESTED_SUBTREE_CONTROL);[m
+     ASSERT_TRUE(write_file(temp_path_g, "+mem"));[m
+ [m
+[31m-    //Protect portion of memory for the current nested cgroup[m
+[32m+[m[32m    // Protect portion of memory for the current nested cgroup[m
+     memset(temp_path_g, 0, MAX_PATH_LENGTH);[m
+     strcpy(temp_path_g, current_nested_cgroup);[m
+     strcat(temp_path_g, TEST_NESTED_MEM_MIN);[m
+     printf(1, "temp_path_g nested cgroup min path: %s\n", temp_path_g);[m
+ [m
+[31m-    /* first, try to allocate the free memory in the kernel + 1 PAGE. This should fail */[m
+[31m-    itoa(exceeding_mem_value, atoi(min_value) * (NESTED_CGROUPS_LEVEL + 1 - depth_cnt) +  PGSIZE);[m
+[32m+[m[32m    /* first, try to allocate the free memory in the kernel + 1 PAGE. This[m
+[32m+[m[32m     * should fail */[m
+[32m+[m[32m    itoa(exceeding_mem_value,[m
+[32m+[m[32m         atoi(min_value) * (NESTED_CGROUPS_LEVEL + 1 - depth_cnt) + PGSIZE);[m
+     ASSERT_FALSE(write_file(temp_path_g, exceeding_mem_value));[m
+ [m
+     /* set the min value to the cgroup */[m
+     ASSERT_TRUE(write_file(temp_path_g, min_value));[m
+[31m-    //read_file(temp_path_g, 1);[m
+[32m+[m[32m    // read_file(temp_path_g, 1);[m
+ [m
+[31m-    //create process to the the cgroup[m
+[32m+[m[32m    // create process to the the cgroup[m
+     ASSERT_TRUE(create_and_move_proc(current_nested_cgroup, 0));[m
+ [m
+     current_nesting_index++;[m
+   }[m
+ [m
+[31m-  //current_nested_cgroup should be the path to the top (last) created nested cgroup[m
+[31m-  ASSERT_TRUE(reset_nested_memory_controllers(current_nested_cgroup, NESTED_CGROUPS_LEVEL));[m
+[32m+[m[32m  // current_nested_cgroup should be the path to the top (last) created nested[m
+[32m+[m[32m  // cgroup[m
+[32m+[m[32m  ASSERT_TRUE(reset_nested_memory_controllers(current_nested_cgroup,[m
+[32m+[m[32m                                              NESTED_CGROUPS_LEVEL));[m
+ }[m
+ [m
+[31m-[m
+ /* ##################################################################[m
+ Scenario 2 - allocate 10 nested cgroups, set min value from the top[m
+ nested cgroup through the bottom (root cgroup) and create process in[m
+[36m@@ -1779,24 +1768,23 @@[m [meach layer.[m
+ On each layer, make sure that we can't allocate more than available[m
+ memory (after the cgroup in the layer above set min value).[m
+ ####################################################################*/[m
+[31m-void nested_cgroup_mem_recalc_scenario2(int kernel_total_mem, char * min_value)[m
+[31m-{[m
+[32m+[m[32mvoid nested_cgroup_mem_recalc_scenario2(int kernel_total_mem, char* min_value) {[m
+   int depth_cnt = 0;[m
+   int current_nesting_index = '0';[m
+   char current_nested_cgroup[MAX_PATH_LENGTH] = {0};[m
+   char descending_nested_cgroup_path[MAX_PATH_LENGTH] = {0};[m
+   char exceeding_memory_value[12] = {0};[m
+[31m-  char * name = "nested_cgroup_mem_recalc_scenario2";[m
+[32m+[m[32m  char* name = "nested_cgroup_mem_recalc_scenario2";[m
+   int current_path_length = 0;[m
+ [m
+[31m-  //initialize the nested cgroup path[m
+[32m+[m[32m  // initialize the nested cgroup path[m
+   strcpy(current_nested_cgroup, ROOT_CGROUP);[m
+[31m-  [m
+[31m-  for(depth_cnt = 0; depth_cnt < 10; depth_cnt++)[m
+[31m-  {[m
+[32m+[m
+[32m+[m[32m  for (depth_cnt = 0; depth_cnt < 10; depth_cnt++) {[m
+     /* Create the nested cgroup and enable the memory controller*/[m
+     strcat(current_nested_cgroup, TESTED_NESTED_CGROUP_CHILD);[m
+[31m-    current_nested_cgroup[strlen(current_nested_cgroup)] = current_nesting_index;[m
+[32m+[m[32m    current_nested_cgroup[strlen(current_nested_cgroup)] =[m
+[32m+[m[32m        current_nesting_index;[m
+     ASSERT_FALSE(mkdir(current_nested_cgroup));[m
+     strcpy(temp_path_g, current_nested_cgroup);[m
+ [m
+[36m@@ -1812,14 +1800,14 @@[m [mvoid nested_cgroup_mem_recalc_scenario2(int kernel_total_mem, char * min_value)[m
+   current_path_length = strlen(descending_nested_cgroup_path);[m
+ [m
+   /* Try the allocations tests on the created cgroups*/[m
+[31m-  for(depth_cnt = 10; depth_cnt > 0; depth_cnt--)[m
+[31m-  {[m
+[32m+[m[32m  for (depth_cnt = 10; depth_cnt > 0; depth_cnt--) {[m
+     memset(temp_path_g, 0, MAX_PATH_LENGTH);[m
+     strcpy(temp_path_g, descending_nested_cgroup_path);[m
+     strcat(temp_path_g, TEST_NESTED_MEM_MIN);[m
+     printf(1, "temp_path_g nested cgroup min path: %s\n", temp_path_g);[m
+ [m
+[31m-    /* first, try to allocate the free memory in the kernel + 1 PAGE. This should fail */[m
+[32m+[m[32m    /* first, try to allocate the free memory in the kernel + 1 PAGE. This[m
+[32m+[m[32m     * should fail */[m
+     itoa(exceeding_memory_value, atoi(min_value) * (depth_cnt + 1) + PGSIZE);[m
+     ASSERT_FALSE(write_file(temp_path_g, exceeding_memory_value))[m
+ [m
+[36m@@ -1830,22 +1818,22 @@[m [mvoid nested_cgroup_mem_recalc_scenario2(int kernel_total_mem, char * min_value)[m
+     descending_nested_cgroup_path[current_path_length] = 0;[m
+   }[m
+ [m
+[31m-  //current_nested_cgroup should be the path to the top (last) created nested cgroup[m
+[31m-  ASSERT_TRUE(reset_nested_memory_controllers(current_nested_cgroup, NESTED_CGROUPS_LEVEL));[m
+[32m+[m[32m  // current_nested_cgroup should be the path to the top (last) created nested[m
+[32m+[m[32m  // cgroup[m
+[32m+[m[32m  ASSERT_TRUE(reset_nested_memory_controllers(current_nested_cgroup,[m
+[32m+[m[32m                                              NESTED_CGROUPS_LEVEL));[m
+ }[m
+ [m
+[31m-[m
+ /* ##################################################################[m
+ Scenario 3 - set maximum memory threshold on the root cgroup.[m
+ Then, we create a nested cgroup and try to allocate above the threshold.[m
+ ####################################################################*/[m
+[31m-void nested_cgroup_mem_recalc_scenario3(int kernel_total_memory)[m
+[31m-{[m
+[32m+[m[32mvoid nested_cgroup_mem_recalc_scenario3(int kernel_total_memory) {[m
+   char current_nested_cgroup[MAX_PATH_LENGTH] = {0};[m
+   char max_mem_threshold[12] = {0};[m
+[31m-  char * name = "nested_cgroup_mem_recalc_scenario3";[m
+[32m+[m[32m  char* name = "nested_cgroup_mem_recalc_scenario3";[m
+ [m
+[31m-  //initialize the nested cgroup path and enable memory controller[m
+[32m+[m[32m  // initialize the nested cgroup path and enable memory controller[m
+   strcpy(current_nested_cgroup, ROOT_CGROUP);[m
+ [m
+   // create nested cgroup and set the maximum threshold[m
+[36m@@ -1877,35 +1865,32 @@[m [mvoid nested_cgroup_mem_recalc_scenario3(int kernel_total_memory)[m
+   memset(temp_path_g, 0, MAX_PATH_LENGTH);[m
+   strcpy(temp_path_g, current_nested_cgroup);[m
+   strcat(temp_path_g, TEST_NESTED_MEM_MIN);[m
+[31m-  memset(max_mem_threshold, 0 , sizeof(max_mem_threshold));[m
+[32m+[m[32m  memset(max_mem_threshold, 0, sizeof(max_mem_threshold));[m
+   itoa(max_mem_threshold, (kernel_total_memory / 2) + PGSIZE);[m
+ [m
+   ASSERT_FALSE(write_file(temp_path_g, max_mem_threshold));[m
+ [m
+   // make sure we still can allocate below the threshold[m
+[31m-  memset(max_mem_threshold, 0 , sizeof(max_mem_threshold));[m
+[32m+[m[32m  memset(max_mem_threshold, 0, sizeof(max_mem_threshold));[m
+   itoa(max_mem_threshold, (kernel_total_memory / 2) - PGSIZE);[m
+   ASSERT_TRUE(write_file(temp_path_g, max_mem_threshold));[m
+ [m
+   ASSERT_TRUE(reset_nested_memory_controllers(current_nested_cgroup, 2));[m
+ }[m
+ [m
+[31m-[m
+[31m-[m
+ /* ##################################################################[m
+ Scenario 4 - Move process from nested cgroup to its parent and[m
+ back. The parent and the child cgroup should set their maximum[m
+ memory to PGSIZE (4096 bytes).[m
+ ####################################################################*/[m
+[31m-void nested_cgroup_mem_recalc_scenario4(int kernel_total_memory)[m
+[31m-{[m
+[32m+[m[32mvoid nested_cgroup_mem_recalc_scenario4(int kernel_total_memory) {[m
+   char parent_nested_cgroup[MAX_PATH_LENGTH] = {0};[m
+   char child_nested_cgroup[MAX_PATH_LENGTH] = {0};[m
+   char max_mem_threshold[12] = {0};[m
+[31m-  char * name = "nested_cgroup_mem_recalc_scenario4";[m
+[32m+[m[32m  char* name = "nested_cgroup_mem_recalc_scenario4";[m
+   int pid = -1;[m
+ [m
+[31m-  //initialize the nested cgroup path and enable memory controller[m
+[32m+[m[32m  // initialize the nested cgroup path and enable memory controller[m
+   strcpy(parent_nested_cgroup, ROOT_CGROUP);[m
+ [m
+   // create nested cgroup and set the maximum threshold[m
+[36m@@ -1925,11 +1910,11 @@[m [mvoid nested_cgroup_mem_recalc_scenario4(int kernel_total_memory)[m
+   ASSERT_TRUE(write_file(temp_path_g, max_mem_threshold));[m
+   read_file(temp_path_g, 1);[m
+ [m
+[31m-  //create the process with PGSIZE bytes allocation[m
+[31m-  // This should fail the process memory is much bigger[m
+[32m+[m[32m  // create the process with PGSIZE bytes allocation[m
+[32m+[m[32m  //  This should fail the process memory is much bigger[m
+   ASSERT_TRUE(pid = create_and_move_proc(parent_nested_cgroup, PGSIZE));[m
+ [m
+[31m-  //create the nested cgroup (its max value should be as its parent max value)[m
+[32m+[m[32m  // create the nested cgroup (its max value should be as its parent max value)[m
+   strcpy(child_nested_cgroup, parent_nested_cgroup);[m
+   strcat(child_nested_cgroup, TESTED_NESTED_CGROUP_CHILD);[m
+   child_nested_cgroup[strlen(child_nested_cgroup)] = '1';[m
+[36m@@ -1940,14 +1925,14 @@[m [mvoid nested_cgroup_mem_recalc_scenario4(int kernel_total_memory)[m
+   ASSERT_TRUE(write_file(temp_path_g, "+mem"));[m
+ [m
+   // move the process to the child cgroup[m
+[31m-  memset(temp_path_g, 0 , MAX_PATH_LENGTH);[m
+[32m+[m[32m  memset(temp_path_g, 0, MAX_PATH_LENGTH);[m
+   strcpy(temp_path_g, child_nested_cgroup);[m
+   strcat(temp_path_g, TEST_NESTED_PROCS);[m
+   ASSERT_TRUE(move_proc(temp_path_g, pid));[m
+   // make sure process not in parent[m
+   ASSERT_TRUE(is_pid_in_group(temp_path_g, pid));[m
+ [m
+[31m-  memset(temp_path_g, 0 , MAX_PATH_LENGTH);[m
+[32m+[m[32m  memset(temp_path_g, 0, MAX_PATH_LENGTH);[m
+   strcpy(temp_path_g, parent_nested_cgroup);[m
+   strcat(temp_path_g, TEST_NESTED_PROCS);[m
+   ASSERT_FALSE(is_pid_in_group(temp_path_g, pid));[m
+[36m@@ -1955,12 +1940,12 @@[m [mvoid nested_cgroup_mem_recalc_scenario4(int kernel_total_memory)[m
+   // move proces back to parent[m
+   ASSERT_TRUE(move_proc(temp_path_g, pid));[m
+   ASSERT_TRUE(is_pid_in_group(temp_path_g, pid));[m
+[31m-  memset(temp_path_g, 0 , MAX_PATH_LENGTH);[m
+[32m+[m[32m  memset(temp_path_g, 0, MAX_PATH_LENGTH);[m
+   strcpy(temp_path_g, child_nested_cgroup);[m
+   strcat(temp_path_g, TEST_NESTED_PROCS);[m
+   ASSERT_FALSE(is_pid_in_group(child_nested_cgroup, pid));[m
+ [m
+[31m-  //set max memory of child to only 10*PGSIZE bytes[m
+[32m+[m[32m  // set max memory of child to only 10*PGSIZE bytes[m
+   memset(temp_path_g, 0, MAX_PATH_LENGTH);[m
+   strcpy(temp_path_g, child_nested_cgroup);[m
+   strcat(temp_path_g, TEST_NESTED_MEM_MAX);[m
+[36m@@ -1969,8 +1954,8 @@[m [mvoid nested_cgroup_mem_recalc_scenario4(int kernel_total_memory)[m
+   ASSERT_TRUE(write_file(temp_path_g, max_mem_threshold));[m
+   read_file(temp_path_g, 1);[m
+ [m
+[31m-  //move process to child again (this should fail)[m
+[31m-  memset(temp_path_g, 0 , MAX_PATH_LENGTH);[m
+[32m+[m[32m  // move process to child again (this should fail)[m
+[32m+[m[32m  memset(temp_path_g, 0, MAX_PATH_LENGTH);[m
+   strcpy(temp_path_g, child_nested_cgroup);[m
+   strcat(temp_path_g, TEST_NESTED_PROCS);[m
+   ASSERT_FALSE(move_proc(temp_path_g, pid));[m
+[36m@@ -1978,11 +1963,9 @@[m [mvoid nested_cgroup_mem_recalc_scenario4(int kernel_total_memory)[m
+   ASSERT_TRUE(reset_nested_memory_controllers(child_nested_cgroup, 2));[m
+ }[m
+ [m
+[31m-[m
+[31m-TEST (test_nested_cgroup_memory_recalculation)[m
+[31m-{[m
+[32m+[m[32mTEST(test_nested_cgroup_memory_recalculation) {[m
+   int kernel_total_mem = 0;[m
+[31m-  char * mem_stat_buf = 0;[m
+[32m+[m[32m  char* mem_stat_buf = 0;[m
+   char min_value[12] = {0};[m
+ [m
+   mem_stat_buf = read_file(TEST_1_MEM_STAT, 0);[m
+[36m@@ -2007,7 +1990,6 @@[m [mTEST (test_nested_cgroup_memory_recalculation)[m
+   nested_cgroup_mem_recalc_scenario4(kernel_total_mem);[m
+ }[m
+ [m
+[31m-[m
+ int main(int argc, char* argv[]) {[m
+   // comment out for debug messages[m
+   set_suppress(1);[m
+[36m@@ -2026,7 +2008,7 @@[m [mint main(int argc, char* argv[]) {[m
+   run_test(test_cpu_stat);[m
+   run_test(test_pid_current);[m
+   run_test(test_setting_cpu_id);[m
+[31m-  //run_test(test_correct_cpu_running);[m
+[32m+[m[32m  // run_test(test_correct_cpu_running);[m
+   run_test(test_no_run);[m
+   run_test(test_mem_stat);[m
+   run_test(test_setting_freeze);[m
+[1mdiff --git a/console.c b/console.c[m
+[1mindex 2f0bf0d..90a80cf 100644[m
+[1m--- a/console.c[m
+[1m+++ b/console.c[m
+[36m@@ -393,8 +393,9 @@[m [mvoid tty_attach(struct vfs_inode *ip) {[m
+ [m
+ void tty_detach(struct vfs_inode *ip) {[m
+   tty_table[ip->minor].flags &= ~(DEV_ATTACH);[m
+[31m-  /* Note: We don't clear the tty's stats because the tty exist it is just detached[m
+[31m-  from the cgroup. Any reuse of the tty (new cgroup created) will use this tty[m
+[32m+[m[32m  /* Note: We don't clear the tty's stats because the tty exist it is just[m
+[32m+[m[32m  detached from the cgroup. Any reuse of the tty (new cgroup created) will use[m
+[32m+[m[32m  this tty[m
+   */[m
+ [m
+   /* remove the tty device from the current cgroup devices list */[m
+[1mdiff --git a/pouch.c b/pouch.c[m
+[1mindex 73f7a93..0138f14 100644[m
+[1m--- a/pouch.c[m
+[1m+++ b/pouch.c[m
+[36m@@ -1,8 +1,8 @@[m
+ #include "pouch.h"[m
+ [m
+ #include "fcntl.h"[m
+[31m-#include "ns_types.h"[m
+ #include "mutex.h"[m
+[32m+[m[32m#include "ns_types.h"[m
+ #include "param.h"[m
+ #include "stat.h"[m
+ #include "types.h"[m
+[36m@@ -349,15 +349,15 @@[m [mstatic int pouch_fork(char* container_name) {[m
+   char cg_cname[256];[m
+   int daemonize = 1;[m
+   mutex_t parent_mutex;[m
+[31m-   [m
+[31m-  //initialize the mutex for the parent (it will release the lock only when its done)[m
+[31m-  if(MUTEX_SUCCESS != mutex_init(&parent_mutex))[m
+[31m-  {[m
+[32m+[m
+[32m+[m[32m  // initialize the mutex for the parent (it will release the lock only when its[m
+[32m+[m[32m  // done)[m
+[32m+[m[32m  if (MUTEX_SUCCESS != mutex_init(&parent_mutex)) {[m
+     printf(1, "Pouch: failed to create synchronization for container\n");[m
+     exit(1);[m
+   }[m
+   mutex_lock(&parent_mutex);[m
+[31m-    [m
+[32m+[m
+   // Find tty name[m
+   if (find_tty(tty_name) < 0) {[m
+     printf(1, "Pouch: cannot create more containers\n");[m
+[36m@@ -384,7 +384,8 @@[m [mstatic int pouch_fork(char* container_name) {[m
+     return -1;[m
+   }[m
+ [m
+[31m-  // if daemonize=1, daemonize the container process (so it won't be realted to the sh process)[m
+[32m+[m[32m  // if daemonize=1, daemonize the container process (so it won't be realted to[m
+[32m+[m[32m  // the sh process)[m
+   if (!daemonize || (daemonize && (pid2 = fork()) == 0)) {[m
+     // Set up pid namespace before fork[m
+     if (unshare(PID_NS) != 0) {[m
+[36m@@ -394,29 +395,27 @@[m [mstatic int pouch_fork(char* container_name) {[m
+ [m
+     // create the container with new PID namespace[m
+     pid = fork();[m
+[31m-    if(pid == -1)[m
+[31m-    {[m
+[31m-        panic("fork");[m
+[31m-    }[m
+[31m-    if(pid == 0)[m
+[31m-    {[m
+[31m-        //wait till the parent process finishes and releases the lock[m
+[31m-        mutex_lock(&parent_mutex);[m
+[31m-        //attach stderr stdin stdout[m
+[31m-        if(attach_tty(tty_fd) < 0){[m
+[31m-            printf(stderr,"attach failed - error in connecting to tty: %d\n", tty_fd);[m
+[31m-            exit(1);[m
+[31m-        }[m
+[31m-        //"Child process - setting up namespaces for the container[m
+[31m-        // Set up mount namespace.[m
+[31m-        if(unshare(MOUNT_NS) < 0) {[m
+[31m-            printf(1, "Cannot create mount namespace\n");[m
+[31m-            exit(1);[m
+[31m-        }[m
+[31m-        printf(stderr,"Entering container\n");[m
+[31m-        exec("sh", argv);[m
+[32m+[m[32m    if (pid == -1) {[m
+[32m+[m[32m      panic("fork");[m
+     }[m
+[31m-    else {[m
+[32m+[m[32m    if (pid == 0) {[m
+[32m+[m[32m      // wait till the parent process finishes and releases the lock[m
+[32m+[m[32m      mutex_lock(&parent_mutex);[m
+[32m+[m[32m      // attach stderr stdin stdout[m
+[32m+[m[32m      if (attach_tty(tty_fd) < 0) {[m
+[32m+[m[32m        printf(stderr, "attach failed - error in connecting to tty: %d\n",[m
+[32m+[m[32m               tty_fd);[m
+[32m+[m[32m        exit(1);[m
+[32m+[m[32m      }[m
+[32m+[m[32m      //"Child process - setting up namespaces for the container[m
+[32m+[m[32m      // Set up mount namespace.[m
+[32m+[m[32m      if (unshare(MOUNT_NS) < 0) {[m
+[32m+[m[32m        printf(1, "Cannot create mount namespace\n");[m
+[32m+[m[32m        exit(1);[m
+[32m+[m[32m      }[m
+[32m+[m[32m      printf(stderr, "Entering container\n");[m
+[32m+[m[32m      exec("sh", argv);[m
+[32m+[m[32m    } else {[m
+       // "Parent process - waiting for child[m
+ [m
+       // Move the current process to "/cgroup/<cname>" cgroup.[m
+[36m@@ -427,9 +426,8 @@[m [mstatic int pouch_fork(char* container_name) {[m
+       if (write(cgroup_procs_fd, cur_pid_buf, sizeof(cur_pid_buf)) < 0)[m
+         return -1;[m
+       if (close(cgroup_procs_fd) < 0) return -1;[m
+[31m-      if (write_to_cconf(container_name, tty_name, pid) >= 0)[m
+[31m-      {[m
+[31m-        //let the child process run[m
+[32m+[m[32m      if (write_to_cconf(container_name, tty_name, pid) >= 0) {[m
+[32m+[m[32m        // let the child process run[m
+         mutex_unlock(&parent_mutex);[m
+         wait(0);[m
+       }[m

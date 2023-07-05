@@ -21,3 +21,4 @@ internal_fs_*
 .testci
 cppcheck-report/
 cppcheck.xml
+required_changes.txt
