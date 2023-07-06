@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ca42cad6_5e7e2a9a",
+        "filename": "Dockerfile",
+        "patchSetId": 2
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-07-06T18:54:52Z",
+      "side": 1,
+      "message": "no need if run as described in lines 1-10 https://review.gerrithub.io/c/davidsaOpenu/xv6/+/556362/2/Dockerfile#1",
+      "range": {
+        "startLine": 79,
+        "startChar": 0,
+        "endLine": 80,
+        "endChar": 52
+      },
+      "revId": "33e6ea6b64dc69d6f6f29890798b26fb4a731ee1",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f28fc2d5_1d501196",
+        "filename": "required_changes.txt",
+        "patchSetId": 2
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-07-06T18:54:52Z",
+      "side": 1,
+      "message": "lets add the file to .gitignore",
+      "range": {
+        "startLine": 1,
+        "startChar": 1,
+        "endLine": 27,
+        "endChar": 19
+      },
+      "revId": "33e6ea6b64dc69d6f6f29890798b26fb4a731ee1",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
