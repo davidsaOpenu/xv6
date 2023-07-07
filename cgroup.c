@@ -122,7 +122,9 @@ void format_path(char* buf, char* path) {
   *bufp = 0;
 }
 
-struct cgroup* cgroup_root(void) { return &cgtable.cgroups[0]; }
+struct cgroup* cgroup_root(void) {
+  return &cgtable.cgroups[0];
+}
 
 struct cgroup* cgroup_create(char* path) {
   char fpath[MAX_PATH_LENGTH];
