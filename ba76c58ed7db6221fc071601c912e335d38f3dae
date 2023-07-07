@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d9938f85_2b5c8810",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 7
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-07-07T11:24:14Z",
+      "side": 1,
+      "message": "Thanks for working on this. Almost done. Just let\u0027s add a comment for the record (see inline)",
+      "revId": "ba76c58ed7db6221fc071601c912e335d38f3dae",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b3ac586b_083b47e5",
+        "filename": "mkfs.c",
+        "patchSetId": 7
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-07-07T11:24:14Z",
+      "side": 1,
+      "message": "please add here and in commit message a line that elaborates why this change is required in order to move tests",
+      "range": {
+        "startLine": 140,
+        "startChar": 0,
+        "endLine": 151,
+        "endChar": 5
+      },
+      "revId": "ba76c58ed7db6221fc071601c912e335d38f3dae",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
