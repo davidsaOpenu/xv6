@@ -138,9 +138,14 @@ int main(int argc, char *argv[]) {
   iappend(rootino, &de, sizeof(de));
 
   for (i = 3; i < argc; i++) {
-    assert(index(argv[i], '/') == 0);
+    const char *full_path = argv[i];
+    const char *base_name = strrchr(full_path, '/');
+    if (!base_name)
+      base_name = full_path;  // No slashes, we already have a base name
+    else
+      ++base_name;  // Skip one past the last '/'
 
-    if ((fd = open(argv[i], 0)) < 0) {
+    if ((fd = open(full_path, 0)) < 0) {
       perror(argv[i]);
       exit(1);
     }
@@ -149,13 +154,13 @@ int main(int argc, char *argv[]) {
     // The binaries are named _rm, _cat, etc. to keep the
     // build operating system from trying to execute them
     // in place of system binaries like rm and cat.
-    if (argv[i][0] == '_') ++argv[i];
+    if (base_name[0] == '_') ++base_name;
 
     inum = ialloc(T_FILE);
 
     bzero(&de, sizeof(de));
     de.inum = xshort(inum);
-    strncpy(de.name, argv[i], DIRSIZ);
+    strncpy(de.name, base_name, DIRSIZ);
     iappend(rootino, &de, sizeof(de));
 
     while ((cc = read(fd, buf, sizeof(buf))) > 0) iappend(inum, buf, cc);
