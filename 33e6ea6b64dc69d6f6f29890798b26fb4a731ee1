@@ -24,6 +24,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "ec0f3e20_8bc48c3e",
+        "filename": "Dockerfile",
+        "patchSetId": 2
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-07-11T19:26:54Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ca42cad6_5e7e2a9a",
+      "range": {
+        "startLine": 79,
+        "startChar": 0,
+        "endLine": 80,
+        "endChar": 52
+      },
+      "revId": "33e6ea6b64dc69d6f6f29890798b26fb4a731ee1",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "f28fc2d5_1d501196",
@@ -37,6 +61,30 @@
       "writtenOn": "2023-07-06T18:54:52Z",
       "side": 1,
       "message": "lets add the file to .gitignore",
+      "range": {
+        "startLine": 1,
+        "startChar": 1,
+        "endLine": 27,
+        "endChar": 19
+      },
+      "revId": "33e6ea6b64dc69d6f6f29890798b26fb4a731ee1",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b35666d0_0191ffd7",
+        "filename": "required_changes.txt",
+        "patchSetId": 2
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-07-11T19:26:54Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f28fc2d5_1d501196",
       "range": {
         "startLine": 1,
         "startChar": 1,
