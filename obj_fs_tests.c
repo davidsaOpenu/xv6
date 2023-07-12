@@ -1,11 +1,10 @@
-#include "obj_fs_tests.h"
-
 #include <stdlib.h>
 #include <string.h>
 
 #include "obj_cache.h"
 #include "obj_disk.h"
 #include "obj_log.h"
+#include "test.h"
 
 /**
  * Tests library variables
