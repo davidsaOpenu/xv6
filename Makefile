@@ -375,7 +375,7 @@ windows_debugging_clean:
 # TODO integrate with the rest of xv6 sources - would be done in later part.
 run-objfs-tests:
 	$(CC) $(CLAGS) \
-		obj_disk.c obj_cache.c obj_log.c obj_fs_tests.c obj_fs_tests_utilities.c \
+		obj_disk.c obj_cache.c obj_log.c tests/host/obj_fs_tests.c obj_fs_tests_utilities.c \
 		-std=gnu99 -DSTORAGE_DEVICE_SIZE=67108864 \
 		-o tests
 	./tests
