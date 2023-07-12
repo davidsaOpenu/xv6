@@ -1,4 +1,4 @@
-#include "obj_fs_tests.h"
+#include "test.h"
 
 #include <stdlib.h>
 #include <string.h>
