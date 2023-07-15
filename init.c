@@ -11,6 +11,7 @@ static int init_procfs() {
   int procfs_fd = -1;
   // Check if procfs already created
   if ((procfs_fd = open("/proc", O_RDWR)) < 0) {
+    unlink("/proc");
     if (mkdir("/proc") != 0) {
       printf(1, "init: failed to create root proc fs\n");
       return -1;
