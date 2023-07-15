@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e9e1ba30_3fc08e4f",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-07-15T22:06:23Z",
+      "side": 1,
+      "message": "please update the commit message according to https://gist.github.com/robertpainsi/b632364184e70900af4ab688decf6f53",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 8,
+        "endChar": 32
+      },
+      "revId": "e434d0b7ab5bb7f0343c72f8299417cd3a2115ca",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b5eef7af_c9b8fa4c",
+        "filename": "obj_fs_tests.c",
+        "patchSetId": 4
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-07-15T22:06:23Z",
+      "side": 1,
+      "message": "printf methods used  by test.h and obj_fs_tests.h are different. \n\n1. handle replace printf calls with a function that calls printf(\"format\") or printf(1, \"format\") according to the circumstances (userspace/kernel)\n\n2. compare test.h and obj_fs_tests.h line by line and make sure to use best practices of macros and other improvements exiting in one or other file.",
+      "revId": "e434d0b7ab5bb7f0343c72f8299417cd3a2115ca",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
