@@ -15,9 +15,6 @@
 #define MAX_STR 64
 #define MAX_BUF 4096
 
-// TODO(unknown): refactor - move to defs.h (also change the name)
-#define abs(x) (x) > 0 ? (x) : (0)
-
 // Is static to save space in the stack
 static char buf[MAX_BUF];
 
@@ -180,15 +177,21 @@ static int find_procs_offsets(int* procoff, int* pidoff, struct vfs_file* f) {
   return 0;
 }
 
-static int copy_until_char(char* s, char* t, char ch, int n) {
+static int copy_until_char(char* dst, char* src, char delimiter,
+                           int max_chars) {
+  /*
+   * copy from src to dst until delim or the end of src is encountered or until
+   * max_chars bytes have been copied, and put '\0' at the end dst
+   * return the length of dst including the \0 at the end
+   */
   int len = 0;
-  while (*t != ch && *t != '\0' && (n--) > 0) {
-    *s++ = *t++;
+  while (*src != delimiter && *src != '\0' && (max_chars--) > 0) {
+    *dst++ = *src++;
     len++;
   }
 
-  *s = 0;
-  if (*t == ch) len++;
+  *dst = '\0';
+  if (*src == delimiter) len++;
 
   return len;
 }
@@ -494,7 +497,8 @@ static int read_file_cg_stat(struct vfs_file* f, char* addr, int n) {
   copy_and_move_buffer(&stattextp, "\n", strlen("\n"));
 
   return copy_buffer_up_to_end(
-      stattext + f->off, min(abs(stattextp - stattext - f->off), n), addr);
+      stattext + f->off, min(at_least_zero(stattextp - stattext - f->off), n),
+      addr);
 }
 
 static int read_file_cpu_stat(struct vfs_file* f, char* addr, int n) {
@@ -542,7 +546,8 @@ static int read_file_cpu_stat(struct vfs_file* f, char* addr, int n) {
   copy_and_move_buffer(&stattextp, "\n", strlen("\n"));
 
   return copy_buffer_up_to_end(
-      stattext + f->off, min(abs(stattextp - stattext - f->off), n), addr);
+      stattext + f->off, min(at_least_zero(stattextp - stattext - f->off), n),
+      addr);
 }
 
 static int read_file_cpu_weight(struct vfs_file* f, char* addr, int n) {
@@ -554,9 +559,9 @@ static int read_file_cpu_weight(struct vfs_file* f, char* addr, int n) {
   copy_and_move_buffer(&weighttextp, tmp_num_buff, num_str_length);
   copy_and_move_buffer(&weighttextp, "\n", strlen("\n"));
 
-  return copy_buffer_up_to_end(weighttext + f->off,
-                               min(abs(weighttextp - weighttext - f->off), n),
-                               addr);
+  return copy_buffer_up_to_end(
+      weighttext + f->off,
+      min(at_least_zero(weighttextp - weighttext - f->off), n), addr);
 }
 
 static int read_file_cpu_max(struct vfs_file* f, char* addr, int n) {
@@ -571,8 +576,9 @@ static int read_file_cpu_max(struct vfs_file* f, char* addr, int n) {
   copy_and_move_buffer(&maxtextp, tmp_num_buff, num_str_length);
   copy_and_move_buffer(&maxtextp, "\n", strlen("\n"));
 
-  return copy_buffer_up_to_end(maxtext + f->off,
-                               min(abs(maxtextp - maxtext - f->off), n), addr);
+  return copy_buffer_up_to_end(
+      maxtext + f->off, min(at_least_zero(maxtextp - maxtext - f->off), n),
+      addr);
 }
 
 static int read_file_pid_max(struct vfs_file* f, char* addr, int n) {
@@ -586,8 +592,9 @@ static int read_file_pid_max(struct vfs_file* f, char* addr, int n) {
   copy_and_move_buffer(&maxtextp, max_buf, strlen(max_buf));
   copy_and_move_buffer(&maxtextp, "\n", strlen("\n"));
 
-  return copy_buffer_up_to_end(maxtext + f->off,
-                               min(abs(maxtextp - maxtext - f->off), n), addr);
+  return copy_buffer_up_to_end(
+      maxtext + f->off, min(at_least_zero(maxtextp - maxtext - f->off), n),
+      addr);
 }
 
 static int read_file_pid_cur(struct vfs_file* f, char* addr, int n) {
@@ -603,7 +610,8 @@ static int read_file_pid_cur(struct vfs_file* f, char* addr, int n) {
   copy_and_move_buffer(&stattextp, "\n", strlen("\n"));
 
   return copy_buffer_up_to_end(
-      stattext + f->off, min(abs(stattextp - stattext - f->off), n), addr);
+      stattext + f->off, min(at_least_zero(stattextp - stattext - f->off), n),
+      addr);
 }
 
 static int read_file_set_cpu(struct vfs_file* f, char* addr, int n) {
@@ -617,8 +625,9 @@ static int read_file_set_cpu(struct vfs_file* f, char* addr, int n) {
   copy_and_move_buffer(&cputextp, cpu_buf, strlen(cpu_buf));
   copy_and_move_buffer(&cputextp, "\n", strlen("\n"));
 
-  return copy_buffer_up_to_end(cputext + f->off,
-                               min(abs(cputextp - cputext - f->off), n), addr);
+  return copy_buffer_up_to_end(
+      cputext + f->off, min(at_least_zero(cputextp - cputext - f->off), n),
+      addr);
 }
 
 static int read_file_set_frz(struct vfs_file* f, char* addr, int n) {
@@ -631,8 +640,9 @@ static int read_file_set_frz(struct vfs_file* f, char* addr, int n) {
   copy_and_move_buffer(&frztextp, frz_buf, strlen(frz_buf));
   copy_and_move_buffer(&frztextp, "\n", strlen("\n"));
 
-  return copy_buffer_up_to_end(frztext + f->off,
-                               min(abs(frztextp - frztext - f->off), n), addr);
+  return copy_buffer_up_to_end(
+      frztext + f->off, min(at_least_zero(frztextp - frztext - f->off), n),
+      addr);
 }
 
 static int read_file_mem_cur(struct vfs_file* f, char* addr, int n) {
@@ -646,7 +656,8 @@ static int read_file_mem_cur(struct vfs_file* f, char* addr, int n) {
   copy_and_move_buffer(&stattextp, "\n", strlen("\n"));
 
   return copy_buffer_up_to_end(
-      stattext + f->off, min(abs(stattextp - stattext - f->off), n), addr);
+      stattext + f->off, min(at_least_zero(stattextp - stattext - f->off), n),
+      addr);
 }
 
 static int read_file_mem_max(struct vfs_file* f, char* addr, int n) {
@@ -659,8 +670,9 @@ static int read_file_mem_max(struct vfs_file* f, char* addr, int n) {
   copy_and_move_buffer(&maxtextp, max_buf, strlen(max_buf));
   copy_and_move_buffer(&maxtextp, "\n", strlen("\n"));
 
-  return copy_buffer_up_to_end(maxtext + f->off,
-                               min(abs(maxtextp - maxtext - f->off), n), addr);
+  return copy_buffer_up_to_end(
+      maxtext + f->off, min(at_least_zero(maxtextp - maxtext - f->off), n),
+      addr);
 }
 
 static int read_file_mem_min(struct vfs_file* f, char* addr, int n) {
@@ -673,8 +685,9 @@ static int read_file_mem_min(struct vfs_file* f, char* addr, int n) {
   copy_and_move_buffer(&maxtextp, max_buf, strlen(max_buf));
   copy_and_move_buffer(&maxtextp, "\n", strlen("\n"));
 
-  return copy_buffer_up_to_end(maxtext + f->off,
-                               min(abs(maxtextp - maxtext - f->off), n), addr);
+  return copy_buffer_up_to_end(
+      maxtext + f->off, min(at_least_zero(maxtextp - maxtext - f->off), n),
+      addr);
 }
 
 static int read_file_io_stat(struct vfs_file* f, char* addr, int n) {
@@ -728,7 +741,8 @@ static int read_file_io_stat(struct vfs_file* f, char* addr, int n) {
   }
 
   return copy_buffer_up_to_end(
-      stattext + f->off, min(abs(stattextp - stattext - f->off), n), addr);
+      stattext + f->off, min(at_least_zero(stattextp - stattext - f->off), n),
+      addr);
 }
 
 static int read_file_mem_stat(struct vfs_file* f, char* addr, int n) {
@@ -773,7 +787,8 @@ static int read_file_mem_stat(struct vfs_file* f, char* addr, int n) {
   copy_and_move_buffer(&stattextp, "\n", strlen("\n"));
 
   return copy_buffer_up_to_end(
-      stattext + f->off, min(abs(stattextp - stattext - f->off), n), addr);
+      stattext + f->off, min(at_least_zero(stattextp - stattext - f->off), n),
+      addr);
 }
 
 static int read_file_cg_events(struct vfs_file* f, char* addr, int n) {

@@ -3,9 +3,6 @@
 
 #include "types.h"
 
-#define min(x, y) (x) > (y) ? (y) : (x)
-#define abs(x) (x) > 0 ? (x) : (0)
-
 struct buf;
 struct context;
 struct file;
@@ -300,6 +297,9 @@ int intlen(int n);
 
 // min between two numbers
 #define min(x, y) (x) > (y) ? (y) : (x)
+
+// if x is bigger that 0 return x, else return 0
+#define at_least_zero(x) (x) > 0 ? (x) : (0)
 
 /** Return codes:
  * - RESULT_ERROR_OPERATION upon error related to the executed operation.
