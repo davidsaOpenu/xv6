@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "862e50f8_6d4b3e8e",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-07-15T22:47:00Z",
+      "side": 1,
+      "message": "please update the commit message according to https://gist.github.com/robertpainsi/b632364184e70900af4ab688decf6f53",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 116
+      },
+      "revId": "1b373b4657657631555e87ebc4c58464c09d2a9f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "713b4943_68523048",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 3
+      },
+      "lineNbr": 161,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-07-15T22:47:00Z",
+      "side": 1,
+      "message": "logically looks same.\n\nfunctionally takes more time because of an additional function call.",
+      "range": {
+        "startLine": 139,
+        "startChar": 0,
+        "endLine": 161,
+        "endChar": 1
+      },
+      "revId": "1b373b4657657631555e87ebc4c58464c09d2a9f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
