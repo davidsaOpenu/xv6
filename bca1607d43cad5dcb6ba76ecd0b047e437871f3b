@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1dc23024_987cf0f8",
+        "filename": "obj_fs_tests.c",
+        "patchSetId": 4
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-07-16T04:49:02Z",
+      "side": 0,
+      "message": "let\u0027s move obj_fs_tests.* to tests/host where all the tests of different components of the system without the need to depend on xv6 syscalls should be located and rhn them from runtests.exp \"make run-objfs-tests\"",
+      "range": {
+        "startLine": 1,
+        "startChar": 10,
+        "endLine": 1,
+        "endChar": 22
+      },
+      "revId": "bca1607d43cad5dcb6ba76ecd0b047e437871f3b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
