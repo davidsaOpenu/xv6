@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2d628608_82963c32",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-08-03T15:33:05Z",
+      "side": 1,
+      "message": "please take a look at https://gist.github.com/robertpainsi/b632364184e70900af4ab688decf6f53 to create a meaningful commit message.",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 25
+      },
+      "revId": "2a4489bbfba7b6208962b2ed9cb34029730a3b87",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "33c2dd68_7fd7506a",
+        "filename": "init.c",
+        "patchSetId": 6
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-08-03T15:33:05Z",
+      "side": 1,
+      "message": "relates to https://trello.com/c/Xf8bEZLJ/140-fix-init-failed-to-create-root-proc-fs. To be submitted as a different CR",
+      "revId": "2a4489bbfba7b6208962b2ed9cb34029730a3b87",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6a4b876d_a4787711",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 6
+      },
+      "lineNbr": 148,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-08-03T15:33:05Z",
+      "side": 1,
+      "message": "a. seems that you have refactored a name to reflect creation and writing actions. What is the reason of having create_file called from  create_and_write_file?\n\nb. suppress better be located in defs.h to aloow a constant approach to debugging messages across all userland tests rather then only in this test suite. It makes also a total sense to refactor additional system calls in tests to have it. Worth creation of trello card for that (refactoring task)",
+      "range": {
+        "startLine": 148,
+        "startChar": 4,
+        "endLine": 148,
+        "endChar": 25
+      },
+      "revId": "2a4489bbfba7b6208962b2ed9cb34029730a3b87",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
