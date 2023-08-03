@@ -169,6 +169,7 @@ static int get_connected_cname(char* cname);
  *   @return: 0 - OK, <0 - FAILURE
  */
 static int pouch_get_images();
+static char *fmtname(char *path);
 
 /*
  *   Get image root directory

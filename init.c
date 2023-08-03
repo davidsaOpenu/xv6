@@ -27,6 +27,21 @@ static int init_procfs() {
   return 0;
 }
 
+static int init_image_dir() {
+  int image_dir_fd = -1;
+  // Check if images directory already created
+  if ((image_dir_fd = open(IMAGE_DIR, O_RDWR)) < 0) {
+    if (mkdir(IMAGE_DIR) != 0) {
+      printf(1, "init: failed to create images directory\n");
+      return -1;
+    }
+  } else {
+    if (close(image_dir_fd) < 0) return -1;
+  }
+
+  return 0;
+}
+
 int main(void) {
   int pid, wpid;
 
@@ -40,6 +55,11 @@ int main(void) {
   mknod("tty0", 1, 1);
   mknod("tty1", 1, 2);
   mknod("tty2", 1, 3);
+
+  if(init_image_dir() != 0){
+    printf(1, "init: init image_dir failed\n");
+    exit(1);
+  }
 
   if (init_procfs() != 0) {
     printf(1, "init: init procfs failed\n");

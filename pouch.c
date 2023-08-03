@@ -7,6 +7,7 @@
 #include "stat.h"
 #include "types.h"
 #include "user.h"
+#include "fs.h"
 
 /*
  *   Helper functions
@@ -61,9 +62,64 @@ static int get_image_root_dir(char * image_name, char * root_dir){
   return -1;
 }
 
+static char *fmtname(char *path) {
+  static char buf[DIRSIZ + 1];
+  char *p;
+
+  // Find first character after last slash.
+  for (p = path + strlen(path); p >= path && *p != '/'; p--) {
+  }
+  p++;
+
+  // Return blank-padded name.
+  if (strlen(p) >= DIRSIZ) return p;
+  memmove(buf, p, strlen(p));
+  memset(buf + strlen(p), ' ', DIRSIZ - strlen(p));
+  return buf;
+}
+
 static int pouch_get_images(){
-  printf(stderr, "pouch images not implemented yet\n");
-  return -1;
+  char buf[512], *p;
+  int fd;
+  struct dirent de;
+  struct stat st;
+
+  if ((fd = open(IMAGE_DIR, 0)) < 0) {
+    printf(2, "ls: cannot open %s\n", IMAGE_DIR);
+    return -1;
+  }
+
+  if (fstat(fd, &st) < 0) {
+    printf(2, "ls: cannot stat %s\n", IMAGE_DIR);
+    close(fd);
+    return -1;
+  }
+
+  if (st.type == T_DIR) {
+    if (strlen(IMAGE_DIR) + 1 + DIRSIZ + 1 > sizeof buf) {
+      printf(1, "ls: path too long\n");
+      return -1;
+    }
+    strcpy(buf, IMAGE_DIR);
+    p = buf + strlen(buf);
+    *p++ = '/';
+    while (read(fd, &de, sizeof(de)) == sizeof(de)) {
+      if (de.inum == 0) continue;
+      memmove(p, de.name, DIRSIZ);
+      p[DIRSIZ] = 0;
+      if (stat(buf, &st) < 0) {
+        printf(1, "ls: cannot stat %s\n", buf);
+        continue;
+      }
+      printf(1, "%s %d %d %d\n", fmtname(buf), st.type, st.ino, st.size);
+    }
+  } else {
+    printf(stderr, "%s is not a directory\n", IMAGE_DIR);
+    return -1;
+  }
+  close(fd);
+  //printf(stderr, "pouch images not implemented yet\n");
+  return 0;
 }
 
 static int pouch_create_image(char * pouch_file, char * image_name){
