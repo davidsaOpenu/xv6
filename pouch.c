@@ -56,18 +56,55 @@ static int prepare_cgroup_cname(char* container_name, char* cg_cname) {
   return 0;
 }
 
+static int get_image_root_dir(char * image_name, char * root_dir){
+  printf(stderr, "not implemented yet\n");
+  return -1;
+}
+
+static int pouch_get_images(){
+  printf(stderr, "pouch images not implemented yet\n");
+  return -1;
+}
+
+static int pouch_create_image(char * pouch_file, char * image_name){
+  printf(stderr, "pouch create is not implemented yet\n");
+  return -1;
+}
+
 static int pouch_cmd(char* container_name, char* image_name, char* pouch_file, enum p_cmd cmd) {
   int tty_fd;
   int pid;
   char tty_name[10];
   char cg_cname[256];
+  char root_dir[MAX_PATH_LENGTH];
 
   if (cmd == START) {
-    return pouch_fork(container_name);
+    return pouch_fork(container_name, NULL);
   }
 
   if (cmd == LIST) {
     if (print_clist() < 0) {
+      return -1;
+    }
+    return 0;
+  }
+
+  if (cmd == IMAGES){
+    if (pouch_get_images() < 0) {
+      return -1;
+    }
+    return 0;
+  }
+
+  if (cmd == RUN){
+    if (get_image_root_dir(image_name, root_dir) < 0){
+      return -1;
+    }
+    return pouch_fork(container_name, root_dir);
+  }
+  
+  if (cmd == CREATE){
+    if (pouch_create_image(pouch_file, image_name) < 0) {
       return -1;
     }
     return 0;
@@ -341,7 +378,7 @@ static int write_to_cconf(char* container_name, char* tty_name, int pid) {
   return 0;
 }
 
-static int pouch_fork(char* container_name) {
+static int pouch_fork(char* container_name, char* root_dir) {
   int tty_fd = -1;
   int pid = -1;
   int pid2 = -1;
@@ -587,12 +624,14 @@ int main(int argc, char* argv[]) {
     }
     strcpy(container_name, argv[2]);
   } else if (argc == 2) {
-    if (ppid == 1 && get_connected_cname(container_name) < 0) {
-      print_help_inside_cnt();
-      exit(1);
-    } else if (ppid != 1) {
-      print_help_outside_cnt();
-      exit(0);
+    if(strcmp(argv[1], "images") != 0){
+      if (ppid == 1 && get_connected_cname(container_name) < 0) {
+        print_help_inside_cnt();
+        exit(1);
+      } else if (ppid != 1) {
+        print_help_outside_cnt();
+        exit(0);
+      }
     }
   } else {
     if (ppid == 1)
