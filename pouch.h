@@ -12,7 +12,10 @@ typedef enum p_cmd {
   DESTROY,
   LIMIT,
   INFO,
-  LIST
+  LIST,
+  RUN,
+  IMAGES,
+  CREATE
 } p_cmd;
 #define CNTNAMESIZE 100
 #define CNTARGSIZE 30
@@ -25,7 +28,7 @@ char* argv[] = {"sh", 0};
  *   @output: none
  *   @return: 0 - OK, != 0 - FAILURE
  */
-static int pouch_cmd(char* container_name, enum p_cmd);
+static int pouch_cmd(char* container_name, char* image_name, char* pouch_file, enum p_cmd);
 
 /*
  *   Pouch fork:

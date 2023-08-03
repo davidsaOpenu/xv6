@@ -56,7 +56,7 @@ static int prepare_cgroup_cname(char* container_name, char* cg_cname) {
   return 0;
 }
 
-static int pouch_cmd(char* container_name, enum p_cmd cmd) {
+static int pouch_cmd(char* container_name, char* image_name, char* pouch_file, enum p_cmd cmd) {
   int tty_fd;
   int pid;
   char tty_name[10];
@@ -571,6 +571,8 @@ static int print_cinfo(char* container_name, char* tty_name, int pid) {
 int main(int argc, char* argv[]) {
   enum p_cmd cmd = START;
   char container_name[CNTNAMESIZE];
+  char image_name[CNTNAMESIZE];
+  char pouch_file[CNTNAMESIZE];
 
   // get parent pid
   int ppid = getppid();
@@ -601,6 +603,7 @@ int main(int argc, char* argv[]) {
   }
 
   // get command type
+  // TODO: Add check for argc in new commands
   if (argc >= 2) {
     if ((strcmp(argv[1], "start")) == 0) {
       cmd = START;
@@ -621,7 +624,17 @@ int main(int argc, char* argv[]) {
     } else if ((strcmp(argv[1], "list")) == 0 &&
                (strcmp(argv[2], "all")) == 0) {
       cmd = LIST;
-    } else {
+    } else if ((strcmp(argv[1], "run")) == 0) {
+      cmd = RUN;
+      strcpy(image_name, argv[3]);
+    } else if ((strcmp(argv[1], "images")) == 0) {
+      cmd = IMAGES;
+    } else if ((strcmp(argv[1], "create")) == 0) {
+      cmd = CREATE;
+      strcpy(pouch_file, argv[2]);
+      strcpy(image_name, argv[3]);
+    }
+    else {
       if (ppid == 1)
         print_help_inside_cnt();
       else
@@ -651,6 +664,12 @@ int main(int argc, char* argv[]) {
       } else if (cmd == DESTROY) {
         printf(1, "Container can't be destroyed while connected.\n");
         exit(1);
+      } else if (cmd == RUN){
+        printf(1, "Nesting containers is not supported.\n");
+        exit(1);
+      } else if (cmd == CREATE){
+        printf(1, "Container images cannot be created inside a container.\n");
+        exit(1);
       } else if (cmd == LIST) {
         if (print_help_inside_cnt() < 0) {
           exit(1);
@@ -662,10 +681,11 @@ int main(int argc, char* argv[]) {
         if (pouch_limit_cgroup(container_name, argv[3], argv[4]) < 0) {
           exit(1);
         }
-      } else if (pouch_cmd(container_name, cmd) < 0) {
+          // TODO: Improve the call to the function for image_name and pouch_file
+      } else if (pouch_cmd(container_name, image_name, pouch_file, cmd) < 0) {
         printf(1, "Pouch: operation failed.\n");
         exit(1);
-      }
+      } 
     }
   }
 
