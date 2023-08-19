@@ -1,19 +1,3 @@
-# Build image
-# docker build --build-arg USERNAME=$(whoami) \
-#              --build-arg GRPNAME=$(id -gn) \
-#              --build-arg UID=$(id -u)
-#              --build-arg GID=$(id -g) -t xv6-test-image .
-
-# Run tests
-# docker run --mount type=bind,source="$(pwd)",target=/home/$(whoami)/xv6 \
-#            --rm xv6-test-image \
-#            /home/$(whoami)/xv6/run-ci.sh
-
-# Interactive run
-# docker run -it \
-#            --mount type=bind,source="$(pwd)",target=/home/$(whoami)/xv6 \
-#            --rm xv6-test-image \
-
 FROM ubuntu:22.04 as base
 
 # Update package lists and install dependencies
