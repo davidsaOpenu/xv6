@@ -7,13 +7,26 @@
 
 char *argv[] = {"sh", 0};
 
+// a function to check if a directory exists based on stat.h definitions
+int dir_exists(const char *path) {
+  struct stat st;
+  if (stat(path, &st) == 0 && st.type == T_DIR) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
 static int init_procfs() {
   int procfs_fd = -1;
   // Check if procfs already created
   if ((procfs_fd = open("/proc", O_RDWR)) < 0) {
-    if (mkdir("/proc") != 0) {
-      printf(1, "init: failed to create root proc fs\n");
-      return -1;
+    // don't try to create it again if exists
+    if (!dir_exists("/proc")) {
+      if (mkdir("/proc") != 0) {
+        printf(1, "init: failed to create root proc fs\n");
+        return -1;
+      }
     }
 
     if (mount(0, "/proc", "proc") != 0) {
