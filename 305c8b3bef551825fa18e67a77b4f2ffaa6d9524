@@ -41,6 +41,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "3c552da3_7c01b836",
+        "filename": "Makefile",
+        "patchSetId": 9
+      },
+      "lineNbr": 378,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-08-25T07:56:59Z",
+      "side": 1,
+      "message": "I\u0027m not sure about the original purpose of this file- it defines a mock panic function that is imported but not used but I dont want to delete it without knowing its purpose",
+      "parentUuid": "a8409540_207de85e",
+      "range": {
+        "startLine": 378,
+        "startChar": 61,
+        "endLine": 378,
+        "endChar": 83
+      },
+      "revId": "305c8b3bef551825fa18e67a77b4f2ffaa6d9524",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "fb9de420_6dbbcbec",
@@ -54,6 +78,30 @@
       "writtenOn": "2023-08-03T18:52:38Z",
       "side": 1,
       "message": "please avoid using \"../..\" in  #include directives, you can add the necessary include paths to the compiler\u0027s search paths (CFLAGS)",
+      "range": {
+        "startLine": 6,
+        "startChar": 0,
+        "endLine": 8,
+        "endChar": 26
+      },
+      "revId": "305c8b3bef551825fa18e67a77b4f2ffaa6d9524",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "fd5bfe20_7095c705",
+        "filename": "tests/host/obj_fs_tests.c",
+        "patchSetId": 9
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-08-25T07:56:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fb9de420_6dbbcbec",
       "range": {
         "startLine": 6,
         "startChar": 0,
@@ -87,6 +135,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "c9a982c3_f65d1c05",
+        "filename": "tests/host/obj_fs_tests.h",
+        "patchSetId": 9
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-08-25T07:56:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "595c4f67_9cfd48b4",
+      "range": {
+        "startLine": 1,
+        "startChar": 8,
+        "endLine": 1,
+        "endChar": 25
+      },
+      "revId": "305c8b3bef551825fa18e67a77b4f2ffaa6d9524",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "0638c25a_8a5e0d50",
@@ -100,6 +172,30 @@
       "writtenOn": "2023-08-03T18:52:38Z",
       "side": 1,
       "message": "lets get rid if ../..",
+      "range": {
+        "startLine": 23,
+        "startChar": 0,
+        "endLine": 23,
+        "endChar": 31
+      },
+      "revId": "305c8b3bef551825fa18e67a77b4f2ffaa6d9524",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "221f04e5_b98b5ef8",
+        "filename": "tests/host/obj_fs_tests.h",
+        "patchSetId": 9
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-08-25T07:56:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0638c25a_8a5e0d50",
       "range": {
         "startLine": 23,
         "startChar": 0,
