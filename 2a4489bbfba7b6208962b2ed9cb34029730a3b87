@@ -24,6 +24,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "f20da736_15ebab1b",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-08-25T07:55:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2d628608_82963c32",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 25
+      },
+      "revId": "2a4489bbfba7b6208962b2ed9cb34029730a3b87",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "33c2dd68_7fd7506a",
@@ -41,6 +65,24 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "bfc6e9bb_fa7660d7",
+        "filename": "init.c",
+        "patchSetId": 6
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-08-25T07:55:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "33c2dd68_7fd7506a",
+      "revId": "2a4489bbfba7b6208962b2ed9cb34029730a3b87",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "6a4b876d_a4787711",
@@ -54,6 +96,30 @@
       "writtenOn": "2023-08-03T15:33:05Z",
       "side": 1,
       "message": "a. seems that you have refactored a name to reflect creation and writing actions. What is the reason of having create_file called from  create_and_write_file?\n\nb. suppress better be located in defs.h to aloow a constant approach to debugging messages across all userland tests rather then only in this test suite. It makes also a total sense to refactor additional system calls in tests to have it. Worth creation of trello card for that (refactoring task)",
+      "range": {
+        "startLine": 148,
+        "startChar": 4,
+        "endLine": 148,
+        "endChar": 25
+      },
+      "revId": "2a4489bbfba7b6208962b2ed9cb34029730a3b87",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "735ea485_cbb618a5",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 6
+      },
+      "lineNbr": 148,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-08-25T07:55:25Z",
+      "side": 1,
+      "message": "I think that making create a different function is a better practice as this is an independent action that has no reason to depend on writing to the file. if another function will need to create a file in the future we will avoid code duplication.\n\nabout suppress, we can\u0027t include defs.h in every test file because it creates conflicting declarations. we may want to make a test_consts.h file for those things",
+      "parentUuid": "6a4b876d_a4787711",
       "range": {
         "startLine": 148,
         "startChar": 4,

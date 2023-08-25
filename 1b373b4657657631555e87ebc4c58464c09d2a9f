@@ -24,6 +24,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "1c1d0e57_18cf8a96",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-08-25T07:55:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "862e50f8_6d4b3e8e",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 116
+      },
+      "revId": "1b373b4657657631555e87ebc4c58464c09d2a9f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "713b4943_68523048",
@@ -37,6 +61,30 @@
       "writtenOn": "2023-07-15T22:47:00Z",
       "side": 1,
       "message": "logically looks same.\n\nfunctionally takes more time because of an additional function call.",
+      "range": {
+        "startLine": 139,
+        "startChar": 0,
+        "endLine": 161,
+        "endChar": 1
+      },
+      "revId": "1b373b4657657631555e87ebc4c58464c09d2a9f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "762a606a_57ee2ff4",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 3
+      },
+      "lineNbr": 161,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-08-25T07:55:25Z",
+      "side": 1,
+      "message": "Is an additional function call a problem? I don\u0027t think that an additional function call will make a performance difference but passing the responsibility of creating a new file to an individual function seems like a better practice to me- so that when someone needs to create a file in the future there will not be code duplication",
+      "parentUuid": "713b4943_68523048",
       "range": {
         "startLine": 139,
         "startChar": 0,
