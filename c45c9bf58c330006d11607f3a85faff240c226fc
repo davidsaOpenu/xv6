@@ -25,6 +25,29 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "00172836_f73d5c9b",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-08-25T14:06:40Z",
+      "side": 1,
+      "message": "lets add a link to the trello card as a last line.",
+      "range": {
+        "startLine": 12,
+        "startChar": 0,
+        "endLine": 14,
+        "endChar": 0
+      },
+      "revId": "c45c9bf58c330006d11607f3a85faff240c226fc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "7d9956e3_f2270dc4",
