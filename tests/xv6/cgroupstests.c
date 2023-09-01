@@ -4,9 +4,13 @@
 #include "mmu.h"
 #include "mutex.h"
 #include "param.h"
-#include "test.h"
 #include "types.h"
 #include "user.h"
+
+// for test.h
+#define PRINT(...) printf(1, __VA_ARGS__)
+
+#include "test.h"
 
 #define GIVE_TURN(my_lock, other_lock) \
   mutex_unlock(&other_lock);           \
