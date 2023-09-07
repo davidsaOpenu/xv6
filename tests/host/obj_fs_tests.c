@@ -1,5 +1,4 @@
-#include "obj_fs_tests.h"
-
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -7,6 +6,10 @@
 #include "obj_disk.h"
 #include "obj_log.h"
 
+// for test.h
+#define PRINT(...) printf(__VA_ARGS__)
+
+#include "test.h"
 /**
  * Tests library variables
  */
