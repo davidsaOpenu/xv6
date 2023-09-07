@@ -1,6 +1,6 @@
 #include "pouch.h"
-
 #include "fcntl.h"
+#include "fs.h"
 #include "mutex.h"
 #include "ns_types.h"
 #include "param.h"
@@ -56,18 +56,89 @@ static int prepare_cgroup_cname(char* container_name, char* cg_cname) {
   return 0;
 }
 
-static int pouch_cmd(char* container_name, enum p_cmd cmd) {
+static char* fmtname(char* path) {
+  static char buf[DIRSIZ + 1];
+  char* p;
+
+  // Find first character after last slash.
+  for (p = path + strlen(path); p >= path && *p != '/'; p--) {
+  }
+  p++;
+
+  // Return blank-padded name.
+  if (strlen(p) >= DIRSIZ) return p;
+  memmove(buf, p, strlen(p));
+  memset(buf + strlen(p), ' ', DIRSIZ - strlen(p));
+  return buf;
+}
+
+static int pouch_get_images() {
+  char buf[512], *p;
+  int fd;
+  struct dirent de;
+  struct stat st;
+
+  if ((fd = open(IMAGE_DIR, 0)) < 0) {
+    printf(2, "ls: cannot open %s\n", IMAGE_DIR);
+    return -1;
+  }
+
+  if (fstat(fd, &st) < 0) {
+    printf(2, "ls: cannot stat %s\n", IMAGE_DIR);
+    close(fd);
+    return -1;
+  }
+
+  if (st.type == T_DIR) {
+    if (strlen(IMAGE_DIR) + 1 + DIRSIZ + 1 > sizeof buf) {
+      printf(1, "ls: path too long\n");
+      return -1;
+    }
+    strcpy(buf, IMAGE_DIR);
+    p = buf + strlen(buf);
+    *p++ = '/';
+    while (read(fd, &de, sizeof(de)) == sizeof(de)) {
+      if (de.inum == 0) continue;
+      memmove(p, de.name, DIRSIZ);
+      p[DIRSIZ] = 0;
+      if (stat(buf, &st) < 0) {
+        printf(1, "ls: cannot stat %s\n", buf);
+        continue;
+      }
+      char dir[512];
+      strcpy(dir, fmtname(buf));
+      if (strncmp(dir, ".", 1) != 0) {
+        printf(1, "%s\n", dir);
+      }
+    }
+  } else {
+    printf(stderr, "%s is not a directory\n", IMAGE_DIR);
+    return -1;
+  }
+  close(fd);
+  return 0;
+}
+
+static int pouch_cmd(char* container_name, char* image_name, char* pouch_file,
+                     enum p_cmd cmd) {
   int tty_fd;
   int pid;
   char tty_name[10];
   char cg_cname[256];
 
   if (cmd == START) {
-    return pouch_fork(container_name);
+    return pouch_fork(container_name, NULL);
   }
 
   if (cmd == LIST) {
     if (print_clist() < 0) {
+      return -1;
+    }
+    return 0;
+  }
+
+  if (cmd == IMAGES) {
+    if (pouch_get_images() < 0) {
       return -1;
     }
     return 0;
@@ -341,7 +412,7 @@ static int write_to_cconf(char* container_name, char* tty_name, int pid) {
   return 0;
 }
 
-static int pouch_fork(char* container_name) {
+static int pouch_fork(char* container_name, char* root_dir) {
   int tty_fd = -1;
   int pid = -1;
   int pid2 = -1;
@@ -571,6 +642,8 @@ static int print_cinfo(char* container_name, char* tty_name, int pid) {
 int main(int argc, char* argv[]) {
   enum p_cmd cmd = START;
   char container_name[CNTNAMESIZE];
+  char image_name[CNTNAMESIZE];
+  char pouch_file[CNTNAMESIZE];
 
   // get parent pid
   int ppid = getppid();
@@ -585,12 +658,14 @@ int main(int argc, char* argv[]) {
     }
     strcpy(container_name, argv[2]);
   } else if (argc == 2) {
-    if (ppid == 1 && get_connected_cname(container_name) < 0) {
-      print_help_inside_cnt();
-      exit(1);
-    } else if (ppid != 1) {
-      print_help_outside_cnt();
-      exit(0);
+    if (strcmp(argv[1], "images") != 0) {
+      if (ppid == 1 && get_connected_cname(container_name) < 0) {
+        print_help_inside_cnt();
+        exit(1);
+      } else if (ppid != 1) {
+        print_help_outside_cnt();
+        exit(0);
+      }
     }
   } else {
     if (ppid == 1)
@@ -621,6 +696,8 @@ int main(int argc, char* argv[]) {
     } else if ((strcmp(argv[1], "list")) == 0 &&
                (strcmp(argv[2], "all")) == 0) {
       cmd = LIST;
+    } else if ((strcmp(argv[1], "images")) == 0) {
+      cmd = IMAGES;
     } else {
       if (ppid == 1)
         print_help_inside_cnt();
@@ -662,10 +739,10 @@ int main(int argc, char* argv[]) {
         if (pouch_limit_cgroup(container_name, argv[3], argv[4]) < 0) {
           exit(1);
         }
-      } else if (pouch_cmd(container_name, cmd) < 0) {
+      } else if (pouch_cmd(container_name, image_name, pouch_file, cmd) < 0) {
         printf(1, "Pouch: operation failed.\n");
         exit(1);
-      }
+      } 
     }
   }
 
