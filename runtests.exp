@@ -142,7 +142,23 @@ proc pouch_start_test {argv} {
     set running [start_container $argv "1" "Pouch: c1 starting"]
     set timeout 3
     set running [pid_check $argv "PID: 2"]
+}
 
+proc pouch_images_command {argv} {
+    set timeout -1
+    log_file -noappend [lindex $argv 0]
+
+    #no images yet
+    send "pouch images\n"
+    expect "$ "
+    sleep 1
+
+    #create image and test if recognized
+    send "mkdir /images/test_image\n"
+    sleep 1
+    send "pouch images\n"
+    expect "test_image"
+    sleep 1
 }
 
 
@@ -514,6 +530,7 @@ set running [pouch_connect_test $argv]
 set running [pouch_disconnect_test $argv]
 set running [pouch_destroy_test $argv]
 set running [command_exit_status_test $argv]
+set running [pouch_images_command $argv]
 
 #scenario tests
 set running [pouch_stress_test $argv]

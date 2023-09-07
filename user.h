@@ -8,6 +8,7 @@ struct stat;
 struct rtcdate;
 
 #define stderr 2
+#define IMAGE_DIR "/images/"
 
 // system calls
 int fork(void);
