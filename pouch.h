@@ -12,7 +12,10 @@ typedef enum p_cmd {
   DESTROY,
   LIMIT,
   INFO,
-  LIST
+  LIST,
+  RUN,
+  IMAGES,
+  CREATE
 } p_cmd;
 #define CNTNAMESIZE 100
 #define CNTARGSIZE 30
@@ -21,21 +24,21 @@ char* argv[] = {"sh", 0};
 /*
  *   Pouch cmd:
  *   - Pouch operation based on command type
- *   @input: container_name,p_cmd
+ *   @input: container_name,image_name,pouch_file,p_cmd
  *   @output: none
  *   @return: 0 - OK, != 0 - FAILURE
  */
-static int pouch_cmd(char* container_name, enum p_cmd);
+static int pouch_cmd(char* container_name, char* image_name, char* pouch_file, enum p_cmd);
 
 /*
  *   Pouch fork:
  *   - Starting new container and execute shell inside, waiting for container to
  * exit
- *   @input: container_name
+ *   @input: container_name,root_dir
  *   @output: none
  *   @return: 0 - OK, <0 - FAILURE
  */
-static int pouch_fork(char* container_name);
+static int pouch_fork(char* container_name, char* root_dir);
 
 /*
  *   Finding a tty:
@@ -158,5 +161,30 @@ static int print_cinfo(char* container_name, char* tty_name, int pid);
  *   @return: 0 - OK, <0 - FAILURE
  */
 static int get_connected_cname(char* cname);
+
+/*
+ *   Get all avaliable images
+ *   @input: none
+ *   @output: prints all avaliable images
+ *   @return: 0 - OK, <0 - FAILURE
+ */
+static int pouch_get_images();
+static char *fmtname(char *path);
+
+/*
+ *   Get image root directory
+ *   @input: image_name,root_dir
+ *   @output: Writes the root directory in root_dir argument
+ *   @return: 0 - OK, <0 - FAILURE
+ */
+static int get_image_root_dir(char * image_name, char * root_dir);
+
+/*
+ *   Create image from pocuh file
+ *   @input: pouch_file,image_name
+ *   @output: Creates the image directory in the images path and add the image to the system
+ *   @return: 0 - OK, <0 - FAILURE
+ */
+static int pouch_create_image(char * pouch_file, char * image_name);
 
 #endif /* XV6_POUCH_H */
