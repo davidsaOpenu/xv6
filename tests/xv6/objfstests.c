@@ -1106,6 +1106,144 @@ void createmanyfiles(uint number_of_files_to_create) {
   printf(stdout, "create many files ok\n");
 }
 
+// obj cache tests
+
+void biggerthancacheblocksinglewrite(void) {
+  int fd, cc;
+  printf(1, "biggerthancacheblocksinglewrite test\n");
+
+  // get cache block size
+  fd = open("/proc/obj_cache_block_size", O_RDONLY);
+  cc = read(fd, buf, 10);
+  if (cc < 0) {
+    printf(1, "could not read cache block size, exiting");
+    exit(1);
+  }
+
+  int block_size = 0;
+  for (int i = 0; buf[i] != '\0'; i++) {
+    // Update the block_size by multiplying it by 10 and adding the righmost
+    // digit
+    block_size = block_size * 10 + (buf[i] - '0');
+    i++;
+  }
+
+  int bytes_to_write = block_size * 1.5;
+
+  unlink("big_file_single");
+  fd = open("big_file_single", O_CREATE | O_RDWR);
+  if (fd < 0) {
+    printf(1, "cannot create big_file_single");
+    exit(1);
+  }
+  // write
+  memset(buf, 60, bytes_to_write);
+  uint written = write(fd, buf, bytes_to_write);
+  if (written != bytes_to_write) {
+    printf(1, "write big_file_single failed\nWrote %d out of %d\n", written,
+           bytes_to_write);
+    exit(1);
+  }
+  close(fd);
+
+  fd = open("big_file_single", 0);
+  if (fd < 0) {
+    printf(1, "cannot open big_file_single\n");
+    exit(1);
+  }
+  cc = read(fd, buf, bytes_to_write);
+  if (cc < 0) {
+    printf(1, "read big_file_single failed\n, err_code: %d", cc);
+    exit(1);
+  }
+  if (cc != bytes_to_write) {
+    printf(1, "read big_file_single failed\n");
+    exit(1);
+  }
+
+  close(fd);
+  unlink("big_file_single");
+
+  printf(1, "biggerthancacheblocksinglewrite test ok\n");
+}
+
+void biggerthanmaxcachesize(void) {
+  int fd, i, total, cc;
+  int write_iterations = 100;
+
+  printf(1, "biggerthancachesize test\n");
+
+  // get cache block size
+  fd = open("/proc/obj_cache_block_size", O_RDONLY);
+  cc = read(fd, buf, 10);
+  if (cc < 0) {
+    printf(1, "could not read cache block size, exiting");
+    exit(1);
+  }
+
+  int block_size = 0;
+  for (int i = 0; buf[i] != '\0'; i++) {
+    // Update the block_size by multiplying it by 10 and adding the righmost
+    // digit
+    block_size = block_size * 10 + (buf[i] - '0');
+    i++;
+  }
+
+  int bytes_per_write = block_size / 10;
+
+  unlink("bigger_than_block");
+  fd = open("bigger_than_block", O_CREATE | O_RDWR);
+  if (fd < 0) {
+    printf(1, "cannot create bigger_than_block");
+    exit(1);
+  }
+  // write
+  for (i = 0; i < write_iterations; i++) {
+    memset(buf, i, bytes_per_write);
+    uint written = write(fd, buf, bytes_per_write);
+    if (written != bytes_per_write) {
+      printf(1,
+             "write bigger_than_block failed\nWrote %d out of %d\nIteration: "
+             "%d/%d",
+             written, bytes_per_write, i, write_iterations);
+      exit(1);
+    }
+  }
+  close(fd);
+
+  fd = open("bigger_than_block", 0);
+  if (fd < 0) {
+    printf(1, "cannot open bigger_than_block\n");
+    exit(1);
+  }
+  total = 0;
+  for (i = 0;; i++) {
+    cc = read(fd, buf, bytes_per_write);
+    if (cc < 0) {
+      printf(1, "read bigger_than_block failed\n, err_code: %d", cc);
+      exit(1);
+    }
+    if (cc == 0) break;
+    if (cc != bytes_per_write) {
+      printf(1, "short read bigger_than_block\n");
+      exit(1);
+    }
+    if (buf[0] != i || buf[bytes_per_write - 1] != i) {
+      printf(1, "read bigger_than_block wrong data\n");
+      exit(1);
+    }
+    total += cc;
+  }
+  close(fd);
+  if (total != write_iterations * bytes_per_write) {
+    printf(1, "read bigger_than_block wrong total\n");
+    exit(1);
+  }
+  unlink("bigger_than_block");
+
+  printf(1, "biggerthancachesize test ok\n");
+}
+
 int main(int argc, char *argv[]) {
   printf(1, "objfstests starting\n");
 
@@ -1122,6 +1260,10 @@ int main(int argc, char *argv[]) {
     printf(2, "ls: cannot cd new\n");
     exit(0);
   }
+
+  // obj cache tests
+  biggerthancacheblocksinglewrite();
+  biggerthanmaxcachesize();
 
   createdelete();
   createmanyfiles(300);
