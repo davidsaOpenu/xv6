@@ -10,40 +10,69 @@
 #include "obj_fs_tests_utilities.h"  // impot mock `panic`
 #endif
 
-// the default cache has 32 objects of 8KB each for total of 256KB.
-#ifndef CACHE_MAX_OBJECT_SIZE
-#define CACHE_MAX_OBJECT_SIZE 8192
+#ifndef OBJ_CACHE_CONSTS
+#define OBJ_CACHE_CONSTS
+
+#define CACHE_BLOCK_SIZE 1024
+#define CACHE_MAX_BLOCKS_PER_OBJECT 8
+#define CACHE_MAX_OBJECT_SIZE (CACHE_BLOCK_SIZE * CACHE_MAX_BLOCKS_PER_OBJECT)
+#define OBJECTS_CACHE_ENTRIES 800
+#define OBJECT_CACHE_METADATA_BLOCK_NUMBER -1
+
 #endif
 
-#ifndef OBJECTS_CACHE_ENTRIES
-#define OBJECTS_CACHE_ENTRIES 100
-#endif
 
 struct sleeplock cachelock;
 
 uint hits;
 uint misses;
 
-struct obj_cache_entry {
-  uchar data[CACHE_MAX_OBJECT_SIZE];
-  uint size;
-  char object_id[OBJECT_ID_LENGTH];
 
-  struct obj_cache_entry* prev;
-  struct obj_cache_entry* next;
+struct obj_cache_metadata_block{
+  uint object_size;
 };
 
+struct obj_cache_data_block{
+  uchar data[CACHE_BLOCK_SIZE];
+  uint size;
+};
+
+typedef union obj_cache_block_content
+{
+  struct obj_cache_data_block data_block;
+  struct obj_cache_metadata_block metadata_block;
+  
+}obj_cache_block_content;
+
+
+typedef struct obj_cache_entry {
+  char object_id[OBJECT_ID_LENGTH];
+  uint block_no;
+  struct obj_cache_entry* prev;
+  struct obj_cache_entry* next;
+  obj_cache_block_content content;
+}obj_cache_entry;
+
 struct {
-  struct obj_cache_entry entries[OBJECTS_CACHE_ENTRIES];
+  obj_cache_entry entries[OBJECTS_CACHE_ENTRIES];
 
   // Linked list of all buffers, through prev/next.
   // head.next is most recently used. The head itself doesn't keep an object.
-  struct obj_cache_entry head;
+  obj_cache_entry head;
 } obj_cache;
 
-void init_object_entry(struct obj_cache_entry* e) {
-  e->size = 0;
-  e->object_id[0] = 0;  // empty string
+
+
+void _cache_invalidate_entry(obj_cache_entry* e){
+  e -> object_id[0] = 0;
+}
+
+bool _cache_is_entry_valid(obj_cache_entry* e){
+  return e -> object_id[0] == 0;
+}
+
+void _init_object_entry(obj_cache_entry* e) {
+  _cache_invalidate_entry(e);  // empty string
 }
 
 void init_objects_cache() {
@@ -53,12 +82,12 @@ void init_objects_cache() {
   initsleeplock(&cachelock, "cachelock");
 
   // the following, was copied from `bio.c` with minor changes.
-  struct obj_cache_entry* e;
+  obj_cache_entry* e;
   obj_cache.head.prev = &obj_cache.head;
   obj_cache.head.next = &obj_cache.head;
   for (e = obj_cache.entries; e < obj_cache.entries + OBJECTS_CACHE_ENTRIES;
        e++) {
-    init_object_entry(e);
+    _init_object_entry(e);
     e->next = obj_cache.head.next;
     e->prev = &obj_cache.head;
     obj_cache.head.next->prev = e;
@@ -66,7 +95,7 @@ void init_objects_cache() {
   }
 }
 
-static void move_to_front(struct obj_cache_entry* e) {
+static void _move_to_front(obj_cache_entry* e) {
   e->next->prev = e->prev;
   e->prev->next = e->next;
   e->next = obj_cache.head.next;
@@ -75,7 +104,7 @@ static void move_to_front(struct obj_cache_entry* e) {
   obj_cache.head.next = e;
 }
 
-static void move_to_back(struct obj_cache_entry* e) {
+static void _move_to_back(obj_cache_entry* e) {
   e->next->prev = e->prev;
   e->prev->next = e->next;
   e->next = &obj_cache.head;
@@ -84,174 +113,172 @@ static void move_to_back(struct obj_cache_entry* e) {
   obj_cache.head.prev = e;
 }
 
-uint cache_add_object(const void* object, uint size, const char* name) {
-  acquiresleep(&cachelock);
-  uint rv = add_object(object, size, name);
-  if (rv != NO_ERR) {
-    releasesleep(&cachelock);
-    return rv;
-  }
-  if (size > CACHE_MAX_OBJECT_SIZE) {
-    releasesleep(&cachelock);
-    return NO_ERR;
-  }
-  // The object is not located in the cache because it is new. And if it was
-  // already created before, it's fair to assume the data is different.
-  struct obj_cache_entry* e = obj_cache.head.prev;
-  move_to_front(e);
-  e->size = size;
-  memmove(e->data, object, size);
-  memmove(e->object_id, name, obj_id_bytes(name));
-  misses++;
-  releasesleep(&cachelock);
+uint _offset_to_block_no(uint offset){
+  /***gets an offset within an object and returns in which block the offset is stored
+   */
+  return offset / CACHE_BLOCK_SIZE;
+}
+
+uint _cache_add_data_entry(const char* id, char* data, uint size, uint block_no){
+  obj_cache_entry* e = obj_cache.head.prev;
+  _move_to_front(e);
+  e->content.data_block.size = size;
+  e->block_no = block_no;
+  memmove(e->content.data_block.data, data, size);
+  memmove(e->object_id, id, obj_id_bytes(id));
   return NO_ERR;
 }
 
-uint cache_rewrite_object(vector data, uint objectsize, uint offset,
-                          const char* name) {
-  acquiresleep(&cachelock);
-  // 1. check for name constraints validity
-  uint rv = rewrite_object(data, objectsize, offset, name);
-  if (rv != NO_ERR) {
-    releasesleep(&cachelock);
-    return rv;
-  }
-  // 2. check if object is small enough to be cached
-  if (objectsize > CACHE_MAX_OBJECT_SIZE) {
-    releasesleep(&cachelock);
-    return NO_ERR;
-  }
-  // 3. search the cache for an object with the specified name
-  int found = 0;
-  struct obj_cache_entry* e = obj_cache.head.prev;
-  misses++;
-  for (struct obj_cache_entry* current = obj_cache.head.prev;
-       current != &obj_cache.head; current = current->prev) {
-    if (obj_id_cmp(name, current->object_id) == 0) {
-      e = current;
-      misses--;
-      hits++;
-      found = 1;
-      break;
-    }
-  }
-  // 4. if found cache it. otherwise, evict using LRU policy
-  if (found) {
-    move_to_front(e);
-    e->size = objectsize;
-    memmove_from_vector((char*)(e->data + offset), data, 0, data.vectorsize);
-    memmove(e->object_id, name, obj_id_bytes(name));
-  }
-  releasesleep(&cachelock);
+uint _cache_add_metadata_entry(const char* id, uint object_size){
+  obj_cache_entry* e = obj_cache.head.prev;
+  _move_to_front(e);
+  e->content.metadata_block.object_size = object_size;
+  e->block_no = OBJECT_CACHE_METADATA_BLOCK_NUMBER;
   return NO_ERR;
 }
 
-uint cache_rewrite_entire_object(vector object, uint size, const char* name) {
-  return cache_rewrite_object(object, size, 0, name);
-}
-
-/// the caller holds the cache lock
-static uint cache_free_from_cache(const char* name) {
-  // the object might be inside the cache and might not
-  for (struct obj_cache_entry* e = obj_cache.head.prev; e != &obj_cache.head;
+obj_cache_entry* _cache_get_entry(const char* id, uint block_no){
+  // get an entry from the cache. the efficiency problems of this function will be solved when I implement a hash map
+  for (obj_cache_entry* e = obj_cache.head.prev; e != &obj_cache.head;
        e = e->prev) {
-    if (obj_id_cmp(name, e->object_id) == 0) {
-      move_to_back(e);
-      e->object_id[0] = 0;
-      // TODO(unknown): remove?
-      releasesleep(&cachelock);
-      return NO_ERR;
+    if (obj_id_cmp(id, e->object_id) == 0 && block_no == e -> block_no) {
+      hits ++;
+      return e;
     }
+  }
+  misses ++;
+  return NULL;
+}
+
+uint _cache_remove_entry(const char* id, uint block_no){
+  obj_cache_entry* e = _cache_get_entry(id, block_no);
+  if (e != NULL){
+    _move_to_back(e);
+    _cache_invalidate_entry(e);
+    return NO_ERR;
   }
   return OBJECT_NOT_EXISTS;
 }
 
-uint cache_delete_object(const char* name) {
+uint cache_remove_object(const char* id, uint offset, bool remove_metadata) {
   acquiresleep(&cachelock);
-  uint rv = delete_object(name);
-  if (rv != NO_ERR) {
-    releasesleep(&cachelock);
-    return rv;
+  if (remove_metadata){
+    _cache_remove_entry(id, OBJECT_CACHE_METADATA_BLOCK_NUMBER);
   }
-  // "remove" the object from the cache - otherwise the assumption
-  // in `cache_add_objet` won't be valid.
-  rv = cache_free_from_cache(name);
-  if (rv == OBJECT_NOT_EXISTS) {
-    misses++;
-  } else if (rv == NO_ERR) {
-    hits++;
-  } else {
-    releasesleep(&cachelock);
-    panic("unexpected error from cache_free_from_cache");
+
+  for (uint block_no = _offset_to_block_no(offset); block_no < CACHE_MAX_BLOCKS_PER_OBJECT; block_no++){
+    _cache_remove_entry(id, block_no);
   }
   releasesleep(&cachelock);
   return NO_ERR;
 }
 
-uint cache_object_size(const char* name, uint* output) {
+uint cache_delete_object(const char* id) {
   acquiresleep(&cachelock);
-  for (struct obj_cache_entry* e = obj_cache.head.prev; e != &obj_cache.head;
-       e = e->prev) {
-    if (obj_id_cmp(name, e->object_id) == 0) {
-      *output = e->size;
-      move_to_front(e);
-      hits++;
-      releasesleep(&cachelock);
-      return NO_ERR;
-    }
+  
+  cache_remove_object(id, 0, true);
+
+  // delete the object from the disk
+  uint rv = delete_object(id);
+  if (rv != NO_ERR) {
+    releasesleep(&cachelock);
+    return rv;
   }
-  misses++;
-  uint err = object_size(name, output);
+
   releasesleep(&cachelock);
-  return err;
+  return NO_ERR;
 }
 
-uint cache_get_object(const char* name, vector* outputvector,
-                      uint read_object_from_offset) {
+uint cache_object_size(const char* id, uint* output) {
   acquiresleep(&cachelock);
-  // 1. check if the desired object is already in the cache
-  for (struct obj_cache_entry* e = obj_cache.head.prev; e != &obj_cache.head;
-       e = e->prev) {
-    if (obj_id_cmp(name, e->object_id) == 0) {
-      memmove_into_vector_bytes(*outputvector, 0, (char*)e->data, e->size);
-      move_to_front(e);
-      hits++;
-      releasesleep(&cachelock);
-      return NO_ERR;
-    }
+  obj_cache_entry* e = _cache_get_entry(id, OBJECT_CACHE_METADATA_BLOCK_NUMBER);
+  if (e != NULL){
+    releasesleep(&cachelock);
+    return e->content.metadata_block.object_size;
   }
-  // 2. object is not in cache hence the miss counter is incremented
-  misses++;
-  // 3. try to fetch object from disk
+  else{
+    uint err = object_size(id, output);
+    _cache_add_metadata_entry(id, *output);
+    releasesleep(&cachelock);
+    return err;
+  }
+}
+
+uint cache_get_object(const char* id, vector* outputvector,
+                      const uint start_offset, const uint end_offset) {
+  acquiresleep(&cachelock);
+  uint resolved_end_offset = end_offset;
+  if(end_offset == OBJ_END){
+    cache_object_size(id, &resolved_end_offset);
+  }
+
+
+  //If the object is too big for the cache, read the object from the disk and return
   uint size;
-  if (object_size(name, &size) != NO_ERR) {
+  if (object_size(id, &size) != NO_ERR) {
     releasesleep(&cachelock);
     panic("cache get object failed to get object size");
   }
   if (size > CACHE_MAX_OBJECT_SIZE) {
-    releasesleep(&cachelock);
-    return NO_ERR;
-  }
-  uint rv = get_object(name, NULL, outputvector);
-  if (rv != NO_ERR) {
+    vector temp = newvector(size, 1);
+    uint rv = get_object(id, NULL, &temp);
+    copysubvector(outputvector, &temp, start_offset, resolved_end_offset - start_offset + 1);
+    freevector(&temp);
     releasesleep(&cachelock);
     return rv;
   }
-  // 4. store the object in some cache entry for later use
-  struct obj_cache_entry* e = obj_cache.head.prev;
-  move_to_front(e);
-  e->size = size;
-  memmove_from_vector((char*)e->data, *outputvector, 0, e->size);
-  memmove(e->object_id, name, obj_id_bytes(name));
+
+  uint start_offset_block_start = (start_offset / CACHE_BLOCK_SIZE) * CACHE_BLOCK_SIZE;
+  uint end_offset_block_start = (resolved_end_offset / CACHE_BLOCK_SIZE) * CACHE_BLOCK_SIZE;
+  
+  // if we are missing a part of the object, we will read the object from the disk
+  bool is_object_read_from_disk = false;
+  char data[CACHE_BLOCK_SIZE];
+  uint curr_offset = 0;
+  vector object_holder = newvector(size, 1);
+
+  //go through the relevant blocks. if a block doesnt exist in the cache, read the object from memory, and if it exists use it to built the result vector
+  for (uint block_no = _offset_to_block_no(start_offset); block_no < _offset_to_block_no(resolved_end_offset); block_no ++){
+    obj_cache_entry* e = _cache_get_entry(id, block_no);
+    if (e == NULL){
+      if (is_object_read_from_disk == false){
+        is_object_read_from_disk = true;
+        get_object(id, NULL, &object_holder);
+      }
+      memmove_from_vector(data, object_holder, block_no * CACHE_BLOCK_SIZE, CACHE_BLOCK_SIZE);
+      _cache_add_data_entry(id, data, CACHE_BLOCK_SIZE, block_no);
+    }
+    else{
+      memmove(&data, e->content.data_block.data, CACHE_BLOCK_SIZE);
+    }
+    memmove_into_vector_bytes(*outputvector, curr_offset, data, CACHE_BLOCK_SIZE);
+    curr_offset =+ CACHE_BLOCK_SIZE;
+  }
+
+  // handling the last block
+  obj_cache_entry* e = _cache_get_entry(id, _offset_to_block_no(resolved_end_offset));
+  if (e == NULL){
+    if (is_object_read_from_disk == false){
+      object_holder = newvector(size, 1);
+      get_object(id, NULL, &object_holder);
+    } 
+    copysubvector(outputvector, &object_holder, start_offset_block_start, resolved_end_offset - start_offset_block_start); 
+    
+    uint size_to_cache = CACHE_BLOCK_SIZE;
+    if (size - end_offset_block_start < CACHE_BLOCK_SIZE){
+      size_to_cache = size - end_offset_block_start;
+    }
+
+    memmove_from_vector(data, object_holder, end_offset_block_start, size_to_cache);
+    _cache_add_data_entry(id, data, size_to_cache, _offset_to_block_no(resolved_end_offset));    
+  }
+  if (is_object_read_from_disk){
+    freevector(&object_holder);
+  }
+  *outputvector = slicevector(*outputvector, start_offset - start_offset_block_start, outputvector -> vectorsize - (start_offset - start_offset_block_start));
+
   releasesleep(&cachelock);
   return NO_ERR;
-}
-
-uint cache_free_from_cache_safe(const char* name) {
-  acquiresleep(&cachelock);
-  uint err = cache_free_from_cache(name);
-  releasesleep(&cachelock);
-  return err;
 }
 
 uint objects_cache_hits() { return hits; }
