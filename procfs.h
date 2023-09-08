@@ -11,6 +11,11 @@
 #define PROCFS_MEM "mem"
 #define PROCFS_MOUNTS "mounts"
 #define PROCFS_DEVICES "devices"
+#define PROCFS_OBJ_CACHE_HITS "obj_cache_hits"
+#define PROCFS_OBJ_CACHE_MISSES "obj_cache_misses"
+#define PROCFS_OBJ_CACHE_BLOCK_SIZE "obj_cache_block_size"
+#define PROCFS_OBJ_CACHE_BLOCKS "obj_cache_blocks"
+#define PROCFS_OBJ_CACHE_BLOCKS_PER_OBJECT "obj_cache_blocks_per_object"
 
 /* /proc/mounts strings. */
 #define MOUNTS_TITLE "Mounts:"
@@ -31,6 +36,11 @@ typedef enum proc_file_name_e {
   PROC_MEM,
   PROC_MOUNTS,
   PROC_DEVICES,
+  PROC_OBJ_CACHE_HITS,
+  PROC_OBJ_CACHE_MISSES,
+  PROC_OBJ_CACHE_BLOCK_SIZE,
+  PROC_OBJ_CACHE_BLOCKS,
+  PROC_OBJ_CACHE_BLOCKS_PER_OBJECT,
 
   PROC_FILE_NAME_END,
   NON_WRITABLE,
