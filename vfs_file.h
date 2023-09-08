@@ -106,6 +106,11 @@ struct vfs_file {
         uint mem;
         struct mount_list *mount_entry;
         struct device devs[NLOOPDEVS];
+        uint obj_cache_hits;
+        uint obj_cache_misses;
+        uint obj_cache_block_size;
+        uint obj_cache_blocks;
+        uint obj_cache_blocks_per_object;
       } proc;
       uint count; /* Useful to count mount entries/devs, etc.. */
     };

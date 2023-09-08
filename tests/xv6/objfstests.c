@@ -1106,6 +1106,458 @@ void createmanyfiles(uint number_of_files_to_create) {
   printf(stdout, "create many files ok\n");
 }
 
+/** obj cache tests
+ * these tests tests the functionallity of the object cache
+ */
+
+/**
+ * helper functions
+ */
+
+/**
+ * get a string that represents a uint and return the int.
+ *
+ * @return the int if successful and -1 if there is an error
+ */
+int string_to_int(char *s) {
+  int result = 0;
+
+  // Iterate over the string
+  for (int i = 0; s[i] != '\0'; i++) {
+    // Update the result by multiplying it by 10 and adding the righmost
+    // digit
+    result *= 10;
+    result += s[i] - '0';
+  }
+
+  return result;
+}
+
+/**
+ * Read a file that contains a uint property of the object cache
+ *
+ * @param path_to_file path to the file in /proc that contains the requested
+ * property
+ * @return the property if successful, -1 if not
+ */
+int object_cache_property_from_procfs(char *path_to_file) {
+  int fd, cc;
+  char size_buffer[20];
+  // Get cache block size from procfs
+  fd = open(path_to_file, O_RDONLY);
+  // I asseme here that the property is less that 20 digits
+  cc = read(fd, size_buffer, 20);
+
+  // If the read was not successful, return -1
+  if (cc < 0) {
+    return -1;
+  }
+
+  size_buffer[cc] = '\0';
+
+  return string_to_int(size_buffer);
+}
+
+/**
+ * get the object cache's block size from procfs
+ *
+ * @return the size if successful, -1 if not
+ */
+int object_cache_block_size() {
+  return object_cache_property_from_procfs("/proc/obj_cache_block_size");
+}
+
+/**
+ * get the object cache's number of blocks from procfs
+ *
+ * @return the number of blocks if successful, -1 if not
+ */
+int object_cache_number_of_blocks() {
+  return object_cache_property_from_procfs("/proc/obj_cache_blocks");
+}
+
+/**
+ * get the object cache's number of blocks per object from procfs
+ *
+ * @return the number of blocks per object if successful, -1 if not
+ */
+int object_cache_max_blocks_per_object() {
+  return object_cache_property_from_procfs("/proc/obj_cache_blocks_per_object");
+}
+
+/**
+ * get the object cache's number of cache hits procfs
+ *
+ * @return the number of hits if successful, -1 if not
+ */
+int object_cache_hits() {
+  return object_cache_property_from_procfs("/proc/obj_cache_hits");
+}
+
+/**
+ * get the object cache's number of cache misses procfs
+ *
+ * @return the number of misses if successful, -1 if not
+ */
+int object_cache_misses() {
+  return object_cache_property_from_procfs("/proc/obj_cache_misses");
+}
+
+/**
+ * this helper function gets a number and returns a file name unique to that
+ * number
+ */
+void generate_file_name_for_number(int n, char *buffer) {
+  char base_file_name[] = "file     ";
+  int digits[5];
+  for (int i = 4; i >= 0; i--) {
+    digits[i] = n % 10;
+    n /= 10;
+  }
+  int i;
+  for (i = 4; i < 9; i++) {
+    base_file_name[i] = '0' + digits[i - 4];
+  }
+  base_file_name[i] = '\0';
+  strcpy(buffer, base_file_name);
+}
+
+/**
+ * obj cache tests
+ */
+
+/**
+ * test that the procfs files return the values we expect them to return
+ */
+void objprocfs() {
+  printf(1, "objfrocfs test starting\n");
+  // expected values
+  int expected_block_size = 1024;
+  int expected_number_of_blocks = 100;
+  int expected_max_blocks_per_object = 8;
+
+  // actual values
+  int block_size_from_procfs = object_cache_block_size();
+  int number_of_blocks_from_procfs = object_cache_number_of_blocks();
+  int max_blocks_per_object_from_procfs = object_cache_max_blocks_per_object();
+
+  if (expected_block_size != block_size_from_procfs) {
+    printf(1, "expected block size: %d, actual: %d, exiting\n",
+           expected_block_size, block_size_from_procfs);
+    exit(1);
+  }
+
+  if (expected_number_of_blocks != number_of_blocks_from_procfs) {
+    printf(1, "expected number of blocks: %d, actual: %d, exiting\n",
+           expected_number_of_blocks, number_of_blocks_from_procfs);
+    exit(1);
+  }
+
+  if (expected_max_blocks_per_object != max_blocks_per_object_from_procfs) {
+    printf(1, "expected max blocks per object: %d, actual: %d, exiting\n",
+           expected_max_blocks_per_object, max_blocks_per_object_from_procfs);
+    exit(1);
+  }
+  printf(1, "objfrocfs test finished successfully\n");
+}
+
+/**
+ * In this test we check that the hits and misses go up when we expect them to.
+ * We can't use hits and misses more in the tests because we are running in
+ * userspace, so when we write an object things that affect those statistics
+ * happen in the background- like the log layer writes.
+ */
+void teststats() {
+  printf(1, "teststats starting\n");
+  int prev_hits = object_cache_hits();
+  int prev_misses = object_cache_misses();
+  int fd, cc, curr_hits, curr_misses;
+  char filename[] = "stattest";
+  // write a new file- we expect the misses to go up and the hits to not go down
+  fd = open(filename, O_CREATE | O_RDWR);
+  cc = write(fd, "hello", strlen("hello"));
+  if (cc < 0) {
+    printf(1, "write failed\n");
+    exit(1);
+  }
+  curr_hits = object_cache_hits();
+  curr_misses = object_cache_misses();
+
+  // we expect the hits to at least remain the same and the misses to go up
+  // because we accessed a new file
+  if (curr_hits < prev_hits || curr_misses <= prev_misses) {
+    printf(1,
+           "unexpected hits and misses after writing. prev_hits: %d curr hits: "
+           "%d, prev misses: %d curr misses: %d ",
+           prev_hits, curr_hits, prev_misses, curr_misses);
+    exit(1);
+  }
+  prev_hits = curr_hits;
+  prev_misses = curr_misses;
+  close(fd);
+  fd = open(filename, O_RDONLY);
+  read(fd, buf, strlen("hello") + 1);
+
+  curr_hits = object_cache_hits();
+  curr_misses = object_cache_misses();
+
+  // we expect the misses to at least remain the same and the hits to go up
+  // because we accessed an existing file
+  if (curr_hits < prev_hits || curr_misses <= prev_misses) {
+    printf(1,
+           "unexpected hits and misses after reading. prev_hits: %d curr hits: "
+           "%d, prev misses: %d curr misses: %d ",
+           prev_hits, curr_hits, prev_misses, curr_misses);
+    exit(1);
+  }
+  close(fd);
+  unlink(filename);
+  printf(1, "teststats finished successfully\n");
+}
+
+/**
+ * This test tests that we can write an object that is bigger than a single
+ * cache block but is small enough to be cached in one write
+ */
+void biggerthancacheblocksinglewrite(void) {
+  int fd, cc;
+  printf(1, "biggerthancacheblocksinglewrite test\n");
+
+  int block_size = object_cache_block_size();
+  if (block_size < 0) {
+    printf(1, "failed to get object cache block size, exiting\n");
+    exit(1);
+  }
+
+  int bytes_to_write = block_size * 1.5;
+
+  unlink("big_file_single");
+  fd = open("big_file_single", O_CREATE | O_RDWR);
+  if (fd < 0) {
+    printf(1, "cannot create big_file_single\n");
+    exit(1);
+  }
+  // write
+  memset(buf, 60, bytes_to_write);
+  uint written = write(fd, buf, bytes_to_write);
+  if (written != bytes_to_write) {
+    printf(1, "write big_file_single failed\nWrote %d out of %d\n", written,
+           bytes_to_write);
+    exit(1);
+  }
+  close(fd);
+
+  fd = open("big_file_single", 0);
+  if (fd < 0) {
+    printf(1, "cannot open big_file_single\n");
+    exit(1);
+  }
+  cc = read(fd, buf, bytes_to_write);
+  if (cc < 0) {
+    printf(1, "read big_file_single failed\n, err_code: %d\n", cc);
+    exit(1);
+  }
+  if (cc != bytes_to_write) {
+    printf(1, "read big_file_single failed\n");
+    exit(1);
+  }
+
+  close(fd);
+  unlink("big_file_single");
+
+  printf(1, "biggerthancacheblocksinglewrite test ok\n");
+}
+
+/**
+ * This test tests that we can write an object that is the size of 10 cache
+ * blocks in 100 small rewrites, which means that the object will be in the
+ * cache at the start and will not be in the cache at the end
+ */
+void biggerthanmaxcachesize(void) {
+  int fd, i, total, cc;
+  int write_iterations = 100;
+
+  printf(1, "biggerthancachesize test\n");
+
+  int block_size = object_cache_block_size();
+  if (block_size < 0) {
+    printf(1, "failed to get object cache block size, exiting");
+    exit(1);
+  }
+  int bytes_per_write = block_size / 10;
+
+  unlink("bigger_than_block");
+  fd = open("bigger_than_block", O_CREATE | O_RDWR);
+  if (fd < 0) {
+    printf(1, "cannot create bigger_than_block");
+    exit(1);
+  }
+  // write
+  for (i = 0; i < write_iterations; i++) {
+    memset(buf, i, bytes_per_write);
+    uint written = write(fd, buf, bytes_per_write);
+    if (written != bytes_per_write) {
+      printf(1,
+             "write bigger_than_block failed\nWrote %d out of %d\nIteration: "
+             "%d/%d",
+             written, bytes_per_write, i, write_iterations);
+      exit(1);
+    }
+  }
+  close(fd);
+
+  fd = open("bigger_than_block", 0);
+  if (fd < 0) {
+    printf(1, "cannot open bigger_than_block\n");
+    exit(1);
+  }
+  total = 0;
+  for (i = 0;; i++) {
+    cc = read(fd, buf, bytes_per_write);
+    if (cc < 0) {
+      printf(1, "read bigger_than_block failed\n, err_code: %d", cc);
+      exit(1);
+    }
+    if (cc == 0) break;
+    if (cc != bytes_per_write) {
+      printf(1, "short read bigger_than_block\n");
+      exit(1);
+    }
+    if (buf[0] != i || buf[bytes_per_write - 1] != i) {
+      printf(1, "read bigger_than_block wrong data\n");
+      exit(1);
+    }
+    total += cc;
+  }
+  close(fd);
+  if (total != write_iterations * bytes_per_write) {
+    printf(1, "read bigger_than_block wrong total\n");
+    exit(1);
+  }
+  unlink("bigger_than_block");
+
+  printf(1, "biggerthancachesize test ok\n");
+}
+
+/**
+ * In this tests we write an read a lot of objects to the cache and check that
+ * we get the expected outputs. The working set in this test is bigger than the
+ * number of blocks in the cache so it tests the case of thrashing.
+ */
+void objcachestressbigworkingset() {
+  printf(1, "objcachestressbigworkingset starting\n");
+  int fd, cc;
+  int cache_entries = object_cache_number_of_blocks();
+  for (int i = 0; i < 2 * cache_entries; i++) {
+    generate_file_name_for_number(i, buf);
+
+    fd = open(buf, O_CREATE | O_RDWR);
+    if (fd < 0) {
+      printf(1, "could not open file %s\n", buf);
+      exit(1);
+    }
+    cc = write(fd, buf, strlen(buf) + 1);
+    if (cc != strlen(buf) + 1) {
+      printf(1, "could not write file %s", buf);
+    }
+    close(fd);
+    // uncomment for debugging
+    // printf(1, "done writing file %s\n", buf);
+  }
+
+  for (int i = 0; i < 2 * cache_entries; i++) {
+    generate_file_name_for_number(i, buf);
+
+    fd = open(buf, O_RDONLY);
+    if (fd < 0) {
+      printf(1,
+             "objcachestressbigworkingset: could not open file for reading%s\n",
+             buf);
+      exit(1);
+    }
+    char *buf2 = buf + 1000;
+    cc = read(fd, buf2, strlen(buf) + 1);
+    if (cc != strlen(buf) + 1) {
+      printf(1, "could not read file %s", buf);
+    }
+    if (strcmp(buf, buf2) != 0) {
+      printf(1,
+             "objcachestressbigworkingset: contents of file %s are not as "
+             "expected: the expected is %s but "
+             "we got %s\n",
+             buf, buf, buf2);
+      exit(1);
+    }
+    close(fd);
+    unlink(buf);
+    // uncomment for debugging
+    // printf(1, "done reading file %s\n", buf);
+  }
+  printf(1, "objcachestressbigworkingset finished successfully\n");
+}
+
+/**
+ * In this tests we write an read a lot of objects to the cache and check that
+ * we get the expected outputs. The working set in this test is smaller than the
+ * number of blocks in the cache so it tests the case of retrieving many objects
+ * from the cache.
+ */
+void objcachestresssmallworkingset() {
+  printf(1, "objcachestresssmallworkingset starting\n");
+  int fd, cc;
+  int cache_entries = object_cache_number_of_blocks();
+  for (int i = 0; i < cache_entries / 2; i++) {
+    generate_file_name_for_number(i, buf);
+
+    fd = open(buf, O_CREATE | O_RDWR);
+    if (fd < 0) {
+      printf(1, "objcachestresssmallworkingset: could not open file %s\n", buf);
+      exit(1);
+    }
+    cc = write(fd, buf, strlen(buf) + 1);
+    if (cc != strlen(buf) + 1) {
+      printf(1, "objcachestresssmallworkingset: could not write file %s", buf);
+    }
+    close(fd);
+    // uncomment for debugging
+    // printf(1, "done writing file %s\n", buf);
+  }
+
+  for (int i = 0; i < cache_entries / 2; i++) {
+    generate_file_name_for_number(i, buf);
+
+    fd = open(buf, O_RDONLY);
+    if (fd < 0) {
+      printf(
+          1,
+          "objcachestresssmallworkingset: could not open file for reading%s\n",
+          buf);
+      exit(1);
+    }
+    char *buf2 = buf + 1000;
+    cc = read(fd, buf2, strlen(buf) + 1);
+    if (cc != strlen(buf) + 1) {
+      printf(1, "objcachestresssmallworkingset: could not read file %s", buf);
+    }
+    if (strcmp(buf, buf2) != 0) {
+      printf(1,
+             "objcachestresssmallworkingset: contents of file %s are not as "
+             "expected: the expected is %s but "
+             "we got %s\n",
+             buf, buf, buf2);
+      exit(1);
+    }
+    close(fd);
+    unlink(buf);
+    // uncomment for debugging
+    // printf(1, "done reading file %s\n", buf);
+  }
+  printf(1, "objcachestresssmallworkingset finished successfully\n");
+}
+
+/**
+ * Main
+ */
 int main(int argc, char *argv[]) {
   printf(1, "objfstests starting\n");
 
@@ -1122,6 +1574,14 @@ int main(int argc, char *argv[]) {
     printf(2, "ls: cannot cd new\n");
     exit(0);
   }
+
+  // obj cache tests
+  objprocfs();
+  teststats();
+  biggerthancacheblocksinglewrite();
+  biggerthanmaxcachesize();
+  objcachestressbigworkingset();
+  objcachestresssmallworkingset();
 
   createdelete();
   createmanyfiles(300);
