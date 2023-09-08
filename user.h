@@ -67,4 +67,9 @@ int is_attached_tty(int tty_fd);
 int disconnect_tty(int tty_fd);
 int is_connected_tty(int tty_fd);
 
+// diff.c
+int compare_files(const char* a, const char* b);
+int compare_dirs(const char* lhs, const char* rhs, char** names,
+                 int names_length);
+
 #endif /* XV6_USER_H */

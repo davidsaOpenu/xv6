@@ -180,7 +180,7 @@ tags: $(OBJS) entryother.S _init
 vectors.S: vectors.pl
 	perl vectors.pl > vectors.S
 
-ULIB = ulib.o usys.o printf.o umalloc.o tty.o mutex.o
+ULIB = ulib.o usys.o printf.o umalloc.o tty.o mutex.o diff.o
 
 _%: %.o $(ULIB)
 	$(LD) $(LDFLAGS) -T userspace.ld -N -e main -Ttext 0 -o $@ $^
@@ -322,7 +322,8 @@ qemu-nox-gdb: gdb .gdbinit
 EXTRA=\
 	mkfs.c ulib.c user.h cat.c cp.c echo.c grep.c kill.c ln.c ls.c mkdir.c rm.c\
 	stressfs.c wc.c zombie.c printf.c umalloc.c mount.c umount.c timer.c cpu.c\
-	mutex.c tests/xv6/forktest.c tests/xv6/mounttest.c tests/xv6/usertests.c\
+	mutex.c diff.c\
+	tests/xv6/forktest.c tests/xv6/mounttest.c tests/xv6/usertests.c\
 	tests/xv6/pidns_tests.c tests/xv6/cgroupstests.c tests/xv6/ioctltests.c\
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
 	.gdbinit.tmpl gdbutil\
