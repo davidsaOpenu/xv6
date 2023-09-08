@@ -70,23 +70,52 @@
 #include "kvector.h"
 #include "types.h"
 
+// if this value is passed to get_object as the end offset the object will be
+// read to the end
+#define OBJ_END -1
+
 void init_objects_cache();
 
-void _check(char* val);
-uint cache_add_object(const void* object, uint size, const char* name);
-uint cache_rewrite_entire_object(vector object, uint size, const char* name);
-uint cache_rewrite_object(vector data, uint objectsize, uint offset,
-                          const char* name);
-uint cache_delete_object(const char* name);
-uint cache_object_size(const char* name, uint* output);
-uint cache_get_object(const char* name, vector* outputvector,
-                      uint read_object_from_offset);
+/**
+ * remove an object from the cache and delete it from the disk
+ * :param id: the object's id
+ */
+uint cache_delete_object(const char* id);
 
 /**
- * Remove the object from the objects cache but not form the disk.
- * This function locks the cache lock and release it in the end.
+ * get an objects size while locking the cache
+ * :param id: the object's id
+ * :param output: will be set to the object's size
  */
-uint cache_free_from_cache_safe(const char* name);
+uint cache_object_size(const char* id, uint* output);
+
+/**
+ * get an object from the cache if possible, and from the disk if not
+ * :param id: the object's id
+ * :param outputvector: will be set to the data of the block
+ * :param start_offset: the offset to get the object from
+ * :param end_offset: the offset to read up to
+ */
+uint cache_get_object(const char* id, vector* outputvector,
+                      const uint start_offset, const uint end_offset);
+
+/**
+ * remove an object from the cache from a certain offset while locking the cache
+ * :param id: the object's id
+ * :param offset: the offset in bytes from which the objcet data will be deleted
+ * from the cache
+ */
+uint cache_remove_object(const char* id, uint offset);
+
+/**
+ * remove an object from the cache and then call rewrite_object
+ * :param data: new object's data
+ * :param objectsize: new object size
+ * :param write_starting_offset: offset to rewrite from
+ * :param id: the object's id
+ */
+uint cache_rewrite_object(vector data, uint objectsize,
+                          uint write_starting_offset, const char* id);
 
 /**
  * The following methods provides statistics about the cache layer. They can
@@ -97,5 +126,7 @@ uint cache_free_from_cache_safe(const char* name);
 uint objects_cache_hits();
 uint objects_cache_misses();
 uint cache_max_object_size();
-
+uint cache_block_size();
+uint cache_blocks();
+uint cache_blocks_per_object();
 #endif /* XV6_OBJ_CACHE_H */
