@@ -6,6 +6,7 @@
 #include "fs.h"
 #include "mount_ns.h"
 #include "namespace.h"
+#include "obj_cache.h"
 #include "param.h"
 #include "vfs_file.h"
 
@@ -107,6 +108,11 @@ static proc_file_name_t get_file_name_constant(char* filename) {
 
   if (strcmp(filename, PROCFS_DEVICES) == 0) return PROC_DEVICES;
 
+  if (strcmp(filename, PROCFS_OBJ_CACHE_HITS) == 0) return PROC_OBJ_CACHE_HITS;
+
+  if (strcmp(filename, PROCFS_OBJ_CACHE_MISSES) == 0)
+    return PROC_OBJ_CACHE_MISSES;
+
   return NONE;
 }
 
@@ -151,6 +157,15 @@ int unsafe_proc_open_file(char* filename, int omode) {
       }
       release(&dev_holder.lock);
       break;
+
+    case PROC_OBJ_CACHE_HITS:
+      f->proc.obj_cache_hits = objects_cache_hits();
+      break;
+
+    case PROC_OBJ_CACHE_MISSES:
+      f->proc.obj_cache_hits = objects_cache_misses();
+      break;
+
     default:
       break;
   }
@@ -220,6 +235,26 @@ static int read_file_proc_mem(struct vfs_file* f, char* addr, int n) {
   char* mem_text = buf;
 
   uint text_size = utoa(mem_text, f->proc.mem);
+  for (; i < (text_size - f->off) && i < n; i++) addr[i] = mem_text[f->off + i];
+
+  return i;
+}
+
+static int read_file_obj_cache_hits(struct vfs_file* f, char* addr, int n) {
+  int i = 0;
+  char* mem_text = buf;
+
+  uint text_size = utoa(mem_text, f->proc.obj_cache_hits);
+  for (; i < (text_size - f->off) && i < n; i++) addr[i] = mem_text[f->off + i];
+
+  return i;
+}
+
+static int read_file_obj_cache_misses(struct vfs_file* f, char* addr, int n) {
+  int i = 0;
+  char* mem_text = buf;
+
+  uint text_size = utoa(mem_text, f->proc.obj_cache_misses);
   for (; i < (text_size - f->off) && i < n; i++) addr[i] = mem_text[f->off + i];
 
   return i;
@@ -304,6 +339,13 @@ int unsafe_proc_read(struct vfs_file* f, char* addr, int n) {
         result = read_file_proc_devices(f, addr, n);
         break;
 
+      case PROC_OBJ_CACHE_HITS:
+        result = read_file_obj_cache_hits(f, addr, n);
+        break;
+
+      case PROC_OBJ_CACHE_MISSES:
+        result = read_file_obj_cache_misses(f, addr, n);
+        break;
       default:
         return RESULT_ERROR;
     }
@@ -317,6 +359,8 @@ int unsafe_proc_read(struct vfs_file* f, char* addr, int n) {
       copy_and_move_buffer_max_len(&bufp, PROCFS_MEM);
       copy_and_move_buffer_max_len(&bufp, PROCFS_MOUNTS);
       copy_and_move_buffer_max_len(&bufp, PROCFS_DEVICES);
+      copy_and_move_buffer_max_len(&bufp, PROCFS_OBJ_CACHE_HITS);
+      copy_and_move_buffer_max_len(&bufp, PROCFS_OBJ_CACHE_MISSES);
 
       *bufp++ = '\0';
 
@@ -367,6 +411,13 @@ static int proc_file_size(struct vfs_file* f) {
       size *= f->count;
       break;
 
+    case PROC_OBJ_CACHE_HITS:
+      size = sizeof(f->proc.obj_cache_hits);
+      break;
+
+    case PROC_OBJ_CACHE_MISSES:
+      size = sizeof(f->proc.obj_cache_misses);
+      break;
     default:
       break;
   }
