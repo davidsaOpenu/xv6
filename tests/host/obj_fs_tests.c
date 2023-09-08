@@ -248,7 +248,7 @@ TEST(get_object_in_cache) {
   char my_string[] = "my super amazing string";
   const char* obj_name = "get_object_in_cache";
   // inserting the object through the cache keeps it inside it
-  cache_add_object(my_string, strlen(my_string) + 1, obj_name);
+  add_object(my_string, strlen(my_string) + 1, obj_name);
 
   uint misses_at_start = objects_cache_misses();
   uint hits_at_start = objects_cache_hits();
@@ -297,7 +297,7 @@ TEST(get_object_size_in_cache) {
   char my_string[] = "my super amazing string";
   const char* obj_name = "object_in_cache_01";
   // inserting the object WITH going through the cache
-  cache_add_object(my_string, strlen(my_string) + 1, obj_name);
+  add_object(my_string, strlen(my_string) + 1, obj_name);
 
   uint misses_at_start = objects_cache_misses();
   uint hits_at_start = objects_cache_hits();
@@ -320,14 +320,14 @@ TEST(get_object_size_not_in_cache_and_doesnt_add_to_cache) {
 
   // validate correctness
   uint size;
-  ASSERT_NO_ERR(cache_object_size(obj_name, &size));
+  ASSERT_NO_ERR(object_size(obj_name, &size));
   ASSERT_UINT_EQ(strlen(my_string) + 1, size);
 
   // valiadte hits and misses
   EXPECT_UINT_EQ(1, objects_cache_misses() - misses_at_start);
   ASSERT_UINT_EQ(0, objects_cache_hits() - hits_at_start);
 
-  ASSERT_NO_ERR(cache_object_size(obj_name, &size));
+  ASSERT_NO_ERR(object_size(obj_name, &size));
   EXPECT_UINT_EQ(2, objects_cache_misses() - misses_at_start);
   ASSERT_UINT_EQ(0, objects_cache_hits() - hits_at_start);
 }
@@ -344,7 +344,7 @@ TEST(object_too_large_not_inserted_to_cache) {
   uint misses_at_start = objects_cache_misses();
   uint hits_at_start = objects_cache_hits();
 
-  cache_add_object(large_data, sizeof(large_data), obj_name);
+  add_object(large_data, sizeof(large_data), obj_name);
 
   // validate correctness
   char actual[sizeof(large_data)];
@@ -369,7 +369,7 @@ TEST(logbook_add_object_regular_flow) {
   char my_string[] = "my super amazing string";
   ASSERT_NO_ERR(log_add_object(my_string, strlen(my_string) + 1, obj_name));
   uint size;
-  ASSERT_NO_ERR(cache_object_size(obj_name, &size));
+  ASSERT_NO_ERR(object_size(obj_name, &size));
   ASSERT_UINT_EQ(strlen(my_string) + 1, size);
   char* actual = (char*)malloc(strlen(my_string) + 1);
   ASSERT_TRUE(actual != NULL);
@@ -395,7 +395,7 @@ TEST(logbook_rewrite_object_regular_flow) {
 
   // validate the new size and data
   uint size;
-  ASSERT_NO_ERR(cache_object_size(obj_name, &size));
+  ASSERT_NO_ERR(object_size(obj_name, &size));
   ASSERT_UINT_EQ(strlen(second_string) + 1, size);
   char* actual = (char*)malloc(strlen(second_string) + 1);
   ASSERT_TRUE(actual != NULL);
@@ -409,7 +409,7 @@ TEST(logbook_delete_object_regular_flow) {
   ASSERT_NO_ERR(log_add_object(&placeholder, sizeof(placeholder), object_name));
   ASSERT_NO_ERR(log_delete_object(object_name));
   uint size;
-  ASSERT_UINT_EQ(OBJECT_NOT_EXISTS, cache_object_size(object_name, &size));
+  ASSERT_UINT_EQ(OBJECT_NOT_EXISTS, object_size(object_name, &size));
 }
 
 int main() {

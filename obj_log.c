@@ -57,7 +57,7 @@ struct {
 // The caller must hold the log lock
 static void finish_add_event() {
   uint size;
-  if (cache_object_size(logbook.add_event.object_id, &size) != NO_ERR) {
+  if (object_size(logbook.add_event.object_id, &size) != NO_ERR) {
     // The object was not created. Delete the event.
     cache_delete_object(LOGBOOK_OBJECT_ID);
     return;
@@ -74,7 +74,7 @@ static void finish_add_event() {
 // The caller must hold the log lock
 static void finish_rewrite_event() {
   uint size;
-  if (cache_object_size(logbook.rewrite_event.new_object_id, &size) != NO_ERR) {
+  if (object_size(logbook.rewrite_event.new_object_id, &size) != NO_ERR) {
     // The object was not created. Delete the event.
     cache_delete_object(LOGBOOK_OBJECT_ID);
     return;
@@ -93,8 +93,8 @@ static void finish_rewrite_event() {
     templogbookvector = newvector(sizeof(logbook), 1);
     memmove_into_vector_bytes(templogbookvector, 0, (char*)&logbook,
                               sizeof(logbook));
-    err = cache_rewrite_entire_object(templogbookvector, sizeof(logbook),
-                                      LOGBOOK_OBJECT_ID);
+    err = cache_rewrite_object(templogbookvector, sizeof(logbook), 0,
+                               LOGBOOK_OBJECT_ID);
     if (err != NO_ERR) {
       releasesleep(&loglock);
       panic("logbook - error updating the logbook to the disk");
@@ -117,13 +117,13 @@ static void finish_rewrite_event() {
     releasesleep(&loglock);
     panic("logbook - unexpected error when deleting the event object");
   }
-  cache_free_from_cache_safe(logbook.rewrite_event.old_object_id);
+  cache_prune_object(logbook.rewrite_event.old_object_id, 0);
 }
 
 // The caller must hold the log lock
 static void finish_delete_event() {
   uint size;
-  if (cache_object_size(logbook.delete_event.object_id, &size) == NO_ERR) {
+  if (object_size(logbook.delete_event.object_id, &size) == NO_ERR) {
     cache_delete_object(logbook.delete_event.object_id);
   }
   if (occupied_objects() == logbook.delete_event.total_objects_before) {
@@ -150,7 +150,7 @@ static void finish_log_transactions() {
         "size");
   }
   vector logbookvector;
-  err = cache_get_object(LOGBOOK_OBJECT_ID, &logbookvector, 0);
+  err = cache_get_object(LOGBOOK_OBJECT_ID, &logbookvector, 0, OBJ_END);
   // vectormemcmp("finish_log_transactions", logbookvector, 0, (char*)&logbook,
   // logbookvector.vectorsize);
   if (err != NO_ERR) {
@@ -193,12 +193,11 @@ uint log_add_object(const void* object, uint size, const char* name) {
   memmove(logbook.add_event.object_id, name, obj_id_bytes(name));
   logbook.add_event.total_objects_before = occupied_objects();
   logbook.add_event.total_objects_after = occupied_objects() + 1;
-  if (cache_add_object(&logbook, sizeof(logbook), LOGBOOK_OBJECT_ID) !=
-      NO_ERR) {
+  if (add_object(&logbook, sizeof(logbook), LOGBOOK_OBJECT_ID) != NO_ERR) {
     releasesleep(&loglock);
     panic("logbook - unexpected error when adding the logbook object");
   }
-  if (cache_add_object(object, size, name) != NO_ERR) {
+  if (add_object(object, size, name) != NO_ERR) {
     releasesleep(&loglock);
     panic("logbook - unexpected error when adding the object itself");
   }
@@ -233,13 +232,13 @@ uint log_rewrite_object(const void* object, uint size, const char* name) {
   }
   logbook.rewrite_event.new_object_table_index = -1;
   logbook.rewrite_event.total_objects = occupied_objects();
-  err = cache_add_object(&logbook, sizeof(logbook), LOGBOOK_OBJECT_ID);
+  err = add_object(&logbook, sizeof(logbook), LOGBOOK_OBJECT_ID);
   if (err != NO_ERR) {
     releasesleep(&loglock);
     panic("logbook - error adding the logbook to the disk");
   }
   // adds the new object to the disk
-  err = cache_add_object(object, size, logbook.rewrite_event.new_object_id);
+  err = add_object(object, size, logbook.rewrite_event.new_object_id);
   if (err != NO_ERR) {
     releasesleep(&loglock);
     panic("logbook - error adding the new object to the disk");
@@ -248,12 +247,10 @@ uint log_rewrite_object(const void* object, uint size, const char* name) {
   if (size == sizeof(*di)) {
     uint size_new = 0;
     uint size_old = 0;
-    if (cache_object_size(logbook.rewrite_event.new_object_id, &size_new) !=
-        NO_ERR) {
+    if (object_size(logbook.rewrite_event.new_object_id, &size_new) != NO_ERR) {
       panic("in log rewrite failed to get size");
     };
-    if (cache_object_size(logbook.rewrite_event.old_object_id, &size_old) !=
-        NO_ERR) {
+    if (object_size(logbook.rewrite_event.old_object_id, &size_old) != NO_ERR) {
       panic("in log rewrite failed to get size");
     };
   }
@@ -273,8 +270,7 @@ uint log_delete_object(const char* name) {
   memmove(logbook.delete_event.object_id, name, obj_id_bytes(name));
   logbook.delete_event.total_objects_before = occupied_objects();
   logbook.delete_event.total_objects_after = occupied_objects() - 1;
-  if (cache_add_object(&logbook, sizeof(logbook), LOGBOOK_OBJECT_ID) !=
-      NO_ERR) {
+  if (add_object(&logbook, sizeof(logbook), LOGBOOK_OBJECT_ID) != NO_ERR) {
     releasesleep(&loglock);
     panic("logbook - unexpected error when adding the logbook object");
   }
@@ -293,14 +289,15 @@ uint log_delete_object(const char* name) {
 uint log_get_object(const char* name, vector* outputvector,
                     uint read_object_from_offset) {
   acquiresleep(&loglock);
-  uint result = cache_get_object(name, outputvector, read_object_from_offset);
+  uint result =
+      cache_get_object(name, outputvector, read_object_from_offset, OBJ_END);
   releasesleep(&loglock);
   return result;
 }
 
 uint log_object_size(const char* name, uint* output) {
   acquiresleep(&loglock);
-  uint result = cache_object_size(name, output);
+  uint result = object_size(name, output);
   releasesleep(&loglock);
   return result;
 }

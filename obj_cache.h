@@ -2,100 +2,146 @@
 #define XV6_OBJ_CACHE_H
 
 /**
- * `obj_cache` specify the second layer in the file system. It is the objects
- * cache layer. The cache in this file-system is different from the original
- * one written in xv6. The cache keep full objects that are frequently used.
- * In this project we implement LRU cache.
+ * Object Buffer Cache
+ * ~~~~~~~~~~~~~~~~~~~
  *
- * When working with the cache, reading and writing objects takes more RAM
- * actions. For example, when loading an object from the disk we copy it both
- * for the user's buffer and for the cache buffer. Altough we does double the
- * work, it's performance is in orders of magnitude faster.
+ * Goal
+ * ~~~~
+ * The goal of this cache- is the same goal a most buffer caches- which is to
+ * save disk operations by saving files in memory- and accessing the memory
+ * version of a file instead of accessing the disk- as reading from the memory
+ * is orders of magnitude faster than reading from the disk.
  *
- * The cache model has couple of limitaions:
- *  - The first one is the size of the objects. In the file system, there can
- *    be objects, for example, for size 100 GB. If we would try to cache them
- *    in the memory we would use 100 GB of the machine RAM which which is
- *    unacceptable for cache. In addition, the chance that someone would read
- *    the same object twice is almost zero. Hence, we limit the size of the
- *    objects we cache.
- *  - The cache memory is preallocated in the kernel data segment. Hence, the
- *    maximum size if fixed and can't be changed during the run.
- *  - To make the implementation simple for now, we don't dynamicly allocate
- *    space for objects in the cache. Instead, we have fixed size of entries
- *    in the cache for objects and each entry has maximum size. By that, the
- *    cache might have a lot of unused space. This behavior can be changed
- *    later by implementing a mechanism like in glibc's malloc.
+ *  General Description
+ * ~~~~~~~~~~~~~~~~~~~
+ * The object cache is the second layer of the object file system.
+ * Our cache is an LRU cache that saves object parts in units of 1kb called
+ * blocks.
  *
- * The regular file system's buffer cache is implemented in `bio.c`. The major
- * different between the 2 implementations is that in the regular fs, the data
- * is not copied to the user. Instead, he receive a pointer to the buffer. It
- * is possible because each buffer has the same size. In the object fs, each
- * object has different size and we set an upper size limitation. Hence, not
- * all of the objects would be cached. Hence, this layer is simpler than the
- * other one and doesn't have "transactions". If the user wants to write
- * multiple times to the buffer, he doesn't need to start a transaction, do
- * the writes and then call `brelse`. Instead, he has a copy of the objects
- * and he can edit it as much as he wants. In the end, he just write it back.
+ * Cache Structure
+ * ~~~~~~~~~~~~~~~
+ * This cache is a linked list of entries
+ * that contain info about objects in disk. Each link is defined in the struct
+ * obj_cache_entry.
  *
- * Altoguh it looks like the cache layer improve the performance less than in
- * the regular file system case, it is still important. The performance
- * optimization comes when reading an objects that were already read or
- * objects that were added/updated and then read again. In these cases, the
- * cache remove the need to read the data again from the disk.
+ * Block Types
+ * ~~~~~~~~~~~
+ * Cache blocks may saves two different types of information:
+ *  - The first is object data- it is saved in a data block in units of 1kb.
+ *    Up to 8 blocks of data can be saved of each object- if an object is bigger
+ *    than 8kb we dont cache it because the space we have in memory is limited
+ * and we dont want to save objets that are too big- if an objet is 100GB and we
+ *    read it's blocks one after the other we dont want it to take the whole
+ * space of the cache.
  *
- * In each of the add/rewrite/get and object_size methods, the object is
- * cached for further use. In addition, in the `delete_object` method, if
- * the object is located in the cache, it is "freed" from it. In that case
- * we specify that this buffer is the oldest buffer that was in use.
+ *  - The second type of information that we save is object metadata- we save
+ *    it in blocks called metadata blocks. Each metadata block contains the size
+ * of an entire object.
  *
- * Implementation details:
- * ~~~~~~~~~~~~~~~~~~~~~~~
- * In similarity to the implementation in `bio.c`, we use a bi-directional
- * linked list to keep the buffer. The head is the most recently used object
- * and the tail is the oldest. The oldest is reached by `head->prev`.
- * If in any of the functions, an error is raised, then the cache state does
- * not change. For example, if object addition fails because the storage
- * device is full, then the object isn't added to the cache either.
+ * API
+ * ~~~
+ * The api works with offsets in objects and with object ids- the cache design
+ * is transparent to the user, and is very similar to the direct disk access
+ * api.
+ *
+ * The API described in this file gives an abstraction of disk operation method,
+ * and every disk access should be done with those methods- direct access to the
+ * disk can cause currupted data in cache- so only use direct disk access if you
+ * know what you are doing.
+ *
+ * Eviction Strategy
+ * ~~~~~~~~~~~~~~~~~
+ * This is an LRU cache with 800 entries- when the cache is full and we want to
+ * add a new object to the cache we take the last object in the cache linked
+ * list- which is the entry that was not accessed for the longest time and use
+ * its entry
  *
  *
- * Implementation extensions:
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~
- * 1. In the current version, the disk is NOT thread safe.
- *      TODO make it a thread safe.
- * 2. The cache currently supports only 1 device in any given time.
- *      TODO support more devices.
+ * Write policy
+ * ~~~~~~~~~~~~
+ * Currently, the write policy is immediate writes to the disk- the disk and the
+ * cache are always in sync.
+ *
+ * Statistics
+ * ~~~~~~~~~~
+ * Each time a user uses a cache operation, if the operation made us read from
+ * the disk, we will increment the hits counter, and if it didn't we will
+ * increment the misses counter. The cache statistics can be used with the
+ * functions at the end of this file, and they are accessible in usermode
+ * through the procfs
+ *
+ * Testing
+ * ~~~~~~~
+ * The functionality of this cache is tested in tests/xv6/objfstests.c
+ *
  */
 
 #include "kvector.h"
 #include "types.h"
 
-void init_objects_cache();
-
-void _check(char* val);
-uint cache_add_object(const void* object, uint size, const char* name);
-uint cache_rewrite_entire_object(vector object, uint size, const char* name);
-uint cache_rewrite_object(vector data, uint objectsize, uint offset,
-                          const char* name);
-uint cache_delete_object(const char* name);
-uint cache_object_size(const char* name, uint* output);
-uint cache_get_object(const char* name, vector* outputvector,
-                      uint read_object_from_offset);
+// if this value is passed to get_object as the end offset the object will be
+// read to the end
+#define OBJ_END -1
 
 /**
- * Remove the object from the objects cache but not form the disk.
- * This function locks the cache lock and release it in the end.
+ * Initialize the cache by making all entries invalid, and marking the
+ * last_object_from_disk as invalid.
  */
-uint cache_free_from_cache_safe(const char* name);
+void init_objects_cache();
+
+/**
+ * remove an object from the cache and delete it from the disk
+ *
+ * @param  id: the object's id.
+ * @return the error code that delete_object returns
+ */
+uint cache_delete_object(const char* id);
+
+/**
+ * get an object from the cache if possible, and from the disk if not.
+ *
+ * @param  id: the object's id
+ * @param  outputvector: will be set to the data of the block
+ * @param  start_offset: the offset to get the object from
+ * @param  end_offset: the offset to read up to
+ * @return the error code of get_object
+ */
+uint cache_get_object(const char* id, vector* outputvector,
+                      const uint start_offset, const uint end_offset);
+
+/**
+ * remove an object from the cache from a certain offset while locking the cache
+ *
+ * @param  id: the object's id.
+ * @param  offset: the offset in bytes from which the objcet data will be
+ * deleted from the cache.
+ * @return  error code (currently always returns NO_ERR).
+ */
+uint cache_prune_object(const char* id, uint offset);
+
+/**
+ * remove an object from the cache and then call rewrite_object
+ *
+ * @param  data: new object's data.
+ * @param  objectsize: new object size.
+ * @param  write_starting_offset: offset to rewrite from.
+ * @param  id: the object's id.
+ * @return  rewrite_object's return value.
+ */
+uint cache_rewrite_object(vector data, uint objectsize,
+                          uint write_starting_offset, const char* id);
 
 /**
  * The following methods provides statistics about the cache layer. They can
  * used by program to show performance of the file system or to try and
  * optimize their run flow.
+ * they can be access from /proc from usermode
  */
 
 uint objects_cache_hits();
 uint objects_cache_misses();
 uint cache_max_object_size();
-
+uint cache_block_size();
+uint cache_blocks();
+uint cache_blocks_per_object();
 #endif /* XV6_OBJ_CACHE_H */
