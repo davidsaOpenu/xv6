@@ -70,23 +70,25 @@
 #include "kvector.h"
 #include "types.h"
 
+// if this value is passed to get_object as the end offset the object will be
+// read to the end
+#define OBJ_END -1
+
 void init_objects_cache();
 
-void _check(char* val);
-uint cache_add_object(const void* object, uint size, const char* name);
-uint cache_rewrite_entire_object(vector object, uint size, const char* name);
-uint cache_rewrite_object(vector data, uint objectsize, uint offset,
-                          const char* name);
-uint cache_delete_object(const char* name);
-uint cache_object_size(const char* name, uint* output);
-uint cache_get_object(const char* name, vector* outputvector,
-                      uint read_object_from_offset);
+uint cache_delete_object(const char* id);
+uint cache_object_size(const char* id, uint* output);
+uint cache_get_object(const char* id, vector* outputvector,
+                      const uint start_offset, const uint end_offset);
 
 /**
  * Remove the object from the objects cache but not form the disk.
  * This function locks the cache lock and release it in the end.
  */
-uint cache_free_from_cache_safe(const char* name);
+uint cache_remove_object(const char* id, uint offset);
+
+uint cache_rewrite_object(vector data, uint objectsize,
+                          uint write_starting_offset, const char* id);
 
 /**
  * The following methods provides statistics about the cache layer. They can
