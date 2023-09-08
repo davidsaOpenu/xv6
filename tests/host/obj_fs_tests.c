@@ -248,7 +248,7 @@ TEST(get_object_in_cache) {
   char my_string[] = "my super amazing string";
   const char* obj_name = "get_object_in_cache";
   // inserting the object through the cache keeps it inside it
-  cache_add_object(my_string, strlen(my_string) + 1, obj_name);
+  add_object(my_string, strlen(my_string) + 1, obj_name);
 
   uint misses_at_start = objects_cache_misses();
   uint hits_at_start = objects_cache_hits();
@@ -297,7 +297,7 @@ TEST(get_object_size_in_cache) {
   char my_string[] = "my super amazing string";
   const char* obj_name = "object_in_cache_01";
   // inserting the object WITH going through the cache
-  cache_add_object(my_string, strlen(my_string) + 1, obj_name);
+  add_object(my_string, strlen(my_string) + 1, obj_name);
 
   uint misses_at_start = objects_cache_misses();
   uint hits_at_start = objects_cache_hits();
@@ -344,7 +344,7 @@ TEST(object_too_large_not_inserted_to_cache) {
   uint misses_at_start = objects_cache_misses();
   uint hits_at_start = objects_cache_hits();
 
-  cache_add_object(large_data, sizeof(large_data), obj_name);
+  add_object(large_data, sizeof(large_data), obj_name);
 
   // validate correctness
   char actual[sizeof(large_data)];
