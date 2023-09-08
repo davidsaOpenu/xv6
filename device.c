@@ -69,7 +69,8 @@ int getorcreateobjdevice() {
   dev_holder.objdev[emptydevice].ref = 1;
   release(&dev_holder.lock);
   objdevinit(emptydevice);
-  obj_fsinit(OBJ_TO_DEV(emptydevice));
+  /* Save a reference to the root in order to release it in umount. */
+  dev_holder.objdev[emptydevice].root_ip = obj_fsinit(OBJ_TO_DEV(emptydevice));
   return OBJ_TO_DEV(emptydevice);
 }
 
@@ -106,6 +107,15 @@ void deviceput(uint dev) {
     dev = DEV_TO_OBJ_DEVICE(dev);
     acquire(&dev_holder.lock);
     dev_holder.objdev[dev].ref--;
+    if (dev_holder.objdev[dev].ref == 1) {
+      release(&dev_holder.lock);
+
+      struct vfs_inode *root_ip = dev_holder.objdev[dev].root_ip;
+      root_ip->i_op.iput(root_ip);
+
+      acquire(&dev_holder.lock);
+      dev_holder.objdev[dev].root_ip = 0;
+    }
     release(&dev_holder.lock);
   }
 }

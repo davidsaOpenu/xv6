@@ -73,7 +73,7 @@ void obj_mkfs() {
   init_objects_cache();
 }
 
-void obj_fsinit(uint dev) {
+struct vfs_inode* obj_fsinit(uint dev) {
   struct vfs_inode *root_inode;
   struct dirent de;
   uint off = 0;
@@ -98,6 +98,8 @@ void obj_fsinit(uint dev) {
   if (obj_writei(root_inode, (char *)&de, off, sizeof(de)) != sizeof(de)) {
     panic("Couldn't create root dir in obj fs");
   }
+
+  return root_inode;
 
   /* For tries, TODO: need to move this logic to obj mkfs (and create one) */
   //    ip = obj_ialloc(dev, T_FILE);

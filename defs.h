@@ -74,7 +74,7 @@ int vfs_filewrite(struct vfs_file*, char*, int n);
 struct vfs_inode* obj_ialloc(uint, short);
 void obj_iinit(uint dev);
 struct vfs_inode* obj_iget(uint dev, uint inum);
-void obj_fsinit(uint dev);
+struct vfs_inode* obj_fsinit(uint dev);
 void obj_mkfs();
 struct vfs_inode* obj_initprocessroot(struct mount**);
 
