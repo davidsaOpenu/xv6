@@ -1106,6 +1106,232 @@ void createmanyfiles(uint number_of_files_to_create) {
   printf(stdout, "create many files ok\n");
 }
 
+/** obj cache tests
+ * these tests tests the functionallity of the object cache
+ */
+
+/**
+ * helper functions
+ */
+
+/**
+ * get a string that represents a uint and return the int.
+ *
+ * @return the int if successful and -1 if there is an error
+ */
+int string_to_int(char *s) {
+  int result = 0;
+
+  // Iterate over the string
+  for (int i = 0; s[i] != '\0'; i++) {
+    // Update the result by multiplying it by 10 and adding the righmost
+    // digit
+    result *= 10;
+    result += s[i] - '0';
+  }
+
+  return result;
+}
+
+/**
+ * Read a file that contains a uint property of the object cache
+ *
+ * @param path_to_file path to the file in /proc that contains the requested
+ * property
+ * @return the property if successful, -1 if not
+ */
+int object_cache_property_from_procfs(char *path_to_file) {
+  int fd, cc;
+  char size_buffer[20];
+  // Get cache block size from procfs
+  fd = open(path_to_file, O_RDONLY);
+  // I asseme here that the property is less that 20 digits
+  cc = read(fd, size_buffer, 20);
+
+  // If the read was not successful, return -1
+  if (cc < 0) {
+    return -1;
+  }
+
+  return string_to_int(size_buffer);
+}
+
+/**
+ * get the object cache's block size from procfs
+ *
+ * @return the size if successful, -1 if not
+ */
+int object_cache_block_size() {
+  return object_cache_property_from_procfs("/proc/obj_cache_block_size");
+}
+
+/**
+ * get the object cache's number of blocks from procfs
+ *
+ * @return the number of blocks if successful, -1 if not
+ */
+int object_cache_number_of_blocks() {
+  return object_cache_property_from_procfs("/proc/obj_cache_blocks");
+}
+
+/**
+ * get the object cache's number of blocks per object from procfs
+ *
+ * @return the number of blocks per object if successful, -1 if not
+ */
+int object_cache_max_blocks_per_object() {
+  return object_cache_property_from_procfs("/proc/obj_cache_blocks_per_object");
+}
+
+/**
+ * get the object cache's number of cache hits procfs
+ *
+ * @return the number of hits if successful, -1 if not
+ */
+int object_cache_hits() {
+  return object_cache_property_from_procfs("/proc/obj_cache_hits");
+}
+
+/**
+ * get the object cache's number of cache misses procfs
+ *
+ * @return the number of misses if successful, -1 if not
+ */
+int object_cache_misses() {
+  return object_cache_property_from_procfs("/proc/obj_cache_misses");
+}
+
+/**
+ * obj cache tests
+ */
+
+/**
+ * This test tests that we can write an object that is bigger than a single
+ * cache block but is small enough to be cached in one write
+ */
+void biggerthancacheblocksinglewrite(void) {
+  int fd, cc;
+  printf(1, "biggerthancacheblocksinglewrite test\n");
+
+  int block_size = object_cache_block_size();
+  if (block_size < 0) {
+    printf(1, "failed to get object cache block size, exiting");
+    exit(1);
+  }
+
+  int bytes_to_write = block_size * 1.5;
+
+  unlink("big_file_single");
+  fd = open("big_file_single", O_CREATE | O_RDWR);
+  if (fd < 0) {
+    printf(1, "cannot create big_file_single");
+    exit(1);
+  }
+  // write
+  memset(buf, 60, bytes_to_write);
+  uint written = write(fd, buf, bytes_to_write);
+  if (written != bytes_to_write) {
+    printf(1, "write big_file_single failed\nWrote %d out of %d\n", written,
+           bytes_to_write);
+    exit(1);
+  }
+  close(fd);
+
+  fd = open("big_file_single", 0);
+  if (fd < 0) {
+    printf(1, "cannot open big_file_single\n");
+    exit(1);
+  }
+  cc = read(fd, buf, bytes_to_write);
+  if (cc < 0) {
+    printf(1, "read big_file_single failed\n, err_code: %d", cc);
+    exit(1);
+  }
+  if (cc != bytes_to_write) {
+    printf(1, "read big_file_single failed\n");
+    exit(1);
+  }
+
+  close(fd);
+  unlink("big_file_single");
+
+  printf(1, "biggerthancacheblocksinglewrite test ok\n");
+}
+
+/**
+ * This test tests that we can write an object that is the size of 10 cache
+ * blocks in 100 small rewrites, which means that the object will be in the
+ * cache at the start and will not be in the cache at the end
+ */
+void biggerthanmaxcachesize(void) {
+  int fd, i, total, cc;
+  int write_iterations = 100;
+
+  printf(1, "biggerthancachesize test\n");
+
+  int block_size = object_cache_block_size();
+  if (block_size < 0) {
+    printf(1, "failed to get object cache block size, exiting");
+    exit(1);
+  }
+  int bytes_per_write = block_size / 10;
+
+  unlink("bigger_than_block");
+  fd = open("bigger_than_block", O_CREATE | O_RDWR);
+  if (fd < 0) {
+    printf(1, "cannot create bigger_than_block");
+    exit(1);
+  }
+  // write
+  for (i = 0; i < write_iterations; i++) {
+    memset(buf, i, bytes_per_write);
+    uint written = write(fd, buf, bytes_per_write);
+    if (written != bytes_per_write) {
+      printf(1,
+             "write bigger_than_block failed\nWrote %d out of %d\nIteration: "
+             "%d/%d",
+             written, bytes_per_write, i, write_iterations);
+      exit(1);
+    }
+  }
+  close(fd);
+
+  fd = open("bigger_than_block", 0);
+  if (fd < 0) {
+    printf(1, "cannot open bigger_than_block\n");
+    exit(1);
+  }
+  total = 0;
+  for (i = 0;; i++) {
+    cc = read(fd, buf, bytes_per_write);
+    if (cc < 0) {
+      printf(1, "read bigger_than_block failed\n, err_code: %d", cc);
+      exit(1);
+    }
+    if (cc == 0) break;
+    if (cc != bytes_per_write) {
+      printf(1, "short read bigger_than_block\n");
+      exit(1);
+    }
+    if (buf[0] != i || buf[bytes_per_write - 1] != i) {
+      printf(1, "read bigger_than_block wrong data\n");
+      exit(1);
+    }
+    total += cc;
+  }
+  close(fd);
+  if (total != write_iterations * bytes_per_write) {
+    printf(1, "read bigger_than_block wrong total\n");
+    exit(1);
+  }
+  unlink("bigger_than_block");
+
+  printf(1, "biggerthancachesize test ok\n");
+}
+
+/**
+ * Main
+ */
 int main(int argc, char *argv[]) {
   printf(1, "objfstests starting\n");
 
@@ -1122,6 +1348,10 @@ int main(int argc, char *argv[]) {
     printf(2, "ls: cannot cd new\n");
     exit(0);
   }
+
+  // obj cache tests
+  biggerthancacheblocksinglewrite();
+  biggerthanmaxcachesize();
 
   createdelete();
   createmanyfiles(300);

@@ -166,8 +166,8 @@ void obj_iupdate(struct vfs_inode *vfs_ip) {
   unsigned disize = sizeof(di);
   vector disk_inode_vector = newvector(disize, 1);
   memmove_into_vector_bytes(disk_inode_vector, 0, (char *)(&di), disize);
-  if (cache_rewrite_entire_object(disk_inode_vector, sizeof(di), iname) !=
-      NO_ERR) {
+
+  if (cache_rewrite_object(disk_inode_vector, sizeof(di), 0, iname) != NO_ERR) {
     panic("obj_iupdate: failed writing dinode to the disk");
   }
   freevector(&disk_inode_vector);
@@ -371,7 +371,7 @@ int obj_readi(struct vfs_inode *vfs_ip, uint off, uint n, vector *dstvector) {
       NO_ERR) {  // TODO(unknown): add support for vector
     panic("obj_readi failed reading object content");
   }
-  copysubvector(dstvector, &datavector, off, n);
+  copysubvector(dstvector, &datavector, 0, n);
   freevector(&datavector);
   // vectormemcmp("obj_readi", *dstvector, 0, dst, n);
   return n;
