@@ -27,6 +27,7 @@ struct device {
 struct obj_device {
   struct objsuperblock sb;
   int ref;
+  struct vfs_inode *root_ip;
 };
 
 struct dev_holder_s {

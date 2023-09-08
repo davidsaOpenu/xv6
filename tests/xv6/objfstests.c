@@ -1106,6 +1106,141 @@ void createmanyfiles(uint number_of_files_to_create) {
   printf(stdout, "create many files ok\n");
 }
 
+static int copy_file(const char *src, const char *dst) {
+  int src_fd = open(src, O_RDONLY);
+  if (src_fd < 0) return 1;
+  int dst_fd = open(dst, O_CREATE | O_RDWR);
+  if (dst_fd < 0) return 1;
+
+  char buf[256];
+  int n;
+  while ((n = read(src_fd, buf, sizeof(buf))) > 0) {
+    if (write(dst_fd, buf, n) != n) {
+      return 1;
+    }
+  }
+
+  close(src_fd);
+  close(dst_fd);
+  return 0;
+}
+
+static int compare_files(const char *a, const char *b) {
+  int a_fd = open(a, O_RDONLY);
+  if (a_fd < 0) return 1;
+  int b_fd = open(b, O_RDONLY);
+  if (b_fd < 0) return 1;
+
+  for (;;) {
+    char c1, c2;
+    int n1 = read(a_fd, &c1, sizeof(c1));
+    int n2 = read(b_fd, &c2, sizeof(c2));
+    if (n1 != n2) return 1;
+    if (n1 == 0 && n2 == 0) return 0;
+    if (c1 != c2) return 1;
+  }
+
+  close(a_fd);
+  close(b_fd);
+  return 0;
+}
+
+static void copy_files(const char *src_dir, const char *dst_dir, char **names,
+                       int names_length) {
+  for (int i = 0; i < names_length; i++) {
+    char src[256];
+    char dst[256];
+    strcpy(src, src_dir);
+    strcat(src, names[i]);
+    strcpy(dst, dst_dir);
+    strcat(dst, names[i]);
+    if (copy_file(src, dst) != 0) {
+      printf(2, "failed to copy %s to %s\n", src, dst);
+      exit(1);
+    }
+  }
+}
+
+static void compare_dirs(const char *lhs, const char *rhs, char **names,
+                         int names_length) {
+  for (int i = 0; i < names_length; i++) {
+    char a[256];
+    char b[256];
+    strcpy(a, lhs);
+    strcat(a, names[i]);
+    strcpy(b, rhs);
+    strcat(b, names[i]);
+    if (compare_files(a, b) != 0) {
+      printf(2, "failed to match contents of %s against %s\n", a, b);
+      exit(1);
+    }
+  }
+}
+
+void crossmounttest(void) {
+  // Create directories /dest and /dest/dir which are part of the regular
+  // filesystem and copy files between them and /objfs_src which is an objfs
+  // mount.
+
+  printf(1, "crossmounttest test\n");
+
+  if (mkdir("/dest") != 0) {
+    printf(2, "objtest: failed to create dir /dest\n");
+    exit(1);
+  }
+
+  if (mkdir("/dest/dir") != 0) {
+    printf(2, "objtest: failed to create dir /dest/dir\n");
+    exit(1);
+  }
+
+  if (mkdir("/objfs_src") != 0) {
+    printf(2, "objtest: failed to create dir /objfs_src\n");
+    exit(1);
+  }
+
+  if (mount(0, "/objfs_src", "objfs") != 0) {
+    printf(2, "objtest: failed to mount objfs to objfs_src\n");
+    exit(0);
+  }
+
+  if (mkdir("/objfs_src/dir") != 0) {
+    printf(2, "objtest: failed to create dir /objfs_src/dir\n");
+    exit(1);
+  }
+
+  char *names[] = {"f0", "f1", "dir/f2"};
+  const int names_length = sizeof(names) / sizeof(names[0]);
+
+  // Create the regular files.
+  for (int i = 0; i < names_length; i++) {
+    char path[256];
+    strcpy(path, "/dest/");
+    strcat(path, names[i]);
+    int fd = open(path, O_CREATE | O_RDWR);
+    if (fd < 0) {
+      printf(2, "create %s failed\n", names[i]);
+      exit(1);
+    }
+    write(fd, names[i], strlen(names[i]));
+    close(fd);
+  }
+
+  // Copy them to the objfs mount.
+  copy_files("/dest/", "/objfs_src/", names, names_length);
+
+  // Compare the contents
+  compare_dirs("/dest/", "/objfs_src/", names, names_length);
+
+  // Copy them back to the regular filesystem.
+  copy_files("/objfs_src/", "/dest/", names, names_length);
+
+  // Compare the contents again
+  compare_dirs("/objfs_src/", "/dest/", names, names_length);
+
+  printf(1, "crossmounttest test ok\n");
+}
+
 int main(int argc, char *argv[]) {
   printf(1, "objfstests starting\n");
 
@@ -1143,6 +1278,7 @@ int main(int argc, char *argv[]) {
   unlinkread();
   dirfile();
   iref();
+  crossmounttest();
 
   exectest();  // Ensure this test to be the last one to run (prints ALL TESTS
                // PASSED)
