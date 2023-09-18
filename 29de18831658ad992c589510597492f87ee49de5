@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "63501f8f_57910861",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-09-18T13:25:35Z",
+      "side": 1,
+      "message": "thanks for working on this. Could you please add inside the commit message a link to the trello card?",
+      "revId": "29de18831658ad992c589510597492f87ee49de5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
