@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "38369ad1_3a87ffcf",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-09-18T13:22:26Z",
+      "side": 1,
+      "message": "could you please add https://trello.com/c/CYwcS2aF/144-simple-copy-from-objfs-root-to-native-fs-root-and-vice-versa  to the commit message?",
+      "revId": "de0d2741118bc99242a44c53b7a0e7d75069539b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
