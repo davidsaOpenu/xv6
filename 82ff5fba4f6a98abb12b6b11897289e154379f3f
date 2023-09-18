@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4b5cff9b_cb2aed2b",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-09-18T13:23:46Z",
+      "side": 1,
+      "message": "Thanks for working on this. Could you please add a link to the trello task inside the commit message?",
+      "revId": "82ff5fba4f6a98abb12b6b11897289e154379f3f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
