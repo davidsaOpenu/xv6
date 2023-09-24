@@ -294,9 +294,10 @@ struct mount_list *copyactivemounts(void) {
   struct mount_list *newentry = shallowcopyactivemounts(&newcwdmount);
   fixparents(newentry);
   release(&myproc()->nsproxy->mount_ns->lock);
-
-  myproc()->cwdmount = mntdup(newcwdmount);
-  mntput(oldcwdmount);
+  if (newcwdmount != 0){
+    myproc()->cwdmount = mntdup(newcwdmount);
+    mntput(oldcwdmount);
+  }
   return newentry;
 }
 

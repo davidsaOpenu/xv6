@@ -92,6 +92,7 @@ struct vfs_inode* vfs_nameimount(char*, struct mount**);
 struct vfs_inode* vfs_nameiparent(char*, char*);
 struct vfs_inode* vfs_nameiparentmount(char*, char*, struct mount**);
 int vfs_namecmp(const char*, const char*);
+int vfs_namencmp(const char *s, const char *t, int length);
 
 // mount.c
 void mntinit(void);
