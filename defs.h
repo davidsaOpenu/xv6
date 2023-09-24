@@ -10,6 +10,7 @@ struct inode;
 struct mount;
 struct mount_list;
 struct mount_ns;
+struct bind_mount_list;
 struct nsproxy;
 struct pipe;
 struct proc;
@@ -26,6 +27,9 @@ typedef struct kvec vector;
 struct devsw;
 struct dev_stat;
 struct cgroup_io_device_statistics_s;
+
+// bind.c
+struct bind_table_holder;
 
 // bio.c
 void binit(void);
@@ -92,7 +96,7 @@ struct vfs_inode* vfs_nameimount(char*, struct mount**);
 struct vfs_inode* vfs_nameiparent(char*, char*);
 struct vfs_inode* vfs_nameiparentmount(char*, char*, struct mount**);
 int vfs_namecmp(const char*, const char*);
-int vfs_namencmp(const char* s, const char* t, int length);
+int vfs_namencmp(const char *s, const char *t, int length);
 
 // mount.c
 void mntinit(void);
@@ -108,6 +112,12 @@ void umountall(struct mount_list*);
 struct mount_list* copyactivemounts(void);
 struct mount* getroot(struct mount_list*);
 struct mount* getinitialrootmount(void);
+
+// bind.c
+void bindtableinit(void);
+struct bind_mount_list* get_bindtable(void);
+void add_root_dir_to_bind_table(struct bind_mount_list* bindmnt, char * root_dir);
+char* apply_binds(char* path);
 
 // ide.c
 void ideinit(void);
