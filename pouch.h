@@ -12,7 +12,13 @@ typedef enum p_cmd {
   DESTROY,
   LIMIT,
   INFO,
+<<<<<<< PATCH SET (9c5424 Added basic implementation of pouch run, in which the contai)
+  LIST,
+  IMAGES,
+  RUN
+=======
   LIST
+>>>>>>> BASE      (6ed18d Fixed the bug that caused binaries inside containers to cras)
 } p_cmd;
 #define CNTNAMESIZE 100
 #define CNTARGSIZE 30
@@ -159,4 +165,24 @@ static int print_cinfo(char* container_name, char* tty_name, int pid);
  */
 static int get_connected_cname(char* cname);
 
+<<<<<<< PATCH SET (9c5424 Added basic implementation of pouch run, in which the contai)
+/*
+ *   Get all avaliable images
+ *   @input: none
+ *   @output: prints all avaliable images
+ *   @return: 0 - OK, <0 - FAILURE
+ */
+static int pouch_get_images();
+static char *fmtname(char *path);
+
+/*
+ *   Get image root directory
+ *   @input: image_name,root_dir
+ *   @output: Writes the root directory in root_dir argument
+ *   @return: 0 - OK, <0 - FAILURE
+ */
+static int get_image_root_dir(char * image_name, char * root_dir);
+
+=======
+>>>>>>> BASE      (6ed18d Fixed the bug that caused binaries inside containers to cras)
 #endif /* XV6_POUCH_H */

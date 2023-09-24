@@ -56,11 +56,88 @@ static int prepare_cgroup_cname(char* container_name, char* cg_cname) {
   return 0;
 }
 
+<<<<<<< PATCH SET (9c5424 Added basic implementation of pouch run, in which the contai)
+static char *fmtname(char *path) {
+  static char buf[DIRSIZ + 1];
+  char *p;
+
+  // Find first character after last slash.
+  for (p = path + strlen(path); p >= path && *p != '/'; p--) {
+  }
+  p++;
+
+  // Return blank-padded name.
+  if (strlen(p) >= DIRSIZ) return p;
+  memmove(buf, p, strlen(p));
+  memset(buf + strlen(p), ' ', DIRSIZ - strlen(p));
+  return buf;
+}
+
+static int pouch_get_images(){
+  char buf[512], *p;
+  int fd;
+  struct dirent de;
+  struct stat st;
+
+  if ((fd = open(IMAGE_DIR, 0)) < 0) {
+    printf(2, "ls: cannot open %s\n", IMAGE_DIR);
+    return -1;
+  }
+
+  if (fstat(fd, &st) < 0) {
+    printf(2, "ls: cannot stat %s\n", IMAGE_DIR);
+    close(fd);
+    return -1;
+  }
+
+  if (st.type == T_DIR) {
+    if (strlen(IMAGE_DIR) + 1 + DIRSIZ + 1 > sizeof buf) {
+      printf(1, "ls: path too long\n");
+      return -1;
+    }
+    strcpy(buf, IMAGE_DIR);
+    p = buf + strlen(buf);
+    *p++ = '/';
+    while (read(fd, &de, sizeof(de)) == sizeof(de)) {
+      if (de.inum == 0) continue;
+      memmove(p, de.name, DIRSIZ);
+      p[DIRSIZ] = 0;
+      if (stat(buf, &st) < 0) {
+        printf(1, "ls: cannot stat %s\n", buf);
+        continue;
+      }
+      printf(1, "%s %d %d %d\n", fmtname(buf), st.type, st.ino, st.size);
+    }
+  } else {
+    printf(stderr, "%s is not a directory\n", IMAGE_DIR);
+    return -1;
+  }
+  close(fd);
+  //printf(stderr, "pouch images not implemented yet\n");
+  return 0;
+}
+
+static int get_image_root_dir(char * image_name, char * root_dir){
+  strcpy(root_dir, IMAGE_DIR);
+  strcat(root_dir, image_name);
+  strcat(root_dir, "/");
+  int fd;
+  if ((fd = open(root_dir, 0)) < 0) {
+    printf(2, "ls: cannot find root_dir of the template in %s\n", root_dir);
+    return -1;
+  }
+  return 0;
+}
+
+static int pouch_cmd(char* container_name, char* image_name, char* pouch_file, enum p_cmd cmd) {
+=======
 static int pouch_cmd(char* container_name, enum p_cmd cmd) {
+>>>>>>> BASE      (6ed18d Fixed the bug that caused binaries inside containers to cras)
   int tty_fd;
   int pid;
   char tty_name[10];
   char cg_cname[256];
+  char root_dir[MAX_PATH_LENGTH];
 
   if (cmd == START) {
     return pouch_fork(container_name);
@@ -73,6 +150,26 @@ static int pouch_cmd(char* container_name, enum p_cmd cmd) {
     return 0;
   }
 
+<<<<<<< PATCH SET (9c5424 Added basic implementation of pouch run, in which the contai)
+  if (cmd == IMAGES){
+    if (pouch_get_images() < 0) {
+      return -1;
+    }
+    return 0;
+  }
+  
+  if (cmd == RUN){
+    if (get_image_root_dir(image_name, root_dir) < 0){
+      return -1;
+    }
+    printf(stderr, "%s\n", image_name);
+    printf(stderr, "%s\n", container_name);
+    printf(stderr, "%s\n", root_dir);
+    return pouch_fork(container_name, root_dir);
+  }
+
+=======
+>>>>>>> BASE      (6ed18d Fixed the bug that caused binaries inside containers to cras)
   if (read_from_cconf(container_name, tty_name, &pid) < 0) {
     return -1;
   }
@@ -469,6 +566,10 @@ void print_help_outside_cnt() {
   printf(stderr, "          - {name} : container name\n");
   printf(stderr, "       pouch list all\n");
   printf(stderr, "          : displays state of all created containers\n");
+  printf(stderr, "       pouch run {name} {image_name}\n");
+  printf(stderr, "          : starts a new container from a base image\n");
+  printf(stderr, "          - {name} : container name\n");
+  printf(stderr, "          - {image_name} : image name\n");
   printf(stderr, "      \ncontainers cgroups:\n");
   printf(stderr, "       pouch cgroup {cname} {state-object} [value]\n");
   printf(stderr, "          : limit given cgroup state-object\n");
@@ -621,6 +722,14 @@ int main(int argc, char* argv[]) {
     } else if ((strcmp(argv[1], "list")) == 0 &&
                (strcmp(argv[2], "all")) == 0) {
       cmd = LIST;
+<<<<<<< PATCH SET (9c5424 Added basic implementation of pouch run, in which the contai)
+    } else if ((strcmp(argv[1], "images")) == 0) {
+      cmd = IMAGES;
+    } else if ((strcmp(argv[1], "run")) == 0) {
+      cmd = RUN;
+      strcpy(image_name, argv[3]);
+=======
+>>>>>>> BASE      (6ed18d Fixed the bug that caused binaries inside containers to cras)
     } else {
       if (ppid == 1)
         print_help_inside_cnt();
@@ -655,7 +764,10 @@ int main(int argc, char* argv[]) {
         if (print_help_inside_cnt() < 0) {
           exit(1);
         }
-      }
+      } else if (cmd == RUN){
+        printf(1, "Nesting containers is not supported.\n");
+        exit(1);
+      } 
     } else {
       // command execution
       if (cmd == LIMIT && argc == 5) {
