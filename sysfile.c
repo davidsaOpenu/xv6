@@ -316,6 +316,7 @@ int sys_open(void) {
     return fd;
   }
 
+  path = apply_binds(path);
   if (omode & O_CREATE) {
     ip = createmount(path, T_FILE, 0, 0, &mnt, omode);
     if (ip == 0) {
