@@ -18,3 +18,12 @@ int sys_unshare(void) {
 
   return unshare(nstype);
 }
+
+int sys_unshare_with_mount(void) {
+  char * root_dir;
+  if (argstr(0, &root_dir) < 0) {
+    return -1;
+  }
+
+  return unshare_with_mount(root_dir);
+}

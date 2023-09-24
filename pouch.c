@@ -117,11 +117,24 @@ static int pouch_get_images(){
   return 0;
 }
 
+static int get_image_root_dir(char * image_name, char * root_dir){
+  strcpy(root_dir, IMAGE_DIR);
+  strcat(root_dir, image_name);
+  strcat(root_dir, "/");
+  int fd;
+  if ((fd = open(root_dir, 0)) < 0) {
+    printf(2, "ls: cannot find root_dir of the template in %s\n", root_dir);
+    return -1;
+  }
+  return 0;
+}
+
 static int pouch_cmd(char* container_name, char* image_name, char* pouch_file, enum p_cmd cmd) {
   int tty_fd;
   int pid;
   char tty_name[10];
   char cg_cname[256];
+  char root_dir[MAX_PATH_LENGTH];
 
   if (cmd == START) {
     return pouch_fork(container_name, NULL);
@@ -139,6 +152,16 @@ static int pouch_cmd(char* container_name, char* image_name, char* pouch_file, e
       return -1;
     }
     return 0;
+  }
+  
+  if (cmd == RUN){
+    if (get_image_root_dir(image_name, root_dir) < 0){
+      return -1;
+    }
+    printf(stderr, "%s\n", image_name);
+    printf(stderr, "%s\n", container_name);
+    printf(stderr, "%s\n", root_dir);
+    return pouch_fork(container_name, root_dir);
   }
 
   if (read_from_cconf(container_name, tty_name, &pid) < 0) {
@@ -477,9 +500,16 @@ static int pouch_fork(char* container_name, char* root_dir) {
       }
       // "Child process - setting up namespaces for the container
       // Set up mount namespace.
-      if (unshare(MOUNT_NS) < 0) {
-        printf(1, "Cannot create mount namespace\n");
-        exit(1);
+      if (root_dir){
+        if (unshare_with_mount(root_dir) < 0) {
+          printf(1, "Cannot create mount namespace with inital root_dir\n");
+          exit(1);
+        }
+      } else {
+        if (unshare(MOUNT_NS) < 0) {
+          printf(1, "Cannot create mount namespace\n");
+          exit(1);
+        }
       }
       printf(stderr, "Entering container\n");
       exec("sh", argv);
@@ -537,6 +567,10 @@ void print_help_outside_cnt() {
   printf(stderr, "          - {name} : container name\n");
   printf(stderr, "       pouch list all\n");
   printf(stderr, "          : displays state of all created containers\n");
+  printf(stderr, "       pouch run {name} {image_name}\n");
+  printf(stderr, "          : starts a new container from a base image\n");
+  printf(stderr, "          - {name} : container name\n");
+  printf(stderr, "          - {image_name} : image name\n");
   printf(stderr, "      \ncontainers cgroups:\n");
   printf(stderr, "       pouch cgroup {cname} {state-object} [value]\n");
   printf(stderr, "          : limit given cgroup state-object\n");
@@ -696,6 +730,9 @@ int main(int argc, char* argv[]) {
       cmd = LIST;
     } else if ((strcmp(argv[1], "images")) == 0) {
       cmd = IMAGES;
+    } else if ((strcmp(argv[1], "run")) == 0) {
+      cmd = RUN;
+      strcpy(image_name, argv[3]);
     } else {
       if (ppid == 1)
         print_help_inside_cnt();
@@ -730,7 +767,10 @@ int main(int argc, char* argv[]) {
         if (print_help_inside_cnt() < 0) {
           exit(1);
         }
-      }
+      } else if (cmd == RUN){
+        printf(1, "Nesting containers is not supported.\n");
+        exit(1);
+      } 
     } else {
       // command execution
       if (cmd == LIMIT && argc == 5) {
