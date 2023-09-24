@@ -1,0 +1,39 @@
+pouch start c1
+Pouch: c1 starting
+$ pid
+PID: 2
+$ pouch connect c1
+
+tty0 connected
+pid
+PID: 1
+$ echo test > testfile
+$ cat testfile
+test
+$ pouch disconnect
+Console connected
+pid
+PID: 2
+$ ls c1
+c1             2 45 23
+$ pouch destroy c1
+zombie!
+Pouch: c1 destroyed
+$ ls c1
+ls: cannot open c1
+cd bad$ dirname_itdoesntexist
+cannot cd baddirname_itdoesntexist
+$ echo $?
+-2
+$ thereisnosuchcommand
+exec thereisnosuchcommand failed
+$ echo $?
+1
+$ pouch start c1
+Pouch: c1 starting
+$ pouch destroy c1
+Pouch: c1 destroyed
+z$ ombie!
+pouch start c1
+Pouch: c1 starting
+$ 
