@@ -1,5 +1,6 @@
 #include "proc.h"
 
+#include "bind.h"
 #include "cpu_account.h"
 #include "defs.h"
 #include "memlayout.h"
@@ -638,7 +639,8 @@ void forkret(void) {
     iinit(ROOTDEV);
     initlog(ROOTDEV);
     init_objfs_log();
-    mntinit();  // initialize mounts
+    mntinit();        // initialize mounts
+    bindtableinit();  // initialize bind mounts
   }
 
   // Return to "caller", actually trapret (see allocproc).
