@@ -237,14 +237,18 @@ static struct mount_list *shallowcopyactivemounts(struct mount **newcwdmount) {
   struct mount_list *head = 0;
   struct mount_list *entry = myproc()->nsproxy->mount_ns->active_mounts;
   struct mount_list *prev = 0;
-  while (entry != 0 && entry->mnt.mountpoint != 0) {
+  while (entry != 0) {
     struct mount_list *newentry = allocmntlist();
     if (head == 0) {
       head = newentry;
     }
     newentry->mnt.ref = 1;
-    newentry->mnt.mountpoint =
-        entry->mnt.mountpoint->i_op.idup(entry->mnt.mountpoint);
+    if (entry->mnt.mountpoint != 0) {
+      newentry->mnt.mountpoint =
+          entry->mnt.mountpoint->i_op.idup(entry->mnt.mountpoint);
+    } else {
+      newentry->mnt.mountpoint = 0;
+    }
     newentry->mnt.parent = 0;
     newentry->mnt.dev = entry->mnt.dev;
     deviceget(newentry->mnt.dev);
@@ -294,9 +298,10 @@ struct mount_list *copyactivemounts(void) {
   struct mount_list *newentry = shallowcopyactivemounts(&newcwdmount);
   fixparents(newentry);
   release(&myproc()->nsproxy->mount_ns->lock);
-
-  myproc()->cwdmount = mntdup(newcwdmount);
-  mntput(oldcwdmount);
+  if (newcwdmount != 0) {
+    myproc()->cwdmount = mntdup(newcwdmount);
+    mntput(oldcwdmount);
+  }
   return newentry;
 }
 
