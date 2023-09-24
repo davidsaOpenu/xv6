@@ -70,7 +70,7 @@ void vfs_fileclose(struct vfs_file *f) {
 
 // Get metadata about file f.
 int vfs_filestat(struct vfs_file *f, struct stat *st) {
-  if (f->type == FD_INODE) {
+  if (f->type == FD_INODE && f->ip != 0) {
     f->ip->i_op.ilock(f->ip);
     f->ip->i_op.stati(f->ip, st);
     f->ip->i_op.iunlock(f->ip);
