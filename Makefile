@@ -17,6 +17,7 @@ OBJS = \
 	log.o\
 	main.o\
 	kmount.o\
+	bind.o\
 	mount_ns.o\
 	pid_ns.o\
 	mp.o\
@@ -321,7 +322,7 @@ qemu-nox-gdb: gdb .gdbinit
 
 EXTRA=\
 	mkfs.c ulib.c user.h cat.c cp.c echo.c grep.c kill.c ln.c ls.c mkdir.c rm.c\
-	stressfs.c wc.c zombie.c printf.c umalloc.c mount.c umount.c timer.c cpu.c\
+	stressfs.c wc.c zombie.c printf.c umalloc.c bind.c mount.c umount.c timer.c cpu.c\
 	mutex.c tests/xv6/forktest.c tests/xv6/mounttest.c tests/xv6/usertests.c\
 	tests/xv6/pidns_tests.c tests/xv6/cgroupstests.c tests/xv6/ioctltests.c\
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
