@@ -78,9 +78,11 @@ static struct vfs_inode *vfs_namex(char *path, int nameiparent, char *name,
 
     mntinum = ip->inum;
     ip->i_op.iunlockput(ip);
-
-    if ((!vfs_namecmp(name, "..")) && (curmount->dev != ROOTDEV) &&
-        ((mntinum == ROOTINO) || (mntinum == OBJ_ROOTINO))) {
+    if ((!vfs_namencmp(name, "..", 3)) && curmount != 0 &&
+        (curmount->dev != ROOTDEV) &&
+        ((mntinum == ROOTINO) || (mntinum == OBJ_ROOTINO)) &&
+        curmount->mountpoint != 0 &&
+        curmount->mountpoint->i_op.dirlookup != 0) {
       nextmount = mntdup(curmount->parent);
       mntinum =
           curmount->mountpoint->i_op.dirlookup(curmount->mountpoint, "..", 0)
@@ -153,3 +155,7 @@ struct vfs_inode *vfs_nameimount(char *path, struct mount **mnt) {
 }
 
 int vfs_namecmp(const char *s, const char *t) { return strncmp(s, t, DIRSIZ); }
+
+int vfs_namencmp(const char *s, const char *t, int length) {
+  return strncmp(s, t, length);
+}

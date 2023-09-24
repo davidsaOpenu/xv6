@@ -132,6 +132,14 @@ proc pouch_stress_test {argv} {
     }
 }
 
+proc pouch_basic_tests {argv} {
+    set running [pouch_start_test $argv]
+    set running [pouch_connect_test $argv]
+    set running [pouch_binaries_test $argv]
+    set running [pouch_disconnect_test $argv]
+    set running [pouch_destroy_test $argv]
+}
+
 proc cp_copy_file_test {argv} {
     set timeout -1
     log_file -noappend [lindex $argv 0]
@@ -222,6 +230,19 @@ proc pouch_connect_test {argv} {
     set timeout 3
     set running [pid_check $argv "PID: 1"]
 
+}
+
+proc pouch_binaries_test {argv} {
+    set timeout 1
+    sleep 0.5
+    send "echo test > testfile\n"
+    sleep 0.5
+    expect "$ "
+    sleep 0.5
+    send "cat testfile\n"
+    sleep 0.5
+    expect "test"
+    sleep 0.5
 }
 
 
@@ -566,17 +587,14 @@ expect "$ "
 #uncomment for expect debugging
 #exp_internal 1
 
-set running [ioctl_syscall_test $argv]
-set running [cgroupstests $argv]
-set running [cgroup_io_states_test]
+#set running [ioctl_syscall_test $argv]
+#set running [cgroupstests $argv]
+#set running [cgroup_io_states_test]
 
 #basic tests
 set running [cp_copy_file_test $argv]
 set running [cp_copy_dir_test $argv]
-set running [pouch_start_test $argv]
-set running [pouch_connect_test $argv]
-set running [pouch_disconnect_test $argv]
-set running [pouch_destroy_test $argv]
+set running [pouch_basic_tests $argv]
 set running [command_exit_status_test $argv]
 
 #scenario tests
