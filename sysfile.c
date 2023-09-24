@@ -248,7 +248,6 @@ static struct vfs_inode *createmount(char *path, short type, short major,
 
   if ((dp = vfs_nameiparentmount(path, name, mnt)) == 0) return 0;
   dp->i_op.ilock(dp);
-
   if ((ip = dp->i_op.dirlookup(dp, name, &off)) != 0) {
     dp->i_op.iunlockput(dp);
     // The path has already been created
@@ -316,6 +315,7 @@ int sys_open(void) {
     return fd;
   }
 
+  path = apply_binds(path);
   if (omode & O_CREATE) {
     ip = createmount(path, T_FILE, 0, 0, &mnt, omode);
     if (ip == 0) {

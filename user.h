@@ -41,6 +41,7 @@ int kmemtest(void);
 int mount(const char*, const char*, const char*);
 int umount(const char*);
 int unshare(int);
+int unshare_with_mount(char*);
 
 // ulib.c
 int stat(const char*, struct stat*);

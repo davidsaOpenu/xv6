@@ -14,6 +14,7 @@ typedef enum p_cmd {
   INFO,
   LIST,
   IMAGES,
+  RUN
 } p_cmd;
 #define CNTNAMESIZE 100
 #define CNTARGSIZE 30
@@ -168,5 +169,13 @@ static int get_connected_cname(char* cname);
  */
 static int pouch_get_images();
 static char *fmtname(char *path);
+
+/*
+ *   Get image root directory
+ *   @input: image_name,root_dir
+ *   @output: Writes the root directory in root_dir argument
+ *   @return: 0 - OK, <0 - FAILURE
+ */
+static int get_image_root_dir(char * image_name, char * root_dir);
 
 #endif /* XV6_POUCH_H */

@@ -66,6 +66,7 @@ struct mount_ns* copymount_ns() {
   struct mount_ns* mount_ns = allocmount_ns();
   mount_ns->active_mounts = copyactivemounts();
   mount_ns->root = getroot(mount_ns->active_mounts);
+  //Todo: implement copy of bind_table
   return mount_ns;
 }
 

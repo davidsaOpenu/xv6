@@ -13,6 +13,7 @@
 #include "spinlock.h"
 #include "stat.h"
 #include "types.h"
+#include "bind.h"
 
 struct {
   struct spinlock lock;
@@ -104,4 +105,24 @@ int unshare(int nstype) {
     default:
       return -1;
   }
+}
+
+int unshare_with_mount(char* root_dir) {
+  acquire(&namespacetable.lock);
+  if (myproc()->nsproxy->ref > 1) {
+    struct nsproxy* oldns = myproc()->nsproxy;
+    myproc()->nsproxy = allocnsproxyinternal();
+    myproc()->nsproxy->mount_ns = mount_nsdup(oldns->mount_ns);
+    myproc()->nsproxy->pid_ns = pid_ns_dup(oldns->pid_ns);
+    oldns->ref--;
+  }
+  release(&namespacetable.lock);
+  struct mount_ns* previous = myproc()->nsproxy->mount_ns;
+  myproc()->nsproxy->mount_ns = copymount_ns();
+  mount_nsput(previous);
+  myproc()->nsproxy->mount_ns->bind_table = get_bindtable();
+  // TOOD: copy the root-dir to the right location and only then run this command
+  add_root_dir_to_bind_table(myproc()->nsproxy->mount_ns->bind_table, root_dir);
+
+  return 0;
 }

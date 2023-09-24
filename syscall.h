@@ -31,5 +31,6 @@
 #define SYS_getppid 29
 #define SYS_getcpu 30
 #define SYS_kmemtest 32
+#define SYS_unshare_with_mount 33
 
 #endif /* XV6_SYSCALL_H */
