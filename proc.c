@@ -13,6 +13,7 @@
 #include "types.h"
 #include "wstatus.h"
 #include "x86.h"
+#include "bind.h"
 
 struct {
   struct spinlock lock;
@@ -639,6 +640,7 @@ void forkret(void) {
     initlog(ROOTDEV);
     init_objfs_log();
     mntinit();  // initialize mounts
+    bindtableinit(); // initialize bind mounts
   }
 
   // Return to "caller", actually trapret (see allocproc).
