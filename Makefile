@@ -214,6 +214,7 @@ UPROGS_TESTS=\
 
 UPROGS=\
 	_cat\
+	_cp\
 	_echo\
 	_grep\
 	_init\
@@ -319,7 +320,7 @@ qemu-nox-gdb: gdb .gdbinit
 # check in that version.
 
 EXTRA=\
-	mkfs.c ulib.c user.h cat.c echo.c grep.c kill.c ln.c ls.c mkdir.c rm.c\
+	mkfs.c ulib.c user.h cat.c cp.c echo.c grep.c kill.c ln.c ls.c mkdir.c rm.c\
 	stressfs.c wc.c zombie.c printf.c umalloc.c mount.c umount.c timer.c cpu.c\
 	mutex.c tests/xv6/forktest.c tests/xv6/mounttest.c tests/xv6/usertests.c\
 	tests/xv6/pidns_tests.c tests/xv6/cgroupstests.c tests/xv6/ioctltests.c\
