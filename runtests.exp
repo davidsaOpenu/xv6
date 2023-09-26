@@ -132,6 +132,68 @@ proc pouch_stress_test {argv} {
     }
 }
 
+proc cp_copy_file_test {argv} {
+    set timeout -1
+    log_file -noappend [lindex $argv 0]
+
+    #bad args test
+    send "cp f1\n"
+    expect "cp requires two arguemnts, source and target"
+    sleep 0.5
+
+    #source file doesnt exist
+    send "cp f1 f2\n"
+    expect "cant locate f1"
+    sleep 0.5
+
+    #target dir doesnt exist
+    send "echo test > f1\n"
+    sleep 0.5
+    send "cp f1 d1/f1\n"
+    expect "cant create d1/f1, make sure the entire path exists"
+
+    #test single file
+    sleep 0.5
+    send "cp f1 f2\n"
+    sleep 0.5
+    send "cat f2\n"
+    expect "test"
+    sleep 0.5
+}
+
+proc cp_copy_dir_test {argv} {
+    set timeout -1
+    log_file -noappend [lindex $argv 0]
+
+    #one file in dir
+    send "mkdir d1\n"
+    sleep 0.5
+    send "echo test > d1/f1\n"
+    sleep 0.5
+    send "mkdir d2\n"
+    sleep 0.5
+    send "cp d1 d2\n"
+    sleep 0.5
+    send "cat d2/f1\n"
+    expect "test"
+    sleep 0.5
+
+    #recursive dir test
+    send "mkdir d3\n"
+    sleep 0.5
+    send "mkdir d3/d4\n"
+    sleep 0.5
+    send "echo test > d3/d4/f1\n"
+    sleep 0.5
+    send "mkdir t1\n"
+    sleep 0.5
+    send "cp d3 t1\n"
+    sleep 0.5
+    send "cat t1/d4/f1\n"
+    expect "test"
+    sleep 0.5
+}
+
 # - This test start the container
 # - The pid should be 2 because we still remain in the console,
 # - and not connected to any tty device yet
@@ -509,6 +571,8 @@ set running [cgroupstests $argv]
 set running [cgroup_io_states_test]
 
 #basic tests
+set running [cp_copy_file_test $argv]
+set running [cp_copy_dir_test $argv]
 set running [pouch_start_test $argv]
 set running [pouch_connect_test $argv]
 set running [pouch_disconnect_test $argv]
