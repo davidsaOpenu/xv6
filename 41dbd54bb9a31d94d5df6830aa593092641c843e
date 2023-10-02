@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8f79d813_fa162d33",
+        "filename": "runtests.exp",
+        "patchSetId": 4
+      },
+      "lineNbr": 176,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-10-02T12:31:41Z",
+      "side": 1,
+      "message": "echo is executed outside the container. In order to verify the change one, presumably, has to create a container and run commands inside.",
+      "range": {
+        "startLine": 165,
+        "startChar": 0,
+        "endLine": 176,
+        "endChar": 1
+      },
+      "revId": "41dbd54bb9a31d94d5df6830aa593092641c843e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
