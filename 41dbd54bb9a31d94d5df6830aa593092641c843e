@@ -22,6 +22,30 @@
       },
       "revId": "41dbd54bb9a31d94d5df6830aa593092641c843e",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fe2a40c6_e9aded74",
+        "filename": "runtests.exp",
+        "patchSetId": 4
+      },
+      "lineNbr": 176,
+      "author": {
+        "id": 1021049
+      },
+      "writtenOn": "2023-10-02T12:47:48Z",
+      "side": 1,
+      "message": "The test is placed between the pouch_connect_test and the pouch_disconnect_test\nand so runs inside a container\n\nset running [pouch_start_test $argv]\nset running [pouch_connect_test $argv]\nset running [pouch_binaries_test $argv]\nset running [pouch_disconnect_test $argv]",
+      "parentUuid": "8f79d813_fa162d33",
+      "range": {
+        "startLine": 165,
+        "startChar": 0,
+        "endLine": 176,
+        "endChar": 1
+      },
+      "revId": "41dbd54bb9a31d94d5df6830aa593092641c843e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
