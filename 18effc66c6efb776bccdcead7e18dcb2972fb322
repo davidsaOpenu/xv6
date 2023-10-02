@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1a6182fe_f13ff9ac",
+        "filename": "pouch.c",
+        "patchSetId": 8
+      },
+      "lineNbr": 121,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-10-02T12:24:23Z",
+      "side": 1,
+      "message": "on the second thought lets get rig of this duplication and execute ls (maybe modifying adding a flag to avoid printing \".\", \"..\"). Better aligns with Unix like system philosophy.",
+      "range": {
+        "startLine": 60,
+        "startChar": 0,
+        "endLine": 121,
+        "endChar": 1
+      },
+      "revId": "18effc66c6efb776bccdcead7e18dcb2972fb322",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
