@@ -1,6 +1,52 @@
 {
   "comments": [
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "99ffe7f7_a4ed9e28",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 5
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-10-21T18:56:21Z",
+      "side": 1,
+      "message": "The link to the epic don\u0027t provide much information about this change. Please provide a context to clarify what this change entails.",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 9,
+        "endChar": 71
+      },
+      "revId": "f5f6fcfd92941215d8440de84685f0fa537d66b6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a51efbe4_d6e1fbf0",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 5
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-10-21T18:56:21Z",
+      "side": 1,
+      "message": "Please abandon https://review.gerrithub.io/c/davidsaOpenu/xv6/+/1169094.\n\nThe recommendation is not to generate a new Change ID when making revisions to a change, as it can make it more challenging to track the history of the change. As you make revisions to the change (such as addressing feedback or making updates), Gerrit creates new patch sets under the same Change ID.",
+      "range": {
+        "startLine": 10,
+        "startChar": 0,
+        "endLine": 12,
+        "endChar": 52
+      },
+      "revId": "f5f6fcfd92941215d8440de84685f0fa537d66b6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "31e17a68_16256838",
