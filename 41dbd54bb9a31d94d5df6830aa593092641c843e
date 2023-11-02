@@ -46,6 +46,30 @@
       },
       "revId": "41dbd54bb9a31d94d5df6830aa593092641c843e",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "26982ad6_08ab5af0",
+        "filename": "runtests.exp",
+        "patchSetId": 4
+      },
+      "lineNbr": 176,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-11-02T18:28:19Z",
+      "side": 1,
+      "message": "Thank you for the clarification. Relying on the order of test execution is not a robust approach, as it can easily be disrupted. To ensure the reliability of our testing, let\u0027s create a comprehensive test that covers the connection, testing and disconnection.",
+      "parentUuid": "fe2a40c6_e9aded74",
+      "range": {
+        "startLine": 165,
+        "startChar": 0,
+        "endLine": 176,
+        "endChar": 1
+      },
+      "revId": "41dbd54bb9a31d94d5df6830aa593092641c843e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
