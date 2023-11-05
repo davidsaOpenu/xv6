@@ -67,6 +67,23 @@
       "message": "thanks for working on this change, Dor. Can you please take a look on \nhttp://192.114.0.189:8080/jenkins/job/xv6-16.04/128? \n\nhttp://192.114.0.189:8080/jenkins/job/xv6-22.04/2032 is passing. But we need both jobs to become our check gates. Thanks",
       "revId": "314e39b0510ada3c6354875c248e762511bf14aa",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d5062eec_8e71e88f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-11-05T14:47:11Z",
+      "side": 1,
+      "message": "recheck",
+      "revId": "314e39b0510ada3c6354875c248e762511bf14aa",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
