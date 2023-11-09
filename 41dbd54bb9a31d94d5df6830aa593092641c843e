@@ -70,6 +70,30 @@
       },
       "revId": "41dbd54bb9a31d94d5df6830aa593092641c843e",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e1b69327_c663c75f",
+        "filename": "runtests.exp",
+        "patchSetId": 4
+      },
+      "lineNbr": 176,
+      "author": {
+        "id": 1021049
+      },
+      "writtenOn": "2023-11-09T17:01:00Z",
+      "side": 1,
+      "message": "Well the tests were already relying on the order of execution as we ran\nset running [pouch_start_test $argv]\nset running [pouch_connect_test $argv]\nset running [pouch_disconnect_test $argv]\nObviously if the order want reliable these tests would fail\nIs your intention to wrap all these 4 tests into 1 ?",
+      "parentUuid": "26982ad6_08ab5af0",
+      "range": {
+        "startLine": 165,
+        "startChar": 0,
+        "endLine": 176,
+        "endChar": 1
+      },
+      "revId": "41dbd54bb9a31d94d5df6830aa593092641c843e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
