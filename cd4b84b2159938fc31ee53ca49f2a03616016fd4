@@ -24,6 +24,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "9a1cab0f_ab15b12f",
+        "filename": "pouch.c",
+        "patchSetId": 12
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 1021049
+      },
+      "writtenOn": "2023-11-09T16:42:31Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4d3ea8e3_3fd16704",
+      "range": {
+        "startLine": 76,
+        "startChar": 11,
+        "endLine": 76,
+        "endChar": 27
+      },
+      "revId": "cd4b84b2159938fc31ee53ca49f2a03616016fd4",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "cc3e3f84_25d94ea5",
@@ -37,6 +61,30 @@
       "writtenOn": "2023-11-09T07:07:40Z",
       "side": 1,
       "message": "please improve the coding style: magic numbers, variables inside the loop etc",
+      "range": {
+        "startLine": 76,
+        "startChar": 0,
+        "endLine": 121,
+        "endChar": 1
+      },
+      "revId": "cd4b84b2159938fc31ee53ca49f2a03616016fd4",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "15b0ffad_d40216f2",
+        "filename": "pouch.c",
+        "patchSetId": 12
+      },
+      "lineNbr": 121,
+      "author": {
+        "id": 1021049
+      },
+      "writtenOn": "2023-11-09T16:42:31Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "cc3e3f84_25d94ea5",
       "range": {
         "startLine": 76,
         "startChar": 0,
