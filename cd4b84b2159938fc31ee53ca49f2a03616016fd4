@@ -140,6 +140,30 @@
       },
       "revId": "cd4b84b2159938fc31ee53ca49f2a03616016fd4",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "23d1cd8f_d7a529bc",
+        "filename": "pouch.c",
+        "patchSetId": 12
+      },
+      "lineNbr": 416,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-11-09T18:33:43Z",
+      "side": 1,
+      "message": "What is the justification to introduce it in this change then? Please remove it for now to avoid confusion.",
+      "parentUuid": "44079035_419cd38c",
+      "range": {
+        "startLine": 416,
+        "startChar": 50,
+        "endLine": 416,
+        "endChar": 58
+      },
+      "revId": "cd4b84b2159938fc31ee53ca49f2a03616016fd4",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
