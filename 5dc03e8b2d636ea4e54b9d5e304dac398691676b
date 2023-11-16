@@ -24,6 +24,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "e7adeccb_16839572",
+        "filename": "bind.c",
+        "patchSetId": 8
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 1021049
+      },
+      "writtenOn": "2023-11-16T11:17:23Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "09e2b75c_f5b410d3",
+      "range": {
+        "startLine": 3,
+        "startChar": 0,
+        "endLine": 6,
+        "endChar": 20
+      },
+      "revId": "5dc03e8b2d636ea4e54b9d5e304dac398691676b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "21fe2b85_58a87f18",
@@ -37,6 +61,30 @@
       "writtenOn": "2023-11-16T07:01:27Z",
       "side": 1,
       "message": "better to move to bind.c except the one required for bind_mount_list",
+      "range": {
+        "startLine": 4,
+        "startChar": 0,
+        "endLine": 13,
+        "endChar": 0
+      },
+      "revId": "5dc03e8b2d636ea4e54b9d5e304dac398691676b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "39bc5de2_dafb81a0",
+        "filename": "bind.h",
+        "patchSetId": 8
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1021049
+      },
+      "writtenOn": "2023-11-16T11:17:23Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "21fe2b85_58a87f18",
       "range": {
         "startLine": 4,
         "startChar": 0,
@@ -70,6 +118,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "8193581c_b81501f8",
+        "filename": "bind.h",
+        "patchSetId": 8
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1021049
+      },
+      "writtenOn": "2023-11-16T11:17:23Z",
+      "side": 1,
+      "message": "Done, all of these methods are external, currently get_bindtable and add_root_dir_to_bind_table, are not in use but they will be used by pouch run",
+      "parentUuid": "819b1672_1173befb",
+      "range": {
+        "startLine": 14,
+        "startChar": 0,
+        "endLine": 21,
+        "endChar": 48
+      },
+      "revId": "5dc03e8b2d636ea4e54b9d5e304dac398691676b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "6d57e618_3bed9264",
@@ -83,6 +155,30 @@
       "writtenOn": "2023-11-16T07:01:27Z",
       "side": 1,
       "message": "please add a description. What is the purpose of the struct/fields.",
+      "range": {
+        "startLine": 12,
+        "startChar": 0,
+        "endLine": 17,
+        "endChar": 2
+      },
+      "revId": "5dc03e8b2d636ea4e54b9d5e304dac398691676b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "93338c63_6c9f21bf",
+        "filename": "mount_ns.h",
+        "patchSetId": 8
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1021049
+      },
+      "writtenOn": "2023-11-16T11:17:23Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6d57e618_3bed9264",
       "range": {
         "startLine": 12,
         "startChar": 0,
@@ -116,6 +212,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "18f2fc87_0a1e1496",
+        "filename": "mount_ns.h",
+        "patchSetId": 8
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 1021049
+      },
+      "writtenOn": "2023-11-16T11:17:23Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0b3c63c8_d294c2d5",
+      "range": {
+        "startLine": 29,
+        "startChar": 26,
+        "endLine": 29,
+        "endChar": 36
+      },
+      "revId": "5dc03e8b2d636ea4e54b9d5e304dac398691676b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "354fc852_57962012",
@@ -129,6 +249,30 @@
       "writtenOn": "2023-11-16T07:01:27Z",
       "side": 1,
       "message": "systemwide?",
+      "range": {
+        "startLine": 20,
+        "startChar": 38,
+        "endLine": 20,
+        "endChar": 67
+      },
+      "revId": "5dc03e8b2d636ea4e54b9d5e304dac398691676b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c82e8931_4035bf10",
+        "filename": "param.h",
+        "patchSetId": 8
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1021049
+      },
+      "writtenOn": "2023-11-16T11:17:23Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "354fc852_57962012",
       "range": {
         "startLine": 20,
         "startChar": 38,

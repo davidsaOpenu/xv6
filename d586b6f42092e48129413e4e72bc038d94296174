@@ -16,6 +16,24 @@
       "message": "Thanks for working on this change. Please add tests for the change and see additional comments inside.",
       "revId": "d586b6f42092e48129413e4e72bc038d94296174",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2df93018_4df7fae3",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1021049
+      },
+      "writtenOn": "2023-11-16T11:17:23Z",
+      "side": 1,
+      "message": "Adding tests here is abit difficult since appyling the binds is only done through the code, (there is no shell command to use them), and currently there are no calls to bind in the system, they are added throuh pouch run.\nWe could add tests to this functionality in pouch run, or we have to implement a \nshell command to use bind.",
+      "parentUuid": "bad3debb_c9ca40ed",
+      "revId": "d586b6f42092e48129413e4e72bc038d94296174",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
