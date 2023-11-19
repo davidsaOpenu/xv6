@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "89622bb4_7124173c",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 7
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-11-19T04:57:48Z",
+      "side": 1,
+      "message": "please leave one Change-ID",
+      "range": {
+        "startLine": 16,
+        "startChar": 0,
+        "endLine": 19,
+        "endChar": 52
+      },
+      "revId": "d4a84484326837497df27edca51690685d61dabb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "49fcd473_43abfe2f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 7
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-11-19T04:57:48Z",
+      "side": 1,
+      "message": "Thanks for working on this change. \n\nNotes:\n\n- Ensure that the changes pass the CI before the review.\n- Include tests that involve objects of varying sizes. Cache and access them to verify correctness.\n- Refer to additional comments provided inline.\"",
+      "revId": "d4a84484326837497df27edca51690685d61dabb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
