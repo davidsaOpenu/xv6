@@ -279,6 +279,29 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "bf448551_ce3e8d11",
+        "filename": "tests/xv6/objfstests.c",
+        "patchSetId": 16
+      },
+      "lineNbr": 1109,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-12-01T09:50:46Z",
+      "side": 1,
+      "message": "this test is not checking anything related to the cache but merely read and write calls. in order to tests the lines added in obj_cache one needs some means to see and verify cache statistics (proc?)",
+      "range": {
+        "startLine": 1109,
+        "startChar": 5,
+        "endLine": 1109,
+        "endChar": 36
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "6ae9ca18_2904278b",
         "filename": "tests/xv6/objfstests.c",
         "patchSetId": 16
@@ -295,6 +318,29 @@
         "startChar": 5,
         "endLine": 1152,
         "endChar": 27
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "15e4f51a_2396c40c",
+        "filename": "tests/xv6/objfstests.c",
+        "patchSetId": 16
+      },
+      "lineNbr": 1207,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-12-01T09:50:46Z",
+      "side": 1,
+      "message": "this test is also not checking anything related to the cache but merely read and write calls. in order to tests the lines added in obj_cache one needs some means to see and verify cache statistics (proc?)",
+      "range": {
+        "startLine": 1156,
+        "startChar": 0,
+        "endLine": 1207,
+        "endChar": 30
       },
       "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
