@@ -3,6 +3,29 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "65221384_e483783a",
+        "filename": "obj_cache.c",
+        "patchSetId": 16
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-12-01T10:11:00Z",
+      "side": 1,
+      "message": "please  address a comment I left on https://trello.com/c/UDhFRcZQ/155-split-each-object-into-multiple-parts-blocks-and-caches-each-part-individually that relates to:  \nCache Size and Organization\nReplacement Policy\nWrite Policy\nConcurrency and Coherency\nMapping Strategy\nDiagram Charts",
+      "range": {
+        "startLine": 30,
+        "startChar": 0,
+        "endLine": 78,
+        "endChar": 0
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "f8d8f3c3_7d0e73cc",
         "filename": "obj_cache.h",
         "patchSetId": 16
