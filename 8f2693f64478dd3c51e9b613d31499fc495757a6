@@ -1,0 +1,326 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f8d8f3c3_7d0e73cc",
+        "filename": "obj_cache.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 83,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-12-01T09:44:13Z",
+      "side": 1,
+      "message": "plz describe what are the return values",
+      "range": {
+        "startLine": 83,
+        "startChar": 0,
+        "endLine": 83,
+        "endChar": 4
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3d598f47_6b26e517",
+        "filename": "obj_cache.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-12-01T09:44:13Z",
+      "side": 1,
+      "message": "plz describe what are the return values",
+      "range": {
+        "startLine": 90,
+        "startChar": 0,
+        "endLine": 90,
+        "endChar": 4
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a2e2ab1f_fa6eac57",
+        "filename": "obj_cache.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-12-01T09:44:13Z",
+      "side": 1,
+      "message": "please add to the description how and why object size can be determined from the cache",
+      "range": {
+        "startLine": 90,
+        "startChar": 5,
+        "endLine": 90,
+        "endChar": 22
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0536fda9_478d369d",
+        "filename": "obj_cache.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-12-01T09:44:13Z",
+      "side": 1,
+      "message": "can you please streamline naming and calls? \n\"get object\" method should call \"get object from cache\" and based on the result (if the desired part of the object is not cached) to bring the object from the disk.",
+      "range": {
+        "startLine": 99,
+        "startChar": 5,
+        "endLine": 99,
+        "endChar": 21
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3d9e4238_8b009823",
+        "filename": "obj_cache.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-12-01T09:44:13Z",
+      "side": 1,
+      "message": "same here",
+      "range": {
+        "startLine": 99,
+        "startChar": 0,
+        "endLine": 99,
+        "endChar": 4
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "98282dcb_2909c7e9",
+        "filename": "obj_cache.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-12-01T09:44:13Z",
+      "side": 1,
+      "message": "same here",
+      "range": {
+        "startLine": 108,
+        "startChar": 0,
+        "endLine": 108,
+        "endChar": 4
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "51e84a88_b8e19c1a",
+        "filename": "obj_cache.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-12-01T09:44:13Z",
+      "side": 1,
+      "message": "possible confusion with cache_delete_object method. can you streamline naming and calls? \n\nWiping cached parts from the cache suppose to be internal \nmethod. When a new content is pushed to the cache, based on the cache size some object parts should be removed from the cache based on the  cache size.",
+      "range": {
+        "startLine": 108,
+        "startChar": 5,
+        "endLine": 108,
+        "endChar": 24
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "528660ca_4d5e9d24",
+        "filename": "obj_cache.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 111,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-12-01T09:44:13Z",
+      "side": 1,
+      "message": "shouldn\u0027t it be vice versa? When rewrite object is called rewritten parts are inserted to the cache causing old content to be wiped and that logic sounds to be internal. I\u0027m struggling to see why this function is external.",
+      "range": {
+        "startLine": 111,
+        "startChar": 3,
+        "endLine": 111,
+        "endChar": 63
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "42893f65_7fb43467",
+        "filename": "obj_cache.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-12-01T09:44:13Z",
+      "side": 1,
+      "message": "same here",
+      "range": {
+        "startLine": 117,
+        "startChar": 0,
+        "endLine": 117,
+        "endChar": 4
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5ad5eabe_81c7f8ec",
+        "filename": "obj_fs.c",
+        "patchSetId": 16
+      },
+      "lineNbr": 374,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-12-01T09:44:13Z",
+      "side": 1,
+      "message": "magic number",
+      "range": {
+        "startLine": 374,
+        "startChar": 40,
+        "endLine": 374,
+        "endChar": 41
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "30a9c5ce_35c140f0",
+        "filename": "tests/host/obj_fs_tests.c",
+        "patchSetId": 16
+      },
+      "lineNbr": 296,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-12-01T09:44:13Z",
+      "side": 1,
+      "message": "I see that run-vector-tests is passing (http://192.114.0.189/jenkins/job/xv6/472/console) but run-objfs-tests is not called at all.",
+      "range": {
+        "startLine": 296,
+        "startChar": 5,
+        "endLine": 296,
+        "endChar": 29
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "db0c73a2_08163022",
+        "filename": "tests/host/obj_fs_tests.c",
+        "patchSetId": 16
+      },
+      "lineNbr": 335,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-12-01T09:44:13Z",
+      "side": 1,
+      "message": "I see that run-vector-tests is passing (http://192.114.0.189/jenkins/job/xv6/472/console) but run-objfs-tests is not called at all. Let\u0027s add run-objfs-tests to the runs since this file got updated (see runtests.exp:583)",
+      "range": {
+        "startLine": 335,
+        "startChar": 5,
+        "endLine": 335,
+        "endChar": 43
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6ae9ca18_2904278b",
+        "filename": "tests/xv6/objfstests.c",
+        "patchSetId": 16
+      },
+      "lineNbr": 1152,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-12-01T09:44:13Z",
+      "side": 1,
+      "message": "the test is not called",
+      "range": {
+        "startLine": 1152,
+        "startChar": 5,
+        "endLine": 1152,
+        "endChar": 27
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bcceb946_dcbcd886",
+        "filename": "tests/xv6/objfstests.c",
+        "patchSetId": 16
+      },
+      "lineNbr": 1250,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2023-12-01T09:44:13Z",
+      "side": 1,
+      "message": "they were not called\nsee http://192.114.0.189/jenkins/job/xv6-22.04/2096/console",
+      "range": {
+        "startLine": 1249,
+        "startChar": 0,
+        "endLine": 1250,
+        "endChar": 27
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
