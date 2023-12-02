@@ -47,6 +47,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "112c36e3_46070dd0",
+        "filename": "obj_cache.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 83,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-12-02T15:16:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f8d8f3c3_7d0e73cc",
+      "range": {
+        "startLine": 83,
+        "startChar": 0,
+        "endLine": 83,
+        "endChar": 4
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "3d598f47_6b26e517",
@@ -83,6 +107,54 @@
       "writtenOn": "2023-12-01T09:44:13Z",
       "side": 1,
       "message": "please add to the description how and why object size can be determined from the cache",
+      "range": {
+        "startLine": 90,
+        "startChar": 5,
+        "endLine": 90,
+        "endChar": 22
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9cbbe5e1_03dce778",
+        "filename": "obj_cache.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-12-02T15:16:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3d598f47_6b26e517",
+      "range": {
+        "startLine": 90,
+        "startChar": 0,
+        "endLine": 90,
+        "endChar": 4
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1a709829_60b29d20",
+        "filename": "obj_cache.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-12-02T15:16:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a2e2ab1f_fa6eac57",
       "range": {
         "startLine": 90,
         "startChar": 5,
@@ -141,6 +213,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "95b1a0dd_940954a1",
+        "filename": "obj_cache.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-12-02T15:16:37Z",
+      "side": 1,
+      "message": "the way that objfs is currently implemented, each layer calls the layer bellow it so the cache layer calls the disk layer",
+      "parentUuid": "0536fda9_478d369d",
+      "range": {
+        "startLine": 99,
+        "startChar": 5,
+        "endLine": 99,
+        "endChar": 21
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "98282dcb_2909c7e9",
         "filename": "obj_cache.h",
         "patchSetId": 16
@@ -187,6 +283,54 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "a7e984ac_0e441efb",
+        "filename": "obj_cache.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-12-02T15:16:37Z",
+      "side": 1,
+      "message": "renamed to cache_prune_object\nyou are right, this logic should happen internally, but it has it\u0027s uses- it\u0027s used in obj_log.c",
+      "parentUuid": "51e84a88_b8e19c1a",
+      "range": {
+        "startLine": 108,
+        "startChar": 5,
+        "endLine": 108,
+        "endChar": 24
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f4ab617e_1bb32b53",
+        "filename": "obj_cache.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-12-02T15:16:37Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "98282dcb_2909c7e9",
+      "range": {
+        "startLine": 108,
+        "startChar": 0,
+        "endLine": 108,
+        "endChar": 4
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "528660ca_4d5e9d24",
         "filename": "obj_cache.h",
         "patchSetId": 16
@@ -210,6 +354,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "8272c58e_b0fb20e7",
+        "filename": "obj_cache.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 111,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-12-02T15:16:37Z",
+      "side": 1,
+      "message": "the way that objfs is currently implemented, each layer calls the layer bellow it so the cache layer calls the disk layer. this is how the previous cache was implemented and I perserved this API. The same logic goes in the log layer- the log layer wraps the cache layer and not vice versa",
+      "parentUuid": "528660ca_4d5e9d24",
+      "range": {
+        "startLine": 111,
+        "startChar": 3,
+        "endLine": 111,
+        "endChar": 63
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "42893f65_7fb43467",
         "filename": "obj_cache.h",
         "patchSetId": 16
@@ -221,6 +389,30 @@
       "writtenOn": "2023-12-01T09:44:13Z",
       "side": 1,
       "message": "same here",
+      "range": {
+        "startLine": 117,
+        "startChar": 0,
+        "endLine": 117,
+        "endChar": 4
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "fad62807_a4b066af",
+        "filename": "obj_cache.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-12-02T15:16:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "42893f65_7fb43467",
       "range": {
         "startLine": 117,
         "startChar": 0,
@@ -256,6 +448,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "62409465_27da6a9a",
+        "filename": "obj_fs.c",
+        "patchSetId": 16
+      },
+      "lineNbr": 374,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-12-02T15:16:37Z",
+      "side": 1,
+      "message": "0 is the starting offset of an object, I can add a constant named OBJECT_STARTING_OFFSET and use it here if you think it will be better",
+      "parentUuid": "5ad5eabe_81c7f8ec",
+      "range": {
+        "startLine": 374,
+        "startChar": 40,
+        "endLine": 374,
+        "endChar": 41
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "30a9c5ce_35c140f0",
         "filename": "tests/host/obj_fs_tests.c",
         "patchSetId": 16
@@ -267,6 +483,30 @@
       "writtenOn": "2023-12-01T09:44:13Z",
       "side": 1,
       "message": "I see that run-vector-tests is passing (http://192.114.0.189/jenkins/job/xv6/472/console) but run-objfs-tests is not called at all.",
+      "range": {
+        "startLine": 296,
+        "startChar": 5,
+        "endLine": 296,
+        "endChar": 29
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "20106f5e_c70609d9",
+        "filename": "tests/host/obj_fs_tests.c",
+        "patchSetId": 16
+      },
+      "lineNbr": 296,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-12-02T15:16:37Z",
+      "side": 1,
+      "message": "I didn\u0027t use this tests file- it seems that it is broken. the changes I made in this file only change the old API to the current API. if we add this file the tests will be broken- I think that correcting it should be done in a separate issue",
+      "parentUuid": "30a9c5ce_35c140f0",
       "range": {
         "startLine": 296,
         "startChar": 5,
@@ -302,6 +542,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "760f2132_7fbb1346",
+        "filename": "tests/host/obj_fs_tests.c",
+        "patchSetId": 16
+      },
+      "lineNbr": 335,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-12-02T15:16:37Z",
+      "side": 1,
+      "message": "same",
+      "parentUuid": "db0c73a2_08163022",
+      "range": {
+        "startLine": 335,
+        "startChar": 5,
+        "endLine": 335,
+        "endChar": 43
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "bf448551_ce3e8d11",
         "filename": "tests/xv6/objfstests.c",
         "patchSetId": 16
@@ -325,6 +589,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "6fb23f20_3d5242ab",
+        "filename": "tests/xv6/objfstests.c",
+        "patchSetId": 16
+      },
+      "lineNbr": 1109,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-12-02T15:16:37Z",
+      "side": 1,
+      "message": "changed the consts in this tests to ones taken from the procfs. \nwe can\u0027t use the hit and miss statistics well in user space tests because when we do a filesytem operation a lot happens behind the scenes (like the log layer writing files) so we can\u0027t expect the hits and misses to go up by 1 every action we do. I added a test that checks that they go up when we make cache operations.",
+      "parentUuid": "bf448551_ce3e8d11",
+      "range": {
+        "startLine": 1109,
+        "startChar": 5,
+        "endLine": 1109,
+        "endChar": 36
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "6ae9ca18_2904278b",
         "filename": "tests/xv6/objfstests.c",
         "patchSetId": 16
@@ -336,6 +624,30 @@
       "writtenOn": "2023-12-01T09:44:13Z",
       "side": 1,
       "message": "the test is not called",
+      "range": {
+        "startLine": 1152,
+        "startChar": 5,
+        "endLine": 1152,
+        "endChar": 27
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7818b2a9_c3d48ca0",
+        "filename": "tests/xv6/objfstests.c",
+        "patchSetId": 16
+      },
+      "lineNbr": 1152,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-12-02T15:16:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6ae9ca18_2904278b",
       "range": {
         "startLine": 1152,
         "startChar": 5,
@@ -371,6 +683,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "f99b7e66_00b27833",
+        "filename": "tests/xv6/objfstests.c",
+        "patchSetId": 16
+      },
+      "lineNbr": 1207,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-12-02T15:16:37Z",
+      "side": 1,
+      "message": "same",
+      "parentUuid": "15e4f51a_2396c40c",
+      "range": {
+        "startLine": 1156,
+        "startChar": 0,
+        "endLine": 1207,
+        "endChar": 30
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "bcceb946_dcbcd886",
         "filename": "tests/xv6/objfstests.c",
         "patchSetId": 16
@@ -382,6 +718,30 @@
       "writtenOn": "2023-12-01T09:44:13Z",
       "side": 1,
       "message": "they were not called\nsee http://192.114.0.189/jenkins/job/xv6-22.04/2096/console",
+      "range": {
+        "startLine": 1249,
+        "startChar": 0,
+        "endLine": 1250,
+        "endChar": 27
+      },
+      "revId": "8f2693f64478dd3c51e9b613d31499fc495757a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "caf7ac4c_bdf9c8b6",
+        "filename": "tests/xv6/objfstests.c",
+        "patchSetId": 16
+      },
+      "lineNbr": 1250,
+      "author": {
+        "id": 1021034
+      },
+      "writtenOn": "2023-12-02T15:16:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "bcceb946_dcbcd886",
       "range": {
         "startLine": 1249,
         "startChar": 0,
