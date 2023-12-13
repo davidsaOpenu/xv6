@@ -184,11 +184,270 @@ struct {
 
 #define C(x) ((x) - '@')  // Control-x
 
+// ----------- History -------------
+static int esc = 0;  // escape sequence flag
+#define INPUT_BUF 128
+#define ENTRIES 10
+#define SCREEN_WIDTH 80
+#define SCREEN_HEIGHT 25
+#define NOT_VIWING -1
+
+typedef struct {
+  char buf[INPUT_BUF];
+} history_entry;
+
+typedef struct {
+  history_entry history[ENTRIES];
+  int index;               // Current command index in history array for saving
+  int current_view_index;  // Current command index being viewed
+} history;
+
+history cmd_history = {.index = 0, .current_view_index = NOT_VIWING};
+
+// Forward declarations
+void print_all_history();
+void print_with_consputc(const char *str);
+
+void increment_history_index() {
+  // printint(cmd_history.index,10,1);
+  cmd_history.index = (cmd_history.index + 1) % ENTRIES;
+  // //debug
+  // consputc('\n');
+  // print_all_history();
+  // consputc('\n');
+  // consputc('\n');
+}
+
+void decrement_history_index() {
+  cmd_history.index =
+      (cmd_history.index == 0) ? ENTRIES - 1 : cmd_history.index - 1;
+}
+
+void save_cmd(char *cmd) {
+  //debug
+  // print_with_consputc("save_cmd: ");
+  // print_with_consputc(cmd);
+  // consputc('\n');
+
+  if (!cmd || strlen(cmd) == 0) return;
+
+  // Reset view index when a new command is saved
+  cmd_history.current_view_index = -1;
+
+  // Check for duplicate in the entire history
+  for (int i = 0; i < ENTRIES; i++) {
+    if (strcmp(cmd, cmd_history.history[i].buf) == 0)
+      return;  // Duplicate found, do not save
+  }
+
+  // check for buffer overflow in history entries - should never happen
+  if (cmd_history.index > ENTRIES) {
+    panic("History buffer overflow");
+  }
+
+// check for buffer overflow in the current entry
+// if the command is too long, we will not save it
+#ifdef DEBUG
+  cprintf("cmd: %s\n", cmd);
+#endif
+  if (strlen(cmd) > INPUT_BUF) {
+    return;
+  }
+
+  memset(cmd_history.history[cmd_history.index].buf, 0, INPUT_BUF);
+
+  // Save the command
+  strncpy(cmd_history.history[cmd_history.index].buf, cmd, strlen(cmd) + 1);
+  cmd_history.history[cmd_history.index].buf[strlen(cmd)] = '\0';
+  increment_history_index();
+  kfree(cmd);
+}
+
+void print_with_consputc(const char *str) {
+  // check for valid input for printing
+  if (!str) return;
+
+  if (strlen(str) > INPUT_BUF) {
+    return;
+  }
+
+  if (strlen(str) > SCREEN_WIDTH) {
+    // print the first SCREEN_WIDTH characters
+    for (int i = 0; i < SCREEN_WIDTH; i++) {
+      consputc(str[i]);
+    }
+    return;
+  }
+
+  while (*str) {
+    consputc(*str++);
+  }
+}
+
+void update_input(char *cmd) {
+  int len = strlen(cmd);
+  if (len >= INPUT_BUF) len = INPUT_BUF - 1;
+
+  memset(input.buf, 0, INPUT_BUF);  // Clear the input buffer
+  memcpy(input.buf, cmd, len);      // Copy the command to the input buffer
+
+  // Set the pointers correctly
+  input.r = 0;    // Read index at start
+  input.w = 0;    // Write index at the end of the command
+  input.e = len;  // Edit index at the end of the command
+}
+
+void cons_clear_line() {
+  while (input.e != input.w && input.buf[(input.e - 1) % INPUT_BUF] != '\n') {
+    input.e--;
+    consputc(BACKSPACE);
+  }
+}
+
+void print_line_from_history(int line) {
+  // delete current command
+  cons_clear_line();
+
+  if (line >= ENTRIES) {
+    return;
+  }
+  char *cmd = cmd_history.history[line].buf;
+  if (cmd == NULL) {
+    return;
+  }
+  print_with_consputc(cmd);
+}
+
+void print_last_command() {
+  if (cmd_history.current_view_index == -1) {
+    // Start from the most recent command
+    cmd_history.current_view_index = cmd_history.index;
+  }
+
+  do {
+    cmd_history.current_view_index = (cmd_history.current_view_index == 0)
+                                         ? ENTRIES - 1
+                                         : cmd_history.current_view_index - 1;
+    if (*cmd_history.history[cmd_history.current_view_index].buf != '\0') {
+      print_line_from_history(cmd_history.current_view_index);
+      update_input(cmd_history.history[cmd_history.current_view_index].buf);
+      return;
+    }
+  } while (cmd_history.current_view_index != cmd_history.index);
+
+  // Reset view index if we've reached the current index
+  cmd_history.current_view_index = NOT_VIWING;
+}
+
+// Function to print the next command in the history
+void print_next_command() {
+  if (cmd_history.current_view_index == NOT_VIWING) {
+    return;  // No history to show
+  }
+
+  // delete current command from screen
+  cons_clear_line();
+
+  do {
+    cmd_history.current_view_index =
+        (cmd_history.current_view_index + 1) % ENTRIES;
+    if (*cmd_history.history[cmd_history.current_view_index].buf != '\0') {
+      print_line_from_history(cmd_history.current_view_index);
+      update_input(cmd_history.history[cmd_history.current_view_index].buf);
+      return;
+    }
+  } while (cmd_history.current_view_index != cmd_history.index);
+
+  // Reset view index if we've reached the current index
+  cmd_history.current_view_index = NOT_VIWING;
+}
+
+// Function to print all commands in the history
+void print_all_history() {
+  for (int i = 0; i < ENTRIES; i++) {
+    consputc('\n');
+    printint(i, 10, 0);
+    consputc('.');
+    consputc(' ');
+    char *cmd = cmd_history.history[i].buf;
+    if (cmd != NULL) {
+      for (int j = 0; j < strlen(cmd); j++) {
+        consputc(cmd[j]);
+        // notice we don't update the input buffer to avoid overwriting the
+      }
+    }
+  }
+  consputc('\n');
+  consputc('$');
+  consputc(' ');
+}
+char *parse_input_buffer() {
+  int start = input.r % INPUT_BUF;
+  int end = (input.e - 1) % INPUT_BUF;  // -1 to exclude the newline character
+
+  char *cmd = (char *)kalloc();
+  memset(cmd, 0, INPUT_BUF);
+
+  if (start <= end) {
+    // Command does not wrap around
+    memcpy(cmd, input.buf + start, end - start);
+  } else {
+    // Command wraps around
+    int firstPartLength = INPUT_BUF - start;
+    memcpy(cmd, input.buf + start, firstPartLength);
+    memcpy(cmd + firstPartLength, input.buf, end);
+  }
+
+  // Manually place a null terminator at the end of the command
+  cmd[(end >= start) ? (end - start) : (INPUT_BUF - start + end)] = '\0';
+
+  return cmd;
+}
+
+// Return type changed to int to indicate whether to continue or not
+int handleEscapeSequence(int c) {
+  if (esc == 1 && c == '[') {
+    esc = 2;
+    return 1;  // Continue the loop in consoleintr
+  }
+
+  if (esc == 2) {
+    esc = 0;
+    switch (c) {
+      case 'A':
+        print_last_command();
+        break;
+      case 'B':
+        print_next_command();
+        break;
+      case 'D':
+        print_all_history();
+        break;
+        // TODO: add more cases.
+    }
+    return 1;  // Continue the loop in consoleintr
+  }
+
+  if (c == '\033') {
+    esc = 1;
+    return 1;  // Continue the loop in consoleintr
+  } else {
+    esc = 0;
+  }
+
+  return 0;  // Do not continue, proceed with the rest of consoleintr logic
+}
+
+// -------------------------------
+
 void consoleintr(int (*getc)(void)) {
   int c, doprocdump = 0;
 
   acquire(&cons.lock);
   while ((c = getc()) >= 0) {
+    if (handleEscapeSequence(c)) {
+      continue;
+    }
     switch (c) {
       case C('P'):  // Process listing.
         // procdump() locks cons.lock indirectly; invoke later
@@ -215,6 +474,9 @@ void consoleintr(int (*getc)(void)) {
           consputc(c);
           if (c == '\n' || c == C('D') || input.e == input.r + INPUT_BUF) {
             input.w = input.e;
+            if (c == '\n') {
+              save_cmd(parse_input_buffer());
+            }
             wakeup(&input.r);
           }
         }

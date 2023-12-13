@@ -706,6 +706,146 @@ proc mounttest_with_ls {argv} {
     assert_on_exit_status
 }
 
+# Console history test procedure
+# @param argv - Filename for logging the history test results
+proc console_history_test {argv} {
+    # Important note: Ensure future feature updates do not affect
+    # the history logging. Utilize the left arrow key (\033\[D) to
+    # print the history log directly from the console.
+    puts "HISTORY TEST START"
+
+    # Set default timeout and initialize log file with no append
+    set timeout 3
+    log_file -noappend [lindex $argv 0]
+
+    # Set history limit for the test
+    set history_limit 9
+
+    # Define escape sequences for UP and DOWN arrow keys
+    set UP \033\[A
+    set DOWN \033\[B
+
+    # Function to convert key escape sequences to readable format
+    proc getKeyName {key} {
+        # Replace escape sequences with 'UP | ' and 'DOWN | ' for readability
+        regsub -all {\033\[A} $key "UP | " key
+        regsub -all {\033\[B} $key "DOWN | " key
+        return $key
+    }
+
+    # Function to send Arrow keys and log the action
+    proc send_key {key} {
+        send "$key"
+        set key_name [getKeyName $key]
+        puts -nonewline "\[Sent '$key_name' key]->"
+        sleep 1
+    }
+
+    # Potential future feature: Access last 10 commands with the left key
+    set HIST_LOG \033\[D
+
+    # Procedure to send commands, recall history, and verify output
+    proc send_and_check {cmd key endl expected} {
+        if {$cmd != ""} {
+            send "$cmd\r"
+            expect -exact "$cmd\r\n" {
+                puts -nonewline " \[Sent '$cmd']->"
+            }
+        }
+        expect "$ "
+        set start_time [clock seconds]
+
+        send_key $key
+        if {$endl != ""} {
+            send "$endl"
+        }
+
+        expect "$expected" {
+            set end_time [clock seconds]
+            set time [expr {$end_time - $start_time} - 1]
+            puts -nonewline "\[Received '$expected' after $time seconds]->\[continue execution...]"
+            flush stdout
+        }
+        sleep 1
+    }
+
+    # Procedure to restart xv6 and reset history (currently not implemented)
+    proc restart_xv6 {} {
+        puts "RESTARTING XV6"
+        send "\001x"
+        expect eof
+
+        # Placeholder for restarting xv6
+        # TODO: Implement proper xv6 restart mechanism
+        # spawn qemu-system-i386 with appropriate arguments
+
+        sleep 2
+        send_and_check "" $UP "$ "
+        expect "$ "
+    }
+
+    sleep 2
+    puts "TEST RE-EXECUTION OF PREVIOUS COMMANDS"
+    send_and_check "echo test1" $UP "\n" "echo test1"
+    send_and_check "echo test2" $UP "\n" "echo test2"
+    send_and_check "echo test3" $UP "\n" "echo test3"
+
+    puts "\nTEST HISTORY NAVIGATION"
+    send_and_check "" $UP "\n" "echo test3"
+    send_and_check "" $UP$UP "\n" "echo test2"
+    send_and_check "" $UP$UP$UP "\n" "echo test1"
+    send_and_check "" $UP$UP$UP$UP "\n" "echo test1"
+    send_and_check "" $UP$UP$UP$DOWN "\n" "echo test2"
+    send_and_check "" $UP$UP$UP$DOWN$DOWN "\n" "echo test3"
+
+    # History reset test is currently disabled
+    # PUTS "TEST HISTORY RESET \ EMPTY HISTORY"
+    # restart_xv6
+    flush stdout
+    sleep 2
+
+    puts "\nFILLING HISTORY BUFFER..."
+    for {set i 0} {$i < $history_limit} {incr i} {
+        send "echo command$i\r"
+        sleep 1
+    }
+    flush stdout
+    puts "TEST HISTORY BUFFER LOOPING"
+    for {set i 0} {$i < $history_limit} {incr i} {
+        puts "LOOP $i"
+        send $UP
+        set result "echo command[expr {$history_limit - $i - 1}]"
+        expect "$result" {
+            puts -nonewline "\[displayed after UP]->\[Received '$result']"
+        }
+        flush stdout
+        sleep 1
+    }
+
+    # Test navigation in the opposite direction
+    for {set i 0} {$i < $history_limit} {incr i} {
+        puts "LOOP $i"
+        send $DOWN
+        set result "echo command$i"
+        expect "$result" {
+            puts -nonewline "\[displayed after DOWN]->\[Received '$result']"
+        }
+        flush stdout
+        sleep 1
+    }
+
+    # clear line before sending new command
+    send "\n"
+
+    puts "\nTEST COMMAND EDITING IN HISTORY"
+    send_and_check "echo to_be_con..." $UP "\n" "echo to_be_con..."
+    send_key $UP
+    send "\b\b\btinue\r"
+    send_and_check "" $UP "\n" "echo to_be_continue"
+    puts "ALL HISTORY TESTS COMPLETE"
+    assert_on_exit_status
+}
+
 #-------------------------------------------------------------------------
 #-MAIN--------------------------------------------------------------------
 #-------------------------------------------------------------------------
@@ -742,6 +882,8 @@ expect "$ "
 #set running [cgroup_io_states_test]
 
 #basic tests
+# history test should be run first to avoid input from other tests
+set running [console_history_test $argv]
 set running [cp_copy_file_test $argv]
 set running [cp_copy_dir_test $argv]
 set running [mount_bind_test $argv]
@@ -771,4 +913,3 @@ set running [usertests $argv]
 log_file
 # just in case
 close
-
