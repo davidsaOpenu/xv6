@@ -102,7 +102,9 @@ static struct vfs_inode *vfs_namex(char *path, int nameiparent, char *name,
       curmount = nextmount;
 
       ip->i_op.iput(next);
-      if (IS_OBJ_DEVICE(curmount->dev)) {
+      if (curmount->bind != 0) {
+        next = curmount->bind->i_op.idup(curmount->bind);
+      } else if (IS_OBJ_DEVICE(curmount->dev)) {
         next = obj_iget(curmount->dev, mntinum);
       } else {
         next = iget(curmount->dev, mntinum);

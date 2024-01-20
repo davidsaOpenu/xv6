@@ -8,6 +8,7 @@ struct mount {
   struct vfs_inode *mountpoint;
   int ref;
   uint dev;
+  struct vfs_inode *bind;
 };
 
 #define NMOUNT (200)

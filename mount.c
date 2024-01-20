@@ -2,10 +2,14 @@
 
 int main(int argc, const char* const argv[]) {
   const char usage[] =
-      "Usage:\nmount [-t [fstype]] [path]\nmount [path] [-t [fstype]]\nmount "
-      "internal_fs_{a|b|c} path\n";
+      "Usage:\n"
+      "mount [-t [fstype]] [path]\n"
+      "mount [path] [-t [fstype]]\n"
+      "mount -t bind path target_path\n"
+      "mount internal_fs_{a|b|c} path\n";
   const char* fstype = 0;
   const char* path = 0;
+  const char* bind = 0;
   int index = 0;
 
   if ((strcmp(argv[1], "internal_fs_a") == 0) ||
@@ -25,13 +29,23 @@ int main(int argc, const char* const argv[]) {
       continue;
     }
 
-    if (path) {
+    if (path && bind) {
       printf(2, usage);
       exit(1);
     }
 
-    path = argv[index];
-    ++index;
+    if (!path) {
+      path = argv[index];
+      ++index;
+    } else {
+      bind = argv[index];
+      ++index;
+    }
+  }
+
+  if (bind && (!fstype || strcmp(fstype, "bind"))) {
+    printf(2, usage);
+    exit(1);
   }
 
   if (!path) {
@@ -39,5 +53,5 @@ int main(int argc, const char* const argv[]) {
     exit(1);
   }
 
-  exit(mount(0, path, fstype));
+  exit(mount(bind, path, fstype));
 }

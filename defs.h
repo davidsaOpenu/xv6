@@ -99,6 +99,8 @@ void mntinit(void);
 int mount(struct vfs_inode*, struct vfs_inode*, struct mount*);
 int objfs_mount(struct vfs_inode* mountpoint, struct vfs_inode* device,
                 struct mount* parent);
+int bind_mount(struct vfs_inode* mountpoint, struct vfs_inode* target_dir,
+               struct mount* parent);
 int umount(struct mount*);
 struct mount* getrootmount(void);
 struct mount* mntdup(struct mount*);
