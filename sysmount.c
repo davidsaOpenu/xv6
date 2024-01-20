@@ -21,9 +21,11 @@ int sys_mount(void) {
   char *fstype;
   char *device_path;
   char *mount_path;
+  char *target_mount_path;
   struct mount *parent;
   int cgroup_res;
   int proc_res;
+  int bind_res;
 
   if (argstr(2, &fstype) < 0) {
     cprintf("badargs\n");
@@ -32,6 +34,7 @@ int sys_mount(void) {
 
   cgroup_res = strcmp(fstype, "cgroup");
   proc_res = strcmp(fstype, "proc");
+  bind_res = strcmp(fstype, "bind");
 
   // Mount objfs file system
   if (strcmp(fstype, "objfs") == 0) {
@@ -93,6 +96,63 @@ int sys_mount(void) {
 
       set_procfs_dir_path(mount_path);
     }
+
+    end_op();
+
+    return 0;
+
+  } else if (bind_res == 0) {
+    struct vfs_inode *mount_dir;
+    struct vfs_inode *target_mount_dir;
+    if (argstr(0, &target_mount_path) < 0 || argstr(1, &mount_path) < 0) {
+      cprintf("badargs\n");
+      return -1;
+    }
+
+    begin_op();
+
+    if ((target_mount_dir = vfs_namei(target_mount_path)) == 0) {
+      cprintf("bad target_mount_path\n");
+      end_op();
+      return -1;
+    }
+
+    if ((mount_dir = vfs_nameimount(mount_path, &parent)) == 0) {
+      cprintf("bad mount_path\n");
+      target_mount_dir->i_op.iput(target_mount_dir);
+      end_op();
+      return -1;
+    }
+
+    if (mount_dir->inum == ROOTINO) {
+      mount_dir->i_op.iput(mount_dir);
+      target_mount_dir->i_op.iput(target_mount_dir);
+      mntput(parent);
+      end_op();
+      return -1;
+    }
+
+    mount_dir->i_op.ilock(mount_dir);
+
+    if (mount_dir->type != T_DIR) {
+      mount_dir->i_op.iunlockput(mount_dir);
+      mount_dir->i_op.iput(mount_dir);
+      target_mount_dir->i_op.iput(target_mount_dir);
+      mntput(parent);
+      end_op();
+      return -1;
+    }
+
+    int res = bind_mount(mount_dir, target_mount_dir, parent);
+
+    mount_dir->i_op.iunlock(mount_dir);
+
+    if (res != 0) {
+      mount_dir->i_op.iput(mount_dir);
+      target_mount_dir->i_op.iput(target_mount_dir);
+    }
+
+    mntput(parent);
 
     end_op();
 
