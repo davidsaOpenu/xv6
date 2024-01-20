@@ -96,9 +96,8 @@ int vfs_namencmp(const char* s, const char* t, int length);
 
 // mount.c
 void mntinit(void);
-int mount(struct vfs_inode*, struct vfs_inode*, struct mount*);
-int objfs_mount(struct vfs_inode* mountpoint, struct vfs_inode* device,
-                struct mount* parent);
+int mount(struct vfs_inode*, struct vfs_inode*, struct vfs_inode*,
+          struct mount*);
 int umount(struct mount*);
 struct mount* getrootmount(void);
 struct mount* mntdup(struct mount*);
