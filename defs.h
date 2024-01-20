@@ -171,6 +171,12 @@ struct mount_ns* mount_nsdup(struct mount_ns*);
 struct mount_ns* newmount_ns(void);
 struct mount_ns* copymount_ns(void);
 
+// sysmount.c
+int handle_objfs_mounts();
+int handle_cgroup_mounts();
+int handle_proc_mounts();
+int handle_native_mounts();
+
 // mp.c
 extern int ismp;
 void mpinit(void);

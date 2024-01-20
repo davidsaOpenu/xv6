@@ -19,22 +19,75 @@
 
 int sys_mount(void) {
   char *fstype;
-  char *device_path;
-  char *mount_path;
-  struct mount *parent;
-  int cgroup_res;
-  int proc_res;
 
   if (argstr(2, &fstype) < 0) {
     cprintf("badargs\n");
     return -1;
   }
 
-  cgroup_res = strcmp(fstype, "cgroup");
-  proc_res = strcmp(fstype, "proc");
-
   // Mount objfs file system
   if (strcmp(fstype, "objfs") == 0) {
+    return handle_objfs_mounts();
+  } else if (strcmp(fstype, "cgroup") == 0){
+    return handle_cgroup_mounts();
+  } else if (strcmp(fstype, "proc") == 0){
+    return handle_proc_mounts();
+  } else {
+    return handle_native_mounts();
+  }
+}
+
+int sys_umount(void) {
+  char *mount_path;
+  if (argstr(0, &mount_path) < 0) {
+    cprintf("badargs\n");
+    return -1;
+  }
+
+  begin_op();
+
+  int delete_cgroup_res = cgroup_delete(mount_path, "umount");
+
+  if (delete_cgroup_res == RESULT_ERROR_ARGUMENT) {
+    struct vfs_inode *mount_dir;
+    struct mount *mnt;
+
+    if ((mount_dir = vfs_nameimount(mount_path, &mnt)) == 0) {
+      end_op();
+      return -1;
+    }
+
+    if (mount_dir->inum != ROOTINO) {
+      mount_dir->i_op.iput(mount_dir);
+      mntput(mnt);
+      end_op();
+      return -1;
+    }
+
+    mount_dir->i_op.iput(mount_dir);
+
+    int res = umount(mnt);
+    if (res != 0) {
+      mntput(mnt);
+    }
+
+    end_op();
+    return res;
+  }
+
+  if (delete_cgroup_res == RESULT_ERROR_ARGUMENT) {
+    end_op();
+    cprintf("cannot unmount cgroup\n");
+    return -1;
+  }
+
+  end_op();
+  return delete_cgroup_res;
+}
+
+int handle_objfs_mounts(){
+    char *mount_path;
+    struct mount *parent;
     struct vfs_inode *mount_dir;
     if (argstr(1, &mount_path) < 0) {
       cprintf("badargs\n");
@@ -60,7 +113,44 @@ int sys_mount(void) {
     end_op();
 
     return res;
-  } else if (cgroup_res == 0 || proc_res == 0) {
+}
+
+int handle_cgroup_mounts(){
+  char *device_path;
+  char *mount_path;
+  struct mount *parent;
+  struct vfs_inode *mount_dir;
+    if (argstr(0, &device_path) < 0 || argstr(1, &mount_path) < 0 ||
+        device_path != 0) {
+      cprintf("badargs\n");
+      return -1;
+    }
+
+    begin_op();
+
+    if ((mount_dir = vfs_nameimount(mount_path, &parent)) == 0) {
+      cprintf("bad mount_path\n");
+      end_op();
+      return -1;
+    }
+
+    if (*(cgroup_root()->cgroup_dir_path)) {
+      cprintf("cgroup filesystem already mounted\n");
+      end_op();
+      return -1;
+    }
+
+    set_cgroup_dir_path(cgroup_root(), mount_path);
+
+    end_op();
+
+    return 0;
+}
+
+int handle_proc_mounts(){
+    char *device_path;
+    char *mount_path;
+    struct mount *parent;
     struct vfs_inode *mount_dir;
     if (argstr(0, &device_path) < 0 || argstr(1, &mount_path) < 0 ||
         device_path != 0) {
@@ -76,29 +166,23 @@ int sys_mount(void) {
       return -1;
     }
 
-    if (cgroup_res == 0) {
-      if (*(cgroup_root()->cgroup_dir_path)) {
-        cprintf("cgroup filesystem already mounted\n");
-        end_op();
-        return -1;
-      }
-
-      set_cgroup_dir_path(cgroup_root(), mount_path);
-    } else if (proc_res == 0) {
-      if (*procfs_root) {
-        cprintf("proc filesystem already mounted\n");
-        end_op();
-        return -1;
-      }
-
-      set_procfs_dir_path(mount_path);
+    if (*procfs_root) {
+      cprintf("proc filesystem already mounted\n");
+      end_op();
+      return -1;
     }
+
+    set_procfs_dir_path(mount_path);
 
     end_op();
 
     return 0;
+}
 
-  } else {
+int handle_native_mounts(){
+    char *device_path;
+    char *mount_path;
+    struct mount *parent;
     struct vfs_inode *device, *mount_dir;
     if (argstr(0, &device_path) < 0 || argstr(1, &mount_path) < 0) {
       cprintf("badargs\n");
@@ -150,53 +234,4 @@ int sys_mount(void) {
     end_op();
 
     return res;
-  }
-}
-
-int sys_umount(void) {
-  char *mount_path;
-  if (argstr(0, &mount_path) < 0) {
-    cprintf("badargs\n");
-    return -1;
-  }
-
-  begin_op();
-
-  int delete_cgroup_res = cgroup_delete(mount_path, "umount");
-
-  if (delete_cgroup_res == RESULT_ERROR_ARGUMENT) {
-    struct vfs_inode *mount_dir;
-    struct mount *mnt;
-
-    if ((mount_dir = vfs_nameimount(mount_path, &mnt)) == 0) {
-      end_op();
-      return -1;
-    }
-
-    if (mount_dir->inum != ROOTINO) {
-      mount_dir->i_op.iput(mount_dir);
-      mntput(mnt);
-      end_op();
-      return -1;
-    }
-
-    mount_dir->i_op.iput(mount_dir);
-
-    int res = umount(mnt);
-    if (res != 0) {
-      mntput(mnt);
-    }
-
-    end_op();
-    return res;
-  }
-
-  if (delete_cgroup_res == RESULT_ERROR_ARGUMENT) {
-    end_op();
-    cprintf("cannot unmount cgroup\n");
-    return -1;
-  }
-
-  end_op();
-  return delete_cgroup_res;
 }
