@@ -25,11 +25,11 @@
 #define SYS_close 21
 #define SYS_mount 22
 #define SYS_umount 23
-#define SYS_unshare 26
-#define SYS_usleep 27
-#define SYS_ioctl 28
-#define SYS_getppid 29
-#define SYS_getcpu 30
-#define SYS_kmemtest 32
+#define SYS_unshare 24
+#define SYS_usleep 25
+#define SYS_ioctl 26
+#define SYS_getppid 27
+#define SYS_getcpu 28
+#define SYS_kmemtest 29
 
 #endif /* XV6_SYSCALL_H */
