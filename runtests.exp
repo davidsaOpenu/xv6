@@ -213,6 +213,71 @@ proc cp_copy_dir_test {argv} {
     expect "test"
 }
 
+proc mount_bind_test {argv} {
+    set timeout -1
+    log_file -noappend [lindex $argv 0]
+
+    send "mkdir bind_tests\n"
+    send "cd bind_tests\n"
+    sleep 0.5
+
+    #one file in dir
+    send "mkdir d1 d2\n"
+    sleep 0.5
+    send "echo test > d2/somefile\n"
+    sleep 0.5
+    send "mount -t bind d1 d2\n"
+    sleep 0.5
+    send "cat d1/somefile\n"
+    expect "test"
+    sleep 0.5
+    send "umount d1\n"
+    sleep 0.5
+
+    #rm file in dir
+    send "mkdir d3 d4\n"
+    sleep 0.5
+    send "echo test > d4/somefile\n"
+    sleep 0.5
+    send "mount -t bind d3 d4\n"
+    sleep 0.5
+    send "rm d3/somefile\n"
+    sleep 0.5
+    send "cat d4/somefile\n"
+    expect "cat: cannot open d4/somefile"
+    sleep 0.5
+    send "umount d3\n"
+    sleep 0.5
+
+    #mount root dir
+    send "mkdir d5\n"
+    sleep 0.5
+    send "mount -t bind / d5\n"
+    sleep 0.5
+    expect "Can't mount root directory"
+    send "mount -t bind d5 /\n"
+    sleep 0.5
+    send "echo test > d5/somefile\n"
+    sleep 0.5
+    send "cat /somefile\n"
+    expect "test"
+    sleep 0.5
+    send "umount d5\n"
+    sleep 0.5
+
+    #mount file
+    send "mkdir d6\n"
+    sleep 0.5
+    send "echo test > somefile\n"
+    sleep 0.5
+    send "mount -t bind somefile d6\n"
+    expect "mount point is not a directory"
+    sleep 0.5
+
+    send "cd ..\n"
+    sleep 0.5
+}
+
 # - This test start the container
 # - The pid should be 2 because we still remain in the console,
 # - and not connected to any tty device yet
@@ -621,6 +686,7 @@ expect "$ "
 #basic tests
 set running [cp_copy_file_test $argv]
 set running [cp_copy_dir_test $argv]
+set running [mount_bind_test $argv]
 set running [pouch_basic_tests $argv]
 set running [command_exit_status_test $argv]
 set running [pouch_images_command $argv]
