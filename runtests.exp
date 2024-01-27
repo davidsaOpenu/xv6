@@ -242,6 +242,26 @@ proc mount_bind_test {argv} {
     sleep 0.5
 }
 
+# - xv6 umount test
+# @argv - file name for logging
+proc umount_bind_mount_test {argv} {
+    send "mkdir orig\n"
+    assert_on_exit_status
+    send "echo test > orig/tfile\n"
+    assert_on_exit_status
+    send "mkdir bind_f\n"
+    assert_on_exit_status
+    send "mount -t bind bind_f orig\n"
+    assert_on_exit_status
+    send "cat bind_f/tfile\n"
+    expect "test"
+
+    send "umount bind_f\n"
+    assert_on_exit_status
+    send "cat bind_f/tfile\n"
+    expect "cat: cannot open bind_f/tfile"
+}
+
 # - This test start the container
 # - The pid should be 2 because we still remain in the console,
 # - and not connected to any tty device yet
@@ -651,6 +671,7 @@ expect "$ "
 set running [cp_copy_file_test $argv]
 set running [cp_copy_dir_test $argv]
 set running [mount_bind_test $argv]
+set running [umount_bind_mount_test $argv]
 set running [pouch_basic_tests $argv]
 set running [command_exit_status_test $argv]
 set running [pouch_images_command $argv]
