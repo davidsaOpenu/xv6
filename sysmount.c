@@ -173,13 +173,6 @@ int sys_umount(void) {
       return -1;
     }
 
-    if (mount_dir->inum != ROOTINO) {
-      mount_dir->i_op.iput(mount_dir);
-      mntput(mnt);
-      end_op();
-      return -1;
-    }
-
     mount_dir->i_op.iput(mount_dir);
 
     int res = umount(mnt);

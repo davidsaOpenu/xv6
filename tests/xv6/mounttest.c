@@ -416,6 +416,39 @@ static int errorondeletedevicetest(void) {
   return 0;
 }
 
+static int umountnonrootmount(void) {
+  mkdir("a");
+
+  if (verifylines("/proc/mounts", 1) != 0) {
+    printf(1, "umountnonrootmount: expected a single mount\n");
+    return 1;
+  }
+
+  int res = mount(0, "a", "objfs");
+  if (res != 0) {
+    printf(1, "umountnonrootmount: mount returned %d\n", res);
+    return -1;
+  }
+
+  if (verifylines("/proc/mounts", 2) != 0) {
+    printf(1, "umountnonrootmount: expected two mounts\n");
+    return 1;
+  }
+
+  res = umount("a");
+  if (res != 0) {
+    printf(1, "umountnonrootmount: umount returned %d\n", res);
+    return -1;
+  }
+
+  if (verifylines("/proc/mounts", 1) != 0) {
+    printf(1, "umountnonrootmount: expected a single mount\n");
+    return 1;
+  }
+
+  return 0;
+}
+
 static int namespacetest(void) {
   if (mounta() != 0) {
     return 1;
@@ -563,6 +596,7 @@ int main(int argc, char *argv[]) {
   run_test(devicefilestoretest, "devicefilestoretest");
   run_test(umountwithopenfiletest, "umountwithopenfiletest");
   run_test(errorondeletedevicetest, "errorondeletedevicetest");
+  run_test(umountnonrootmount, "umountnonrootmount");
 
   /* Tests that might leaves open mounts - leaves for last.
    * Other test might check how many open mounts there are
