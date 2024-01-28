@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "bbbd6b95_9515381a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 12
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-01-28T12:30:13Z",
+      "side": 1,
+      "message": "https://review.gerrithub.io/c/davidsaOpenu/xv6/+/1175479 an implementation of the bind mount",
+      "revId": "ff46bdadf72724b8470b014bae4f67647c66d0da",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
