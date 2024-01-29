@@ -24,6 +24,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "2914b55f_ceeccb9b",
+        "filename": "tests/xv6/objfstests.c",
+        "patchSetId": 4
+      },
+      "lineNbr": 1149,
+      "author": {
+        "id": 1021025
+      },
+      "writtenOn": "2024-01-29T19:40:55Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "115f74b6_ffb77b88",
+      "range": {
+        "startLine": 1149,
+        "startChar": 24,
+        "endLine": 1149,
+        "endChar": 43
+      },
+      "revId": "8235fd7ed01fce29ace7e46e8aff1aba9042be3d",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "a74cd16b_7569217b",
@@ -37,6 +61,30 @@
       "writtenOn": "2024-01-27T19:56:45Z",
       "side": 1,
       "message": "same here. E.g. names that reflect the relation of the folders to regular or objfs locations",
+      "range": {
+        "startLine": 1150,
+        "startChar": 48,
+        "endLine": 1150,
+        "endChar": 52
+      },
+      "revId": "8235fd7ed01fce29ace7e46e8aff1aba9042be3d",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "27eae62a_40ec89ad",
+        "filename": "tests/xv6/objfstests.c",
+        "patchSetId": 4
+      },
+      "lineNbr": 1150,
+      "author": {
+        "id": 1021025
+      },
+      "writtenOn": "2024-01-29T19:40:55Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "a74cd16b_7569217b",
       "range": {
         "startLine": 1150,
         "startChar": 48,
@@ -70,6 +118,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "cf0f0720_314279c8",
+        "filename": "tests/xv6/objfstests.c",
+        "patchSetId": 4
+      },
+      "lineNbr": 1162,
+      "author": {
+        "id": 1021025
+      },
+      "writtenOn": "2024-01-29T19:40:55Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "63596dfd_9bce9bbf",
+      "range": {
+        "startLine": 1162,
+        "startChar": 1,
+        "endLine": 1162,
+        "endChar": 31
+      },
+      "revId": "8235fd7ed01fce29ace7e46e8aff1aba9042be3d",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c6c7a210_431a16f4",
@@ -83,6 +155,30 @@
       "writtenOn": "2024-01-27T19:56:45Z",
       "side": 1,
       "message": "Lets elevate the elegance of boilerplate Code",
+      "range": {
+        "startLine": 1198,
+        "startChar": 1,
+        "endLine": 1242,
+        "endChar": 5
+      },
+      "revId": "8235fd7ed01fce29ace7e46e8aff1aba9042be3d",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "29ad0c01_692187c6",
+        "filename": "tests/xv6/objfstests.c",
+        "patchSetId": 4
+      },
+      "lineNbr": 1242,
+      "author": {
+        "id": 1021025
+      },
+      "writtenOn": "2024-01-29T19:40:55Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "c6c7a210_431a16f4",
       "range": {
         "startLine": 1198,
         "startChar": 1,
