@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e05ab321_376c5e18",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1021025
+      },
+      "writtenOn": "2024-01-31T11:29:37Z",
+      "side": 1,
+      "message": "How do I start CI?",
+      "revId": "740967eda1dc7f844da32e1e19591b83c6ca2b65",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
