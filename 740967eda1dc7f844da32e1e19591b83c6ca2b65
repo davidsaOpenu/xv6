@@ -16,6 +16,23 @@
       "message": "How do I start CI?",
       "revId": "740967eda1dc7f844da32e1e19591b83c6ca2b65",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a4c46614_b0c81d12",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-02-09T08:36:28Z",
+      "side": 1,
+      "message": "recheck",
+      "revId": "740967eda1dc7f844da32e1e19591b83c6ca2b65",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
