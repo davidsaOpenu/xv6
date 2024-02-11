@@ -16,6 +16,92 @@
       "message": "Rebased.",
       "revId": "c3b4bbbf2f90d73f878e8366fcbf1016c34f4597",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a7f3e951_256ddd46",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 9
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-02-11T13:50:59Z",
+      "side": 1,
+      "message": "In general, we need more tests:\n- tests that bring the system to the limits in terms of number of bind and objfs mounts, inodes, nested folders, file sizes. e.g for i-nodes the test aasses for 300 and fails for 301. \n- cross-mount tests that bind mount was implemented for. E.g copy from a path objfs1Dir1/naitiveFSDir1/objfs1Dir2/naitiveFSDir1/.../objfs1DirN/naitiveFSDirN \nto \nobjfs2Dir1/naitiveFSDir1/objfs2Dir2/naitiveFSDir1/.../objfs2DirN/naitiveFSDirN \nwhere N is an arbitrary number up to the system limit (test fails on N+1).",
+      "revId": "c3b4bbbf2f90d73f878e8366fcbf1016c34f4597",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "28fc94b9_4e585995",
+        "filename": "tests/xv6/objfstests.c",
+        "patchSetId": 9
+      },
+      "lineNbr": 1180,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-02-11T13:50:59Z",
+      "side": 1,
+      "message": "looking at https://review.gerrithub.io/c/davidsaOpenu/xv6/+/1168723/9/runtests.exp#223\n\nseems that has no added value. Am I missing smth?",
+      "range": {
+        "startLine": 1180,
+        "startChar": 5,
+        "endLine": 1180,
+        "endChar": 19
+      },
+      "revId": "c3b4bbbf2f90d73f878e8366fcbf1016c34f4597",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e71e8885_c66e2be6",
+        "filename": "tests/xv6/objfstests.c",
+        "patchSetId": 9
+      },
+      "lineNbr": 1230,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-02-11T13:50:59Z",
+      "side": 1,
+      "message": "no need in copy_files. let\u0027s call to exec(cp...).",
+      "range": {
+        "startLine": 1230,
+        "startChar": 1,
+        "endLine": 1230,
+        "endChar": 12
+      },
+      "revId": "c3b4bbbf2f90d73f878e8366fcbf1016c34f4597",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3a5f1a4e_f65fed84",
+        "filename": "tests/xv6/objfstests.c",
+        "patchSetId": 9
+      },
+      "lineNbr": 1239,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-02-11T13:50:59Z",
+      "side": 1,
+      "message": "let\u0027s create and use here a simple diff utility moving compare_dirs and compare_files methods to diff.c.",
+      "range": {
+        "startLine": 1239,
+        "startChar": 2,
+        "endLine": 1239,
+        "endChar": 14
+      },
+      "revId": "c3b4bbbf2f90d73f878e8366fcbf1016c34f4597",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
