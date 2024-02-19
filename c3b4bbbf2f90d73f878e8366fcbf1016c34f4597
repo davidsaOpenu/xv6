@@ -58,6 +58,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "2915dfd5_499a51fa",
+        "filename": "tests/xv6/objfstests.c",
+        "patchSetId": 9
+      },
+      "lineNbr": 1180,
+      "author": {
+        "id": 1021025
+      },
+      "writtenOn": "2024-02-19T21:50:16Z",
+      "side": 1,
+      "message": "True.",
+      "parentUuid": "28fc94b9_4e585995",
+      "range": {
+        "startLine": 1180,
+        "startChar": 5,
+        "endLine": 1180,
+        "endChar": 19
+      },
+      "revId": "c3b4bbbf2f90d73f878e8366fcbf1016c34f4597",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "e71e8885_c66e2be6",
@@ -81,6 +105,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "4fdbf1cf_8175f843",
+        "filename": "tests/xv6/objfstests.c",
+        "patchSetId": 9
+      },
+      "lineNbr": 1230,
+      "author": {
+        "id": 1021025
+      },
+      "writtenOn": "2024-02-19T21:50:16Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "e71e8885_c66e2be6",
+      "range": {
+        "startLine": 1230,
+        "startChar": 1,
+        "endLine": 1230,
+        "endChar": 12
+      },
+      "revId": "c3b4bbbf2f90d73f878e8366fcbf1016c34f4597",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "3a5f1a4e_f65fed84",
@@ -94,6 +142,30 @@
       "writtenOn": "2024-02-11T13:50:59Z",
       "side": 1,
       "message": "let\u0027s create and use here a simple diff utility moving compare_dirs and compare_files methods to diff.c.",
+      "range": {
+        "startLine": 1239,
+        "startChar": 2,
+        "endLine": 1239,
+        "endChar": 14
+      },
+      "revId": "c3b4bbbf2f90d73f878e8366fcbf1016c34f4597",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a2bb0933_7f3992cf",
+        "filename": "tests/xv6/objfstests.c",
+        "patchSetId": 9
+      },
+      "lineNbr": 1239,
+      "author": {
+        "id": 1021025
+      },
+      "writtenOn": "2024-02-19T21:50:16Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "3a5f1a4e_f65fed84",
       "range": {
         "startLine": 1239,
         "startChar": 2,
