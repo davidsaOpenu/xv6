@@ -16,6 +16,92 @@
       "message": "Attended to comments.",
       "revId": "a250e7be054b56e2c071999163b781e157c275e7",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4ecdbd10_e3dc784a",
+        "filename": "Makefile",
+        "patchSetId": 10
+      },
+      "lineNbr": 183,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-02-23T09:53:32Z",
+      "side": 1,
+      "message": "part of UPROG rather then of ULIB",
+      "range": {
+        "startLine": 183,
+        "startChar": 54,
+        "endLine": 183,
+        "endChar": 60
+      },
+      "revId": "a250e7be054b56e2c071999163b781e157c275e7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b0819b63_3848dcbf",
+        "filename": "diff.c",
+        "patchSetId": 10
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-02-23T09:53:32Z",
+      "side": 1,
+      "message": "main is lacking.",
+      "revId": "a250e7be054b56e2c071999163b781e157c275e7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f154f5f2_9c6351fe",
+        "filename": "tests/xv6/objfstests.c",
+        "patchSetId": 10
+      },
+      "lineNbr": 1147,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-02-23T09:53:32Z",
+      "side": 1,
+      "message": "In general, we need more tests:\n\n- tests that bring the system to the limits in terms of number of bind and objfs mounts, inodes, nested folders, file sizes. e.g for i-nodes the test aasses for 300 and fails for 301.\n- cross-mount tests that bind mount was implemented for. E.g copy from a path objfs1Dir1/naitiveFSDir1/objfs1Dir2/naitiveFSDir1/.../objfs1DirN/naitiveFSDirN\nto\nobjfs2Dir1/naitiveFSDir1/objfs2Dir2/naitiveFSDir1/.../objfs2DirN/naitiveFSDirN\nwhere N is an arbitrary number up to the system limit (test fails on N+1).",
+      "range": {
+        "startLine": 1136,
+        "startChar": 0,
+        "endLine": 1147,
+        "endChar": 13
+      },
+      "revId": "a250e7be054b56e2c071999163b781e157c275e7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7e5d0b3f_298cbe7f",
+        "filename": "user.h",
+        "patchSetId": 10
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-02-23T09:53:32Z",
+      "side": 1,
+      "message": "user.h contains signatures serving as an API between the kernel and user space or methods that serve as analogs to standard library (stdlib) functions. These methods show no attribution to either of these two categories.",
+      "range": {
+        "startLine": 70,
+        "startChar": 0,
+        "endLine": 73,
+        "endChar": 35
+      },
+      "revId": "a250e7be054b56e2c071999163b781e157c275e7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
