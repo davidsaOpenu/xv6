@@ -7,28 +7,23 @@
 
 static int cp(const char* src, const char* target);
 
-static int join_paths(char* dest, int dest_size, const char* path1,
-                      const char* path2) {
-  int path1_len = strlen(path1);
-  if (path1_len >= dest_size) return -1;
-  memmove(dest, path1, path1_len);
-  dest += path1_len;
-  dest_size -= path1_len;
+static int join_paths(char** dest, const char* lhs, const char* rhs) {
+  int lhs_len = strlen(lhs);
+  int rhs_len = strlen(rhs);
+  bool need_slash = lhs[lhs_len - 1] != '/';
 
-  if (dest[0] != '/') {
-    if (dest_size <= 1) return -1;
-    dest[0] = '/';
-    dest++;
-    dest_size--;
+  int total_size = lhs_len + rhs_len + need_slash + 1;
+  char* joined = malloc(total_size);
+  if (!joined) {
+    printf(2, "cp: malloc(%u) failed\n", total_size);
+    return -1;
   }
 
-  int path2_len = strlen(path2);
-  if (path2_len >= dest_size) return -1;
+  strcpy(joined, lhs);
+  if (need_slash) strcat(joined, "/");
+  strcat(joined, rhs);
 
-  memmove(dest, path2, path2_len);
-  dest += path2_len;
-
-  *dest = '\0';
+  *dest = joined;
   return 0;
 }
 
@@ -81,14 +76,21 @@ static int copy_dir(int fd, const char* src, const char* target) {
 
     if ((strcmp(name, ".") == 0) || (strcmp(name, "..") == 0)) continue;
 
-    char joined_src[MAX_PATH_LENGTH];
-    if (join_paths(joined_src, sizeof(joined_src), src, name) < 0) return -1;
+    char* joined_src;
+    char* joined_target;
 
-    char joined_target[MAX_PATH_LENGTH];
-    if (join_paths(joined_target, sizeof(joined_target), target, name) < 0)
+    if (join_paths(&joined_src, src, name) < 0) return -1;
+
+    if (join_paths(&joined_target, target, name) < 0) {
+      free(joined_src);
       return -1;
+    }
 
-    if (cp(joined_src, joined_target) < 0) return -1;
+    if (cp(joined_src, joined_target) < 0) {
+      free(joined_src);
+      free(joined_target);
+      return -1;
+    }
   }
 
   return 0;
