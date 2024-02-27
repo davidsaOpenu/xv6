@@ -198,6 +198,30 @@
       },
       "revId": "c3b4bbbf2f90d73f878e8366fcbf1016c34f4597",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "576fe823_bd885c4c",
+        "filename": "tests/xv6/objfstests.c",
+        "patchSetId": 9
+      },
+      "lineNbr": 1239,
+      "author": {
+        "id": 1021026
+      },
+      "writtenOn": "2024-02-27T16:13:20Z",
+      "side": 1,
+      "message": "David, this is Out of scope for this feature. \nand currently not being used anywhere, so we deleted it for now.\n\nWe suggest that if such demand arises it is worthy to be a part of other tickets or epics.",
+      "parentUuid": "dd2c3024_0deb76bb",
+      "range": {
+        "startLine": 1239,
+        "startChar": 2,
+        "endLine": 1239,
+        "endChar": 14
+      },
+      "revId": "c3b4bbbf2f90d73f878e8366fcbf1016c34f4597",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
