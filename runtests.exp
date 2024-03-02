@@ -251,6 +251,79 @@ proc cp_simple_objfs_nativefs_copy_test {argv} {
     assert_on_exit_status
 }
 
+proc cp_recursive_objfs_nativefs_test {argv} {
+    set timeout -1
+    log_file -noappend [lindex $argv 0]
+
+    send "mkdir obj1Dir1\n"
+    assert_on_exit_status
+    send "mount -t objfs obj1Dir1\n"
+    assert_on_exit_status
+    send "mkdir n1Dir1 obj1Dir1/n1Dir1\n"
+    assert_on_exit_status
+    send "mount -t bind obj1Dir1/n1Dir1 n1Dir1\n"
+    assert_on_exit_status
+    send "mkdir n1Dir1/obj1Dir2 obj1Dir1/obj1Dir2\n"
+    assert_on_exit_status
+    send "mount -t bind n1Dir1/obj1Dir2 obj1Dir1/obj1Dir2\n"
+    assert_on_exit_status
+    send "mkdir n1Dir1/n1Dir2 obj1Dir1/obj1Dir2/n1Dir2\n"
+    assert_on_exit_status
+    send "mount -t bind obj1Dir1/obj1Dir2/n1Dir2 n1Dir1/n1Dir2\n"
+    assert_on_exit_status
+    send "mkdir n1Dir1/n1Dir2/obj1Dir3 obj1Dir1/obj1Dir2/obj1Dir3\n"
+    assert_on_exit_status
+    send "mount -t bind n1Dir1/n1Dir2/obj1Dir3 obj1Dir1/obj1Dir2/obj1Dir3\n"
+    assert_on_exit_status
+    send "mkdir n1Dir1/n1Dir2/n1Dir3 obj1Dir1/obj1Dir2/obj1Dir3/n1Dir3\n"
+    assert_on_exit_status
+    send "mount -t bind obj1Dir1/obj1Dir2/obj1Dir3/n1Dir3 n1Dir1/n1Dir2/n1Dir3\n"
+    assert_on_exit_status
+
+    send "mkdir obj2Dir1\n"
+    assert_on_exit_status
+    send "mount -t objfs obj2Dir1\n"
+    assert_on_exit_status
+    send "mkdir n2Dir1 obj2Dir1/n2Dir1\n"
+    assert_on_exit_status
+    send "mount -t bind obj2Dir1/n2Dir1 n2Dir1\n"
+    assert_on_exit_status
+    send "mkdir n2Dir1/obj2Dir2 obj2Dir1/obj2Dir2\n"
+    assert_on_exit_status
+    send "mount -t bind n2Dir1/obj2Dir2 obj2Dir1/obj2Dir2\n"
+    assert_on_exit_status
+    send "mkdir n2Dir1/n2Dir2 obj2Dir1/obj2Dir2/n2Dir2\n"
+    assert_on_exit_status
+    send "mount -t bind obj2Dir1/obj2Dir2/n2Dir2 n2Dir1/n2Dir2\n"
+    assert_on_exit_status
+    send "mkdir n2Dir1/n2Dir2/obj2Dir3 obj2Dir1/obj2Dir2/obj2Dir3\n"
+    assert_on_exit_status
+    send "mount -t bind n2Dir1/n2Dir2/obj2Dir3 obj2Dir1/obj2Dir2/obj2Dir3\n"
+    assert_on_exit_status
+    send "mkdir n2Dir1/n2Dir2/n2Dir3 obj2Dir1/obj2Dir2/obj2Dir3/n2Dir3\n"
+    assert_on_exit_status
+    send "mount -t bind obj2Dir1/obj2Dir2/obj2Dir3/n2Dir3 n2Dir1/n2Dir2/n2Dir3\n"
+    assert_on_exit_status
+
+    send "echo hello > obj1Dir1/n1Dir1/obj1Dir2/n1Dir2/obj1Dir3/n1Dir3/hello\n"
+    assert_on_exit_status
+    send "cp obj1Dir1/n1Dir1/obj1Dir2/n1Dir2/obj1Dir3/n1Dir3 obj2Dir1/n2Dir1/obj2Dir2/n2Dir2/obj2Dir3/n2Dir3\n"
+    assert_on_exit_status
+    send "cat obj2Dir1/n2Dir1/obj2Dir2/n2Dir2/obj2Dir3/n2Dir3/hello\n"
+    assert_on_exit_status
+    expect "test"
+    assert_on_exit_status
+
+    send "rm obj1Dir1/n1Dir1 rm obj1Dir1/obj1Dir2\n"
+    assert_on_exit_status
+    send "umount obj1Dir1\n"
+    assert_on_exit_status
+    send "rm obj2Dir1/n2Dir1 rm obj2Dir1/obj2Dir2\n"
+    assert_on_exit_status
+    send "umount obj2Dir1\n"
+    assert_on_exit_status
+}
+
 proc mount_bind_test {argv} {
     set timeout -1
     log_file -noappend [lindex $argv 0]
@@ -752,6 +825,7 @@ set running [pouch_images_command $argv]
 
 #scenario tests
 set running [cp_simple_objfs_nativefs_copy_test $argv]
+set running [cp_recursive_objfs_nativefs_test $argv]
 
 set running [pouch_stress_test $argv]
 set running [pouch_cgroup_already_exists $argv]
