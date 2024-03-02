@@ -192,7 +192,10 @@ struct mount *mntlookup(struct vfs_inode *mountpoint, struct mount *parent) {
 
   struct mount_list *entry = getactivemounts();
   while (entry != 0) {
-    if (entry->mnt.mountpoint == mountpoint && entry->mnt.parent == parent) {
+    /* Search for a matching mountpoint and also a parent mount, unless it is a
+     * bind mount which inherently has different parents. */
+    if (entry->mnt.mountpoint == mountpoint &&
+        (entry->mnt.parent == parent || entry->mnt.bind != NULL)) {
       release(&myproc()->nsproxy->mount_ns->lock);
       return mntdup(&entry->mnt);
     }
