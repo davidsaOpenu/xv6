@@ -251,6 +251,94 @@ proc cp_simple_objfs_nativefs_copy_test {argv} {
     assert_on_exit_status
 }
 
+# - Nested bind mount across different fs types test
+# @argv - file name for logging
+proc cp_recursive_objfs_nativefs_test {argv} {
+    set timeout -1
+    log_file -noappend [lindex $argv 0]
+
+    # Mount a new objfs
+    send "mkdir /obj_mnt\n"
+    assert_on_exit_status
+    send "mount -t objfs /obj_mnt\n"
+
+    # An arbitrary directories hierarchy depth, can be modified
+    set depth 3
+
+    # Create directories hierarchy in each fs.
+    # In each directory create also an "aux" directory, in which create a simple text file.
+    set objfs_path "/obj_mnt"
+    set nativefs_path "/"
+    for {set i 1} {$i <= $depth} {incr i} {
+        append objfs_path "/od${i}"
+        send "mkdir $objfs_path\n"
+        assert_on_exit_status
+        send "mkdir $objfs_path/od${i}_aux\n"
+        assert_on_exit_status
+        send "echo \"od${i}_aux/od${i}.txt\" >$objfs_path/od${i}_aux/od${i}.txt\n"
+        assert_on_exit_status
+
+        append nativefs_path "/nd${i}"
+        send "mkdir $nativefs_path\n"
+        assert_on_exit_status
+        send "mkdir $nativefs_path/nd${i}_aux\n"
+        assert_on_exit_status
+        send "echo \"nd${i}_aux/nd${i}.txt\" >$nativefs_path/nd${i}_aux/nd${i}.txt\n"
+        assert_on_exit_status
+    }
+
+    # Bind mount the directories from nativefs and the objfs
+    # on the "aux" directories in nested structure
+    set objfs_path "/obj_mnt/od1"
+    set nativefs_path "/"
+    set mix_path "$objfs_path"
+    for {set i 1} {$i < $depth} {incr i} {
+        append mix_path "/od${i}_aux"
+        append nativefs_path "/nd${i}"
+        send "mount -t bind $mix_path $nativefs_path\n"
+        assert_on_exit_status
+        sleep 0.5
+        send "cat $mix_path/nd${i}_aux/nd${i}.txt\n"
+        sleep 0.5
+        expect "nd${i}_aux/nd${i}.txt"
+
+        append mix_path "/nd${i}_aux"
+        append objfs_path "/od[expr {$i + 1}]"
+        send "mount -t bind $mix_path $objfs_path\n"
+        assert_on_exit_status
+        send "cat $mix_path/od[expr {$i + 1}]_aux/od[expr {$i + 1}].txt\n"
+        sleep 0.5
+        expect "od[expr {$i + 1}]_aux/od[expr {$i + 1}].txt"
+    }
+
+    # Unmount the previous bind mount and then verify the files content.
+    for {set i $depth} {$i > 1} {incr i -1} {
+        send "umount $mix_path\n"
+        assert_on_exit_status
+        send "cat $mix_path/nd[expr {$i - 1}].txt\n"
+        sleep 0.5
+        expect "nd[expr {$i - 1}]_aux/nd[expr {$i - 1}].txt"
+
+        # Remove the last element from the "mix path" (the mount point we just unmounted)
+        set last_separator [string last "/" $mix_path]
+        set mix_path [string range $mix_path 0 [expr $last_separator - 1]]
+
+        send "umount $mix_path\n"
+        assert_on_exit_status
+        send "cat $mix_path/od[expr {$i - 1}].txt\n"
+        sleep 0.5
+        expect "od[expr {$i - 1}]_aux/od[expr {$i - 1}].txt"
+
+        # Remove the last element from the "mix path" (the mount point we just unmounted)
+        set last_separator [string last "/" $mix_path]
+        set mix_path [string range $mix_path 0 [expr $last_separator - 1]]
+    }
+
+    # Clean
+    send "umount /obj_mnt\n"
+    assert_on_exit_status
+}
+
 proc mount_bind_test {argv} {
     set timeout -1
     log_file -noappend [lindex $argv 0]
@@ -752,6 +840,7 @@ set running [pouch_images_command $argv]
 
 #scenario tests
 set running [cp_simple_objfs_nativefs_copy_test $argv]
+set running [cp_recursive_objfs_nativefs_test $argv]
 
 set running [pouch_stress_test $argv]
 set running [pouch_cgroup_already_exists $argv]
