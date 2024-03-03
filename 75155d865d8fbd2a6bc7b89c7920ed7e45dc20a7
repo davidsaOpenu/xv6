@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fc362e66_ce1ef111",
+        "filename": "runtests.exp",
+        "patchSetId": 4
+      },
+      "lineNbr": 254,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-03-03T15:12:43Z",
+      "side": 1,
+      "message": "Let\u0027s refine the approach to make the test more universally applicable and easily extendable for an arbitrary number of iterations, N, while incorporating several additional checks throughout the process:\n\n1. Generate a series of nested directories `od1/.../odN` within an object-based file system (FS).\n    1.1. Inside each `od{i}` directory, create a subdirectory `od{i}_aux` containing a file `od_{i}.txt`. This file should contain the text `od{i}_aux/od_{i}.txt`.\n\n2. Similarly, create a series of nested directories `nd1/.../ndN` within a native file system.\n    2.1. Under each `nd{i}` directory, create a subdirectory `nd{i}_aux` that includes a file `nd_{i}.txt`, with the file containing the text `nd{i}_aux/nd_{i}.txt`.\n\n3. Starting from `od1`, perform bind mounts in a loop, alternating between the directory structures created in steps 1 and 2.\n    - During each iteration, bind mount `nd{i}` to `od{i-1}_aux`. Verify that the resulting path `od1/nd1/.../od{i-1}/nd{i}` contains the file `nd{i}_aux/nd_{i}.txt` with the correct content.\n\n4. Beginning with `nd1`, execute a similar loop of bind mounts, this time interchanging the roles of the directory structures.\n    - At each step, bind mount `od{i}` to `nd{i-1}_aux`. Ensure that the path `nd1/od1/.../nd{i-1}/od{i}` includes the file `od{i}_aux/od_{i}.txt` with the intended content.\n\n5. Start from the combined path `od1/nd1/.../odN/ndN` and iterate backwards from N to 1. In each step, unmount `nd{i}` (or `od{i}`) and confirm that the file `od{i-1}_aux/od_{i}.txt` (or `nd{i-1}_aux/nd_{i}.txt`) exists with the correct content.\n\n6. Similarly, start from the combined path `nd1/od1/.../ndN/odN` and iterate backwards from N to 1. In each step, unmount `od{i}` (or `nd{i}`) and confirm that the file `nd{i-1}_aux/nd_{i}.txt` (or `od{i-1}_aux/od_{i}.txt`) exists with the correct content.",
+      "range": {
+        "startLine": 254,
+        "startChar": 5,
+        "endLine": 254,
+        "endChar": 37
+      },
+      "revId": "75155d865d8fbd2a6bc7b89c7920ed7e45dc20a7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
