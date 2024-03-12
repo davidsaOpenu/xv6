@@ -77,14 +77,30 @@ make
 LOG_FILE="mylog.txt"
 ./runtests.exp $LOG_FILE
 
-
 ########################################################################
-#  Last verification
-lines=$(tail -5 $LOG_FILE | grep  "ALL TESTS PASSED" | wc -l)
-if [ $lines -ne 1 ]; then
-    echo "ALL TESTS PASSED string was not found"
-    exit 1
+# Stability test
+if [[ $JOB_NAME =~ .*"stability".* ]]; then
+    for i in {0..40}
+    do
+        rm fs.img;
+        make fs;
+        timeout 25m ./runtests.exp $LOG_FILE
+        if [ $? -eq 124 ]; then 
+            echo "timeout++" 
+        elif [ $? -eq 0 ]; then 
+            echo "pass++"
+        else
+            echo "fail++"
+        fi
+    done
+else
+    ########################################################################
+    #  Last verification
+    lines=$(tail -5 $LOG_FILE | grep  "ALL TESTS PASSED" | wc -l)
+    if [ $lines -ne 1 ]; then
+        echo "ALL TESTS PASSED string was not found"
+        exit 1
+    fi
+    echo "SUCCESS"
 fi
-
-echo "SUCCESS"
 exit 0
