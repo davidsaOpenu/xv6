@@ -1,6 +1,28 @@
-The following command:
+Construct a container using Ubuntu 22.04 as the base image
+==========================================================
 
-   ./runtests.exp log.txt
+```
+./docker-ci.sh build 22.04
+```
 
-will spawn 'make qemu-nox', execute usertests from the xv6 command line,
-log the output to the log.txt and, finally, kill the qemu process.
+Execute testing procedures before submitting a change request
+=============================================================
+
+```
+./docker-ci.sh test 22.04
+```
+
+Initiate the container and form a connection
+============================================
+
+Start an interactive session within the container:
+
+```
+./docker-ci.sh interactive 22.04 bash
+```
+
+Launch make qemu-nox to start xv6 without X support, execute usertests from the xv6 command line, capture and log the output to log.txt, and then gracefully terminate the qemu process:
+
+```
+./runtests.exp log.txt
+```
