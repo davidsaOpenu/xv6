@@ -18,38 +18,29 @@ int dir_exists(const char *path) {
 }
 
 static int init_procfs() {
-  int procfs_fd = -1;
-  // Check if procfs already created
-  if ((procfs_fd = open("/proc", O_RDWR)) < 0) {
-    // don't try to create it again if exists
-    if (!dir_exists("/proc")) {
-      if (mkdir("/proc") != 0) {
-        printf(1, "init: failed to create root proc fs\n");
-        return -1;
-      }
-    }
-
-    if (mount(0, "/proc", "proc") != 0) {
-      printf(1, "init: failed to mount proc fs\n");
+  // Make sure the procfs mount point exists
+  if (!dir_exists("/proc")) {
+    if (mkdir("/proc") != 0) {
+      printf(1, "init: failed to create procfs mount point\n");
       return -1;
     }
-  } else {
-    if (close(procfs_fd) < 0) return -1;
+  }
+
+  if (mount(0, "/proc", "proc") != 0) {
+    printf(1, "init: failed to mount proc fs\n");
+    return -1;
   }
 
   return 0;
 }
 
 static int init_image_dir() {
-  int image_dir_fd = -1;
-  // Check if images directory already created
-  if ((image_dir_fd = open(IMAGE_DIR, O_RDWR)) < 0) {
+  // Make sure the images dir exists
+  if (!dir_exists(IMAGE_DIR)) {
     if (mkdir(IMAGE_DIR) != 0) {
       printf(1, "init: failed to create images directory\n");
       return -1;
     }
-  } else {
-    if (close(image_dir_fd) < 0) return -1;
   }
 
   return 0;
