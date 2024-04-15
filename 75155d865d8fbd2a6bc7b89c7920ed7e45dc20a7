@@ -22,6 +22,30 @@
       },
       "revId": "75155d865d8fbd2a6bc7b89c7920ed7e45dc20a7",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "148db9e7_fd94035e",
+        "filename": "runtests.exp",
+        "patchSetId": 4
+      },
+      "lineNbr": 254,
+      "author": {
+        "id": 1037966
+      },
+      "writtenOn": "2024-04-15T10:07:43Z",
+      "side": 1,
+      "message": "@davidsa@openu.ac.il I\u0027m not sure this test will pass or maybe I misunderstand it: in step 3, there is no entry `nd{i}` in the dir `od{i}` (even after the bind mounts), therefore the path `od1/nd1/.../od{i-1}/nd{i}` does not exist on the system.\nThe same applies to step 4 as well, interchanging the role of the directories.",
+      "parentUuid": "fc362e66_ce1ef111",
+      "range": {
+        "startLine": 254,
+        "startChar": 5,
+        "endLine": 254,
+        "endChar": 37
+      },
+      "revId": "75155d865d8fbd2a6bc7b89c7920ed7e45dc20a7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
