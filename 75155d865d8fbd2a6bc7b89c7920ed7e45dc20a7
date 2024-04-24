@@ -70,6 +70,30 @@
       },
       "revId": "75155d865d8fbd2a6bc7b89c7920ed7e45dc20a7",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "15564a3c_8ffbc236",
+        "filename": "runtests.exp",
+        "patchSetId": 4
+      },
+      "lineNbr": 254,
+      "author": {
+        "id": 1037966
+      },
+      "writtenOn": "2024-04-24T18:13:01Z",
+      "side": 1,
+      "message": "@davidsa@openu.ac.il\nMaybe I understand something wrong, but why would bind mount `nd1` on `od1/od1_aux` will create the path `od1/nd1`? All it should do is to make the `nd1` directory accessible from the path `od1/od1_aux`? Do I miss something?",
+      "parentUuid": "3ad0cb1f_d3805100",
+      "range": {
+        "startLine": 254,
+        "startChar": 5,
+        "endLine": 254,
+        "endChar": 37
+      },
+      "revId": "75155d865d8fbd2a6bc7b89c7920ed7e45dc20a7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
