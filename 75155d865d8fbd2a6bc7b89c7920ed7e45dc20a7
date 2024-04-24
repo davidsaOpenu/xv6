@@ -46,6 +46,30 @@
       },
       "revId": "75155d865d8fbd2a6bc7b89c7920ed7e45dc20a7",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3ad0cb1f_d3805100",
+        "filename": "runtests.exp",
+        "patchSetId": 4
+      },
+      "lineNbr": 254,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-04-24T10:17:57Z",
+      "side": 1,
+      "message": "@sagi1.marom@gmail.com \ndo you mean that mounting nd1 on od1/od1_aux shows no od1/ns1 path? If that\u0027s the case I\u0027m afraid we have a bug in bind mount.",
+      "parentUuid": "148db9e7_fd94035e",
+      "range": {
+        "startLine": 254,
+        "startChar": 5,
+        "endLine": 254,
+        "endChar": 37
+      },
+      "revId": "75155d865d8fbd2a6bc7b89c7920ed7e45dc20a7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
