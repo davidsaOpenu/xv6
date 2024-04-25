@@ -14,6 +14,7 @@ typedef enum p_cmd {
   INFO,
   LIST,
   IMAGES,
+  BUILD,
 } p_cmd;
 #define CNTNAMESIZE 100
 #define CNTARGSIZE 30

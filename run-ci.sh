@@ -70,7 +70,7 @@ cppcheck --error-exitcode=${ERROR_CODE} \
 ########################################################################
 # compile
 make clean
-make
+make TEST_POUCHFILES=1
 
 ########################################################################
 #  Run tests
