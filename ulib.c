@@ -130,9 +130,41 @@ char *strstr(char *src, char *needle) {
 
   for (i = 0; i < src_len; i++) {
     if (0 == strncmp(src, needle, needle_size)) {
-      return src + needle_size;
+      return src;
     }
     src++;
   }
   return 0;
+}
+
+char *strtok_r(char *str, char *const delim, char **saveptr) {
+  if (str == NULL) {
+    if (saveptr == NULL) return NULL;
+    str = *saveptr;
+  }
+
+  for (; *str; ++str) {
+    bool any_del_found = false;
+    for (char *currd = delim; *currd; ++currd) {
+      if (*str == *currd) {
+        any_del_found = true;
+        break;
+      }
+    }
+
+    if (!any_del_found) {
+      break;
+    }
+  }
+  char *to_return = str;
+  for (; *str; ++str) {
+    for (char *currd = delim; *currd; ++currd) {
+      if (*str == *currd) {
+        *str = '\0';
+        if (saveptr != NULL) *saveptr = str + 1;
+        return to_return;
+      }
+    }
+  }
+  return to_return;
 }
