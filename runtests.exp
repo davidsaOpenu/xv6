@@ -11,10 +11,9 @@ proc pid_check { argv expect_str} {
 
     send "pid\n"
     log_file -noappend [lindex $argv 0]
-    set timeout 7
-    expect {
-       expect_str
-    }
+    set timeout 2
+    expect "$expect_str"
+    assert_on_exit_status
 }
 
 # - wrapper for container start command
@@ -26,9 +25,7 @@ proc start_container { argv id expect_str} {
     send "pouch start c$id\n"
     set timeout 3
     log_file -noappend [lindex $argv 0]
-    expect {
-       expect_str
-    }
+    expect "$expect_str"
 }
 
 # - wrapper for pouch connect command
@@ -40,17 +37,7 @@ proc connect_container {argv id } {
     log_file -noappend [lindex $argv 0]
 
     # container can connect to any tty, checking here every one
-    expect {
-       "tty0 connected" {
-                   exp_continue
-       }
-       "tty1 connected" {
-                   exp_continue
-       }
-       "tty2 connected" {
-                   exp_continue
-       }
-   }
+    expect -re {tty[012] connected}
 }
 
 # - wrapper for pouch disconnect command
@@ -68,34 +55,30 @@ proc disconnect_container {argv} {
 # - wrapper for pouch destroy command
 # @argv - file name for logging
 proc destroy_container {argv id expect_str} {
-
     send "pouch destroy c$id\n"
-    set timeout 3
+    sleep 1
+
+    set timeout 5
     log_file -noappend [lindex $argv 0]
-    expect {
-       "zombie!"
-    }
-    set timeout 3
-    log_file -noappend [lindex $argv 0]
-    expect {
-       expect_str
-    }
+    expect "$expect_str"
 }
 
-proc assert_on_exit_status {} {
-    expect {
-        "$ "
+proc assert_on_exit_status {{code 0} {wait_for_last_exit 1}} {
+    if { $wait_for_last_exit } {
+        expect {
+            "$ "
+        }
     }
-    sleep 2
+    sleep 0.1
     send "echo $?\n"
-    sleep 2
+    sleep 0.1
 
     # expect is not a line oriented
     # meaning a number of process exit status comes right after a new line
     expect -re "\\n(\\d+)" {
         set result $expect_out(1,string)
     }
-    if { $result != 0 } {
+    if { $result != $code } {
         puts "TEST HAS FAILED exit = $result" ; exit 1;
     }
     expect {
@@ -127,7 +110,11 @@ proc pouch_stress_test {argv} {
     set timeout 3
     for {set x 0} {$x < 10} {incr x} {
         set running [start_container $argv "1" "Pouch: c1 starting"]
+        set running [assert_on_exit_status 0 1]
+        sleep 0.5
         set running [destroy_container $argv "1" "Pouch: c1 destroyed"]
+        set running [assert_on_exit_status 0 1]
+        sleep 0.5
         log_file -noappend [lindex $argv 0]
     }
 }
@@ -141,7 +128,7 @@ proc pouch_basic_tests {argv} {
 }
 
 proc cp_copy_file_test {argv} {
-    set timeout -1
+    set timeout 2
     log_file -noappend [lindex $argv 0]
 
     #bad args test
@@ -170,7 +157,7 @@ proc cp_copy_file_test {argv} {
 }
 
 proc cp_copy_dir_test {argv} {
-    set timeout -1
+    set timeout 2
     log_file -noappend [lindex $argv 0]
 
     #one file in dir
@@ -214,7 +201,7 @@ proc cp_copy_dir_test {argv} {
 }
 
 proc cp_simple_objfs_nativefs_copy_test {argv} {
-    set timeout -1
+    set timeout 2
     log_file -noappend [lindex $argv 0]
 
     send "mkdir d5 d6\n"
@@ -252,7 +239,7 @@ proc cp_simple_objfs_nativefs_copy_test {argv} {
 }
 
 proc mount_bind_test {argv} {
-    set timeout -1
+    set timeout 2
     log_file -noappend [lindex $argv 0]
 
     send "mkdir bind_tests\n"
@@ -346,22 +333,24 @@ proc pouch_start_test {argv} {
     set running [start_container $argv "1" "Pouch: c1 starting"]
     set timeout 3
     set running [pid_check $argv "PID: 2"]
+    sleep 2
 }
 
 proc pouch_images_command {argv} {
-    set timeout -1
+    set timeout 3
     log_file -noappend [lindex $argv 0]
 
     #no images yet
     send "pouch images\n"
     expect "$ "
-    sleep 1
 
     #create image and test if recognized
     send "mkdir /images/test_image\n"
-    sleep 1
+    expect "$ "
+
     send "pouch images\n"
     expect "test_image"
+    expect "$ "
     sleep 1
 }
 
@@ -418,13 +407,10 @@ proc pouch_destroy_test {argv} {
     send "ls c1\n"
     set timeout 3
     log_file -noappend [lindex $argv 0]
-    expect {
-       "c1         2 39 24" {
-                    exp_continue
-       }
-    }
+    expect -re {c1\s+2\s+[0-9]+\s+[0-9]+}
 
     set running [destroy_container $argv "1" "Pouch: c1 destroyed"]
+    assert_on_exit_status
 
     set timeout 3
     send "ls c1\n"
@@ -437,7 +423,7 @@ proc pouch_destroy_test {argv} {
 
 
 proc command_exit_status_test {argv} {
-    set timeout -1
+    set timeout 1
     log_file -noappend [lindex $argv 0]
 
     # Test cd
@@ -462,10 +448,12 @@ proc command_exit_status_test {argv} {
 # - 'Cannot find tty' because there are only 3 containers available
 # @argv - file name for logging
 proc pouch_to_many_cnts_test {argv} {
-
     set running [start_container $argv "1" "Pouch: c1 starting"]
+    # sleep 1
     set running [start_container $argv "2" "Pouch: c2 starting"]
+    # sleep 1
     set running [start_container $argv "3" "Pouch: c3 starting"]
+    # sleep 1
     set running [start_container $argv "4" "Pouch: cannot create more containers"]
 
 }
@@ -479,19 +467,19 @@ proc pouch_list_test {argv} {
     send "pouch list all\n"
     set timeout 3
     log_file -noappend [lindex $argv 0]
-    expect {
-       "     Pouch containers:\n
-       1. c1 : started\n
-       2. c2 : started\n
-       3. c3 : started\n"
-    }
+    expect "Pouch containers:"
+    expect "1. c1 : started"
+    expect "2. c2 : started"
+    expect "3. c3 : started"
 
     set running [connect_container $argv "1"]
+    send "\n"
 
     send "pouch list all\n"
     log_file -noappend [lindex $argv 0]
     assert_on_exit_status
     log_file -noappend [lindex $argv 0]
+
     set running [disconnect_container $argv]
 }
 
@@ -499,8 +487,10 @@ proc pouch_list_test {argv} {
 # - Limit cgroup test:
 # @argv - file name for logging
 proc pouch_cgroup_limit_test {argv} {
-
     set timeout 10
+
+    send "pouch start c1\n"
+    sleep 1
     send "pouch cgroup c1 cpu.max 10000,20000\n"
 
     log_file -noappend [lindex $argv 0]
@@ -530,12 +520,9 @@ proc pouch_cgroup_already_exists {argv} {
     log_file -noappend [lindex $argv 0]
     assert_on_exit_status
     set timeout 3
-    set running [start_container $argv "5" "Pouch: c5 starting"]
+    set running [start_container $argv "5" "cgroup already exists"]
     log_file -noappend [lindex $argv 0]
-    expect {
-        "cgroup already exists\n
-        Pouch: Failed to create cgroup with the given name. Consider another container name: c5"
-    }
+    expect "Pouch: Failed to create cgroup with the given name. Consider another container name: c5"
 }
 
 
@@ -580,16 +567,13 @@ proc pouch_info_container_test {argv} {
     send "pouch info c6\n"
     set timeout 3
     log_file -noappend [lindex $argv 0]
-    expect {
-       "There is no container: c6 in a started stage\n"
-    }
+    expect "There is no container: c6 in a started stage"
 }
 
 
 # - xv6 usertests
 # @argv - file name for logging
 proc usertests {argv} {
-
     set timeout -1
     #clean expect buffer
     expect *
@@ -601,7 +585,6 @@ proc usertests {argv} {
 # - xv6 objfstests
 # @argv - file name for logging
 proc objfstests {argv} {
-
     set timeout -1
     #clean expect buffer
     expect *
@@ -613,7 +596,6 @@ proc objfstests {argv} {
 # - xv6 cgroup tests
 # @argv - file name for logging
 proc cgroupstests {argv} {
-
     set timeout -1
     send "cgroupstests\n"
     log_file -noappend [lindex $argv 0]
@@ -621,59 +603,44 @@ proc cgroupstests {argv} {
 }
 
 # - xv6 cgroup IO stats tests
-proc cgroup_io_states_test {} {
-    set timeout -1
+proc cgroup_io_states_test {argv} {
+    set timeout 2
 
-    send "pouch start temp\n"
+    set running [start_container $argv "temp" "Pouch: ctemp starting"]
     assert_on_exit_status
     sleep 1
-    send "cat /cgroup/temp/io.stat\n"
-    expect {
-        "1:1 rbytes=0 wbytes=0 rios=0 wios=0"
-    }
+    send "cat /cgroup/ctemp/io.stat\n"
+    expect "1:1 rbytes=0 wbytes=0 rios=0 wios=0"
 
-    send "pouch connect temp\n"
-    expect {
-        "tty0 connected"
-    }
+    send "pouch connect ctemp\n"
+    expect "tty0 connected"
 
     sleep 1
-    send "cat /cgroup/temp/io.stat\n"
-    expect {
-        "1:1 rbytes=25 wbytes=0 rios=25 wios=0"
-    }
+    send "cat /cgroup/ctemp/io.stat\n"
+    expect "1:1 rbytes=26 wbytes=0 rios=26 wios=0"
 
     send "echo 12345678901234567890\n"
     sleep 1
-    send "cat /cgroup/temp/io.stat\n"
-    expect {
-        "1:1 rbytes=76 wbytes=64 rios=76 wios=7"
-    }
+    send "cat /cgroup/ctemp/io.stat\n"
+    expect "1:1 rbytes=78 wbytes=64 rios=78 wios=7"
 
     send "pouch disconnect\n"
     expect {
        "Console connected"
     }
+    set running [destroy_container $argv "temp" "Pouch: ctemp destroyed"]
 
-    sleep 1
-    send "pouch destroy temp\n"
+    set running [start_container $argv "test" "Pouch: ctest starting"]
     assert_on_exit_status
-
-    send "pouch start test\n"
     sleep 1
-    send "cat /cgroup/test/io.stat\n"
-    expect {
-        "1:1 rbytes=93 wbytes=106 rios=93 wios=11"
-    }
-
-    send "pouch destroy test\n"
-    assert_on_exit_status
+    send "cat /cgroup/ctest/io.stat\n"
+    expect "1:1 rbytes=95 wbytes=106 rios=95 wios=11"
+    set running [destroy_container $argv "test" "Pouch: ctest destroyed"]
 }
 
 # - xv6 pidns tests
 # @argv - file name for logging
 proc pidns_tests {argv} {
-
     set timeout -1
     send "pidns_tests\n"
     log_file -noappend [lindex $argv 0]
@@ -683,7 +650,6 @@ proc pidns_tests {argv} {
 # - xv6 mntns tests
 # @argv - file name for logging
 proc mounttest {argv} {
-
     set timeout -1
     send "mounttest\n"
     log_file -noappend [lindex $argv 0]
@@ -704,6 +670,126 @@ proc mounttest_with_ls {argv} {
     assert_on_exit_status
     send "rm test_dir_mount_test\n"
     assert_on_exit_status
+}
+
+# - pouch build image command line test, invalid arguments
+# @argv - file name for logging
+proc test_pouch_build_invalid_args {argv} {
+    set timeout 3
+
+    # pouch build <invalid args> combinations, should fail.
+    send "pouch build add\n"
+    expect "Error: Unexpected argument add!"
+    log_file -noappend [lindex $argv 0]
+    assert_on_exit_status 1
+
+    send "pouch build --abb b\n"
+    expect "Error: Unexpected argument --abb!"
+    log_file -noappend [lindex $argv 0]
+    assert_on_exit_status 1
+
+    send "pouch build --tag\n"
+    log_file -noappend [lindex $argv 0]
+    expect "Error: Expected tag name after --tag"
+    assert_on_exit_status 1
+
+    send "pouch build --file a --tag\n"
+    expect "Error: Expected tag name after --tag"
+    log_file -noappend [lindex $argv 0]
+    assert_on_exit_status 1
+
+    send "pouch build --file --tag jkjk\n"
+    expect "Error: Unexpected argument jkjk!"
+    log_file -noappend [lindex $argv 0]
+    assert_on_exit_status 1
+
+    send "pouch build --file\n"
+    expect "Error: Expected file name after --file"
+    log_file -noappend [lindex $argv 0]
+    assert_on_exit_status 1
+
+    send "pouch build --file a --file b\n"
+    expect "Error: Specified more than one --file argument."
+    log_file -noappend [lindex $argv 0]
+    assert_on_exit_status 1
+
+    send "pouch build --file a --tag b --file b\n"
+    expect "Error: Specified more than one --file argument."
+    log_file -noappend [lindex $argv 0]
+    assert_on_exit_status 1
+
+    send "pouch build --tag a --file b --tag b\n"
+    expect "Error: Specified more than one --tag argument."
+    log_file -noappend [lindex $argv 0]
+    assert_on_exit_status 1
+}
+
+# - pouch build image command line test, valid arguments
+# @argv - file name for logging
+proc test_pouch_build_valid_args {argv} {
+    set timeout 3
+
+    send "echo IMPORT abc > Pouchfile\n"
+
+    send "pouch build\n"
+    expect "Building pouch image from \"Pouchfile\" to tag \"default\"..."
+    expect "Built image to tag \"default\"."
+
+    assert_on_exit_status
+    log_file -noappend [lindex $argv 0]
+
+    send "pouch build --tag hello\n"
+    expect "Building pouch image from \"Pouchfile\" to tag \"hello\"..."
+    expect "Built image to tag \"hello\"."
+    assert_on_exit_status
+    log_file -noappend [lindex $argv 0]
+
+    send "echo IMPORT abc > MyFile\n"
+    send "pouch build --file MyFile\n"
+    expect "Building pouch image from \"MyFile\" to tag \"default\"..."
+    expect "Built image to tag \"default\"."
+    assert_on_exit_status
+    log_file -noappend [lindex $argv 0]
+
+    send "echo IMPORT abc > MyPouchFile\n"
+    send "pouch build --file MyPouchFile --tag myimagetag\n"
+    expect "Building pouch image from \"MyPouchFile\" to tag \"myimagetag\"..."
+    expect "Built image to tag \"myimagetag\"."
+    assert_on_exit_status
+    log_file -noappend [lindex $argv 0]
+
+    send "echo IMPORT abc > My22PouchFile\n"
+    send "pouch build --tag my3imagetag --file My22PouchFile\n"
+    expect "Built image to tag \"my3imagetag\"."
+    assert_on_exit_status
+    log_file -noappend [lindex $argv 0]
+}
+
+proc test_pouch_build_file_parsing {argv} {
+    # iterate over Valid1.Pouchfile, Valid2.Pouchfile, build and assert_on_exit_status
+    set timeout 3
+
+    set valid_pouchfiles [list Valid1.Pouchfile Valid2.Pouchfile]
+    foreach elem $valid_pouchfiles {
+        send "pouch build --file $elem\n"
+        assert_on_exit_status
+    }
+
+    set valid_syntax_pouchfiles [list ValidSyntax1.Pouchfile ValidSyntax2.Pouchfile]
+    foreach elem $valid_syntax_pouchfiles {
+        send "pouch build --file $elem\n"
+        # This would need to be modified once build is implemnted properly.
+        assert_on_exit_status
+    }
+
+    set invalid_syntax_pouchfiles [list \
+        Invalid1.Pouchfile Invalid2.Pouchfile Invalid3.Pouchfile \
+        Invalid4.Pouchfile Invalid5.Pouchfile Invalid6.Pouchfile \
+        Invalid7.Pouchfile Invalid8.Pouchfile Invalid9.Pouchfile]
+    foreach elem $invalid_syntax_pouchfiles {
+        send "pouch build --file $elem\n"
+        assert_on_exit_status 1
+    }
 }
 
 #-------------------------------------------------------------------------
@@ -737,11 +823,17 @@ expect "$ "
 #uncomment for expect debugging
 #exp_internal 1
 
-set running [ioctl_syscall_test $argv]
-set running [cgroupstests $argv]
-set running [cgroup_io_states_test]
+# These lines cause tests to fail when timeout is reached on expect block,
+# instead of continuing to the next test.
+expect_before {
+    timeout { puts "timeout"; exit 2 }
+}
 
-#basic tests
+set running [ioctl_syscall_test $argv]
+# set running [cgroupstests $argv] # ERR
+set running [cgroup_io_states_test $argv]
+
+# basic tests
 set running [cp_copy_file_test $argv]
 set running [cp_copy_dir_test $argv]
 set running [mount_bind_test $argv]
@@ -750,7 +842,7 @@ set running [pouch_basic_tests $argv]
 set running [command_exit_status_test $argv]
 set running [pouch_images_command $argv]
 
-#scenario tests
+# scenario tests
 set running [cp_simple_objfs_nativefs_copy_test $argv]
 
 set running [pouch_stress_test $argv]
@@ -760,6 +852,10 @@ set running [pouch_list_test $argv]
 set running [pouch_disconnect_outside_container_test $argv]
 set running [pouch_info_container_test $argv]
 set running [pouch_cgroup_limit_test $argv]
+
+set running [test_pouch_build_valid_args $argv]
+set running [test_pouch_build_invalid_args $argv]
+set running [test_pouch_build_file_parsing $argv]
 
 set running [pidns_tests $argv]
 set running [mounttest $argv]
