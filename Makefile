@@ -235,20 +235,28 @@ UPROGS=\
     _pouch\
     _ctrl_grp\
     _demo_pid_ns\
-    _demo_mount_ns\
-    $(UPROGS_TESTS)
+    _demo_mount_ns
+
+UPROGS += $(UPROGS_TESTS)
+
+TEST_ASSETS=
+
+# Add test pouchfiles to the list of test assets, if the TEST_POUCHFILES env is set to 1
+ifeq ($(TEST_POUCHFILES), 1)
+	TEST_ASSETS += $(wildcard tests/pouchfiles/*)
+endif
 
 INTERNAL_DEV=\
 	internal_fs_a\
 	internal_fs_b\
-	internal_fs_c\
+	internal_fs_c
 
 internal_fs_%: mkfs
 	dd if=/dev/zero of=$@ count=80
 	./mkfs $@ 1
 
 fs.img: mkfs README $(INTERNAL_DEV)  $(UPROGS) _pouch # $(UPROGS)
-	./mkfs fs.img 0 README $(UPROGS) $(INTERNAL_DEV)
+	./mkfs fs.img 0 README $(UPROGS) $(INTERNAL_DEV) $(TEST_ASSETS)
 
 -include *.d
 
