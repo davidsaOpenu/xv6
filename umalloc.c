@@ -24,6 +24,11 @@ static Header *freep;
 void free(void *ap) {
   Header *bp, *p;
 
+  /* Standard modern free() ignores NULL calls. */
+  if (ap == NULL) {
+    return;
+  }
+
   bp = (Header *)ap - 1;
   for (p = freep; !(bp > p && bp < p->s.ptr); p = p->s.ptr)
     if (p >= p->s.ptr && (bp > p || bp < p->s.ptr)) break;
