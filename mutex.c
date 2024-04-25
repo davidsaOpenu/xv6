@@ -5,14 +5,28 @@
 
 #define MUTEX_RETRY_MS (10)
 
+int mutex_init_named(mutex_t *const mutex_var, const char *const name) {
+  char *buffer = NULL;
+  uint name_len = 0;
+
+  if (NULL == mutex_var || name == NULL) return MUTEX_INVALID_PARAMETER;
+
+  name_len = strlen(name);
+  if (name_len > MAX_INT_ASCII_DIGITS || name_len < 1)
+    return MUTEX_INVALID_PARAMETER;
+
+  buffer = mutex_var->buffer;
+
+  *buffer = '\0';
+  strcat(buffer, MUTEX_PREFIX);
+  strcat(buffer, name);
+
+  return MUTEX_SUCCESS;
+}
+
 /* Init a unique mutex. */
 int mutex_init(mutex_t *mutex_var) {
   int timeid;
-  char *buffer = NULL;
-
-  if (NULL == mutex_var) return MUTEX_INVALID_PARAMETER;
-
-  buffer = mutex_var->buffer;
 
   // Using uptime() to have a unique mutex filename as
   //    xv6 doesn't support nanoseconds resolution.
@@ -20,13 +34,16 @@ int mutex_init(mutex_t *mutex_var) {
     return MUTEX_UPTIME_ERROR;
   }
 
-  strcpy(buffer, MUTEX_PREFIX);
-  buffer += sizeof(MUTEX_PREFIX) - 1;
+  // Timestamp to string
+  char timeid_str[MAX_INT_ASCII_DIGITS + 1];
+  itoa(timeid_str, timeid);
 
-  itoa(buffer, timeid);
+  int res = mutex_init_named(mutex_var, timeid_str);
+  if (res != MUTEX_SUCCESS) return res;
+
   sleep(1);  // Skip tick - otherwise, we got the same tick in tests.
 
-  return MUTEX_SUCCESS;
+  return res;
 }
 
 /* Locks a mutex if unlocked, sleep otherwise - res might indicates an error. */
