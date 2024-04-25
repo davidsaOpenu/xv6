@@ -22,3 +22,4 @@ internal_fs_*
 cppcheck-report/
 cppcheck.xml
 required_changes.txt
+vectortests
