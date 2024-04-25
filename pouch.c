@@ -6,8 +6,38 @@
 #include "ns_types.h"
 #include "param.h"
 #include "stat.h"
-#include "types.h"
 #include "user.h"
+
+/*
+ *   Helper consts
+ */
+enum POUCH_INTERNAL_STATUS_CODES {
+  SUCCESS_CODE = 0,
+  END_OF_FILE_CODE = 1,
+  ERROR_CODE = -1
+};
+#define LINE_BUFFER_SIZE 1024
+#define POUCHFILE_IMPORT_TOKEN "IMPORT"
+#define POUCHFILE_RUN_TOKEN "RUN"
+
+/*
+ * Command line options
+ */
+#define POUCH_CMD_ARG_IMAGES "images"
+#define POUCH_CMD_ARG_BUILD "build"
+
+/*
+ *   Helper types
+ */
+struct pouchfile_command {
+  char* command;
+  struct pouchfile_command* next;
+};
+
+struct pouchfile {
+  char* image_name;
+  struct pouchfile_command* commands_list_head;
+};
 
 /*
  *   Helper functions
@@ -19,6 +49,296 @@ static void empty_string(char* s, int length) {
 void panic(char* s) {
   printf(stderr, "%s\n", s);
   exit(1);
+}
+
+static int is_whitespace(const char c) {
+  return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f';
+}
+
+/*
+ *   Pouchfile functions
+ */
+static int next_line(const int pouchfile_fd, char** const line,
+                     int* const count) {
+  int exit_code = SUCCESS_CODE;
+  *count = 0;
+  *line = (char*)malloc(sizeof(char) * LINE_BUFFER_SIZE);
+  if (*line == NULL) {
+    return ERROR_CODE;
+  }
+
+  int allocated_line_length = LINE_BUFFER_SIZE;
+  char current = 0;
+  int index = 0;
+
+  int read_ret = 0;
+  bool started_read = false;
+  while ((read_ret = read(pouchfile_fd, &current, 1)) > 0) {
+    /* Skip initial whitespace */
+    if (!started_read) {
+      if (is_whitespace(current)) {
+        continue;
+      }
+      started_read = true;
+    }
+
+    if (current == '\n' || current == '\0') {
+      break;
+    }
+
+    (*line)[index] = current;
+    ++index;
+
+    if (index == allocated_line_length) {
+      const int last_line_length = allocated_line_length;
+      allocated_line_length += LINE_BUFFER_SIZE;
+      char* new_line = (char*)malloc(sizeof(char) * allocated_line_length);
+      if (new_line == NULL) {
+        goto exit_error;
+      }
+
+      memmove(new_line, *line, last_line_length);
+      free(*line);
+      *line = new_line;
+    }
+  }
+
+  if (read_ret == 0) {
+    exit_code = END_OF_FILE_CODE;
+  }
+  (*line)[index] = '\0';
+  *count = index;
+  return exit_code;
+
+exit_error:
+  free(*line);
+  *line = NULL;
+  return ERROR_CODE;
+}
+
+static int pouchfile_init(struct pouchfile** const pouchfile,
+                          const char* const image_name) {
+  *pouchfile = NULL;
+
+  if (image_name == NULL) {
+    printf(stderr, "Empty image name!\n");
+    goto error_image_name;
+  }
+
+  int image_name_length = strlen(image_name);
+  if (image_name_length == 0) {
+    printf(stderr, "Empty image name!\n");
+    goto error_image_name;
+  }
+
+  *pouchfile = (struct pouchfile*)malloc(sizeof(struct pouchfile));
+  if (*pouchfile == NULL) {
+    printf(stderr, "Pouchfile struct alloc failed!\n");
+    return ERROR_CODE;
+  }
+
+  (*pouchfile)->image_name =
+      (char*)malloc(sizeof(char) * (image_name_length + 1));
+  if ((*pouchfile)->image_name == NULL) {
+    printf(stderr, "Image name alloc failed!\n");
+    goto error_image_name;
+  }
+
+  strcpy((*pouchfile)->image_name, image_name);
+  (*pouchfile)->commands_list_head = NULL;
+  return SUCCESS_CODE;
+
+error_image_name:
+  free(pouchfile);
+  return ERROR_CODE;
+}
+
+static void pouchfile_destroy(struct pouchfile** const pouchfile) {
+  free((*pouchfile)->image_name);
+  struct pouchfile_command* current_command = (*pouchfile)->commands_list_head;
+  while (current_command != NULL) {
+    struct pouchfile_command* const to_free = current_command;
+    current_command = current_command->next;
+    free(to_free->command);
+    free(to_free);
+  }
+
+  *pouchfile = NULL;
+}
+
+static int pouchfile_add_command(struct pouchfile* const pouchfile,
+                                 const char* const command_string) {
+  const int new_command_length = strlen(command_string);
+  if (new_command_length == 0) {
+    return SUCCESS_CODE;
+  }
+
+  struct pouchfile_command* const new_command =
+      (struct pouchfile_command*)malloc(sizeof(struct pouchfile_command));
+  if (new_command == NULL) {
+    return ERROR_CODE;
+  }
+
+  char* const new_command_string =
+      (char*)malloc(sizeof(char) * (new_command_length + 1));
+  if (new_command_string == NULL) {
+    goto error_new_command;
+  }
+
+  strcpy(new_command_string, command_string);
+  new_command->command = new_command_string;
+  new_command->next = NULL;
+  if (pouchfile->commands_list_head == NULL) {
+    pouchfile->commands_list_head = new_command;
+  } else {
+    struct pouchfile_command* current = pouchfile->commands_list_head;
+    while (current->next != NULL) {
+      current = current->next;
+    }
+
+    current->next = new_command;
+  }
+
+  return SUCCESS_CODE;
+
+error_new_command:
+  free(new_command);
+  return ERROR_CODE;
+}
+
+static char* pouchfile_skip_cmd(char* line, const char* pouchfile_token) {
+  char* const end_of_original_line = line + strlen(line);
+
+  char* next_token = strtok_r(line, " \t\n\r\f", NULL);
+  if (next_token == NULL) {
+    return NULL;
+  }
+  if (strcmp(next_token, pouchfile_token) == 0) {
+    char* to_return = next_token + strlen(next_token);
+    // Skip whitespace after token, if there are some.
+    while (to_return < end_of_original_line && is_whitespace(*to_return)) {
+      ++to_return;
+    }
+    if (to_return < end_of_original_line)
+      return to_return + 1;
+    else
+      return to_return;
+  }
+
+  return NULL;
+}
+
+static int pouch_pouchfile_parse(const char* const pouchfile_path,
+                                 struct pouchfile** const pouchfile) {
+  int exit_code = SUCCESS_CODE;
+  const int pouchfile_fd = open(pouchfile_path, O_RDONLY);
+  if (pouchfile_fd < 0) {
+    printf(stderr, "Failed to open pouchfile %s\n", pouchfile_path);
+    return ERROR_CODE;
+  }
+
+  char* import_line = NULL;
+  int import_line_length = 0;
+  enum POUCH_INTERNAL_STATUS_CODES read_line_code = SUCCESS_CODE;
+
+  /* Extract import, skip empty lines, break on end-of-file. */
+  while (read_line_code == SUCCESS_CODE) {
+    if ((read_line_code = next_line(pouchfile_fd, &import_line,
+                                    &import_line_length)) == ERROR_CODE) {
+      printf(stderr, "Failed to read import line from Pouchfile\n");
+      goto image_line_error;
+    }
+    if (import_line_length > 0) {
+      break;
+    }
+  }
+
+  if (import_line_length == 0) {
+    printf(stderr, "No import line found in Pouchfile\n");
+    exit_code = ERROR_CODE;
+    goto pouchfile_creation_error;
+  }
+
+  char* const image_name_start =
+      pouchfile_skip_cmd(import_line, POUCHFILE_IMPORT_TOKEN);
+  if (image_name_start == NULL) {
+    printf(stderr,
+           "Failed to find import directive in first line of Pouchfile: %s\n",
+           import_line);
+    exit_code = ERROR_CODE;
+    goto pouchfile_creation_error;
+  }
+  if (*image_name_start == '\0' ||
+      import_line + import_line_length < image_name_start) {
+    printf(stderr,
+           "Failed to find image name for import directive in first line of "
+           "Pouchfile: %s\n",
+           import_line);
+    exit_code = ERROR_CODE;
+    goto pouchfile_creation_error;
+  }
+
+  if (pouchfile_init(pouchfile, image_name_start) == ERROR_CODE) {
+    printf(stderr, "Failed to init pouchfile struct\n");
+    exit_code = ERROR_CODE;
+    goto pouchfile_creation_error;
+  }
+
+  free(import_line);
+  import_line = NULL;
+
+  char* run_command_line = NULL;
+  int run_command_line_length = 0;
+  int extract_line_status = SUCCESS_CODE;
+  while (extract_line_status == SUCCESS_CODE) {
+    if ((extract_line_status = next_line(pouchfile_fd, &run_command_line,
+                                         &run_command_line_length)) ==
+        ERROR_CODE) {
+      printf(stderr, "Failed to extract run line from Pouchfile\n");
+      exit_code = ERROR_CODE;
+      goto pouch_commands_error;
+    }
+
+    if (run_command_line_length == 0) {
+      goto skip_line;
+    }
+
+    char* const run_command_start =
+        pouchfile_skip_cmd(run_command_line, POUCHFILE_RUN_TOKEN);
+    if (run_command_start == NULL) {
+      printf(stderr,
+             "Failed to find run directive in first line of Pouchfile\n");
+      exit_code = ERROR_CODE;
+      goto pouch_commands_add_error;
+    }
+    if (*run_command_start == '\0') {
+      printf(stderr,
+             "Failed to find run argument in first line of Pouchfile\n");
+      exit_code = ERROR_CODE;
+      goto pouch_commands_error;
+    }
+
+    if (pouchfile_add_command(*pouchfile, run_command_start) == ERROR_CODE) {
+      exit_code = ERROR_CODE;
+      goto pouch_commands_error;
+    }
+
+  skip_line:
+    free(run_command_line);
+  }
+  run_command_line = NULL;
+
+pouch_commands_add_error:
+  free(run_command_line);
+pouch_commands_error:
+  if (exit_code != SUCCESS_CODE) {
+    pouchfile_destroy(pouchfile);
+  }
+pouchfile_creation_error:
+  free(import_line);
+image_line_error:
+  close(pouchfile_fd);
+  return exit_code;
 }
 
 /*
@@ -525,6 +845,19 @@ static int print_help_inside_cnt() {
   return retval;
 }
 
+void print_pouch_build_help() {
+  printf(
+      stderr,
+      "       pouch build [--file filename=Pouchfile] [--tag Tag=default]\n");
+  printf(
+      stderr,
+      "          : build a new pouch image using the specified parameters\n");
+  printf(stderr,
+         "          - {--file} : The pouch file name to use for building the "
+         "container.\n");
+  printf(stderr, "          - {--tag} : The tag to use for the output image\n");
+}
+
 void print_help_outside_cnt() {
   printf(stderr, "\nPouch commands outside containers:\n");
   printf(stderr, "       pouch start {name}\n");
@@ -550,6 +883,10 @@ void print_help_outside_cnt() {
   printf(stderr,
          "          - [value] : argument for the state-object, multiple values "
          "delimited by ','\n");
+  printf(stderr, "      \npouch images:\n");
+  printf(stderr, "       pouch images\n");
+  printf(stderr, "          : list pouch images in the system.\n");
+  print_pouch_build_help();
 }
 
 static int create_pouch_cgroup(char* cg_cname, char* cname) {
@@ -640,6 +977,28 @@ static int print_cinfo(char* container_name, char* tty_name, int pid) {
   return 0;
 }
 
+static int pouch_build(char* file_name, char* tag) {
+  if (!tag) {
+    tag = "default";  // todo: getcwd?
+  }
+  if (!file_name) {
+    file_name = "Pouchfile";
+  }
+  printf(stderr, "Building pouch image from \"%s\" to tag \"%s\"...\n",
+         file_name, tag);
+  struct pouchfile* pouchfile = NULL;
+  if (pouch_pouchfile_parse(file_name, &pouchfile) == ERROR_CODE) {
+    printf(stderr, "Error parsing Pouchfile %s\n", file_name);
+    return ERROR_CODE;
+  }
+  // Future: Implement image construction!
+  (void)pouchfile;
+
+  pouchfile_destroy(&pouchfile);
+  printf(stderr, "Built image to tag \"%s\".\n", tag);
+  return 0;
+}
+
 int main(int argc, char* argv[]) {
   enum p_cmd cmd = START;
   char container_name[CNTNAMESIZE];
@@ -659,7 +1018,8 @@ int main(int argc, char* argv[]) {
     }
     strcpy(container_name, argv[2]);
   } else if (argc == 2) {
-    if (strcmp(argv[1], "images") != 0) {
+    if (strcmp(argv[1], POUCH_CMD_ARG_IMAGES) != 0 &&
+        strcmp(argv[1], POUCH_CMD_ARG_BUILD) != 0) {
       if (ppid == 1 && get_connected_cname(container_name) < 0) {
         print_help_inside_cnt();
         exit(1);
@@ -697,8 +1057,10 @@ int main(int argc, char* argv[]) {
     } else if ((strcmp(argv[1], "list")) == 0 &&
                (strcmp(argv[2], "all")) == 0) {
       cmd = LIST;
-    } else if ((strcmp(argv[1], "images")) == 0) {
+    } else if ((strcmp(argv[1], POUCH_CMD_ARG_IMAGES)) == 0) {
       cmd = IMAGES;
+    } else if ((strcmp(argv[1], POUCH_CMD_ARG_BUILD)) == 0) {
+      cmd = BUILD;
     } else {
       if (ppid == 1)
         print_help_inside_cnt();
@@ -719,33 +1081,77 @@ int main(int argc, char* argv[]) {
 
     // Inside the container the are only few commands permitted, disable others.
     if (ppid == 1 && cmd != LIMIT && cmd != DISCONNECT /* && cmd != LIST*/
-        && cmd != INFO) {
+        && cmd != INFO && cmd != IMAGES && cmd != BUILD) {
       if (cmd == START) {
         printf(1, "Nesting containers is not supported.\n");
-        exit(1);
+        goto error_exit;
       } else if (cmd == CONNECT) {
         printf(1, "Nesting containers is not supported.\n");
-        exit(1);
+        goto error_exit;
       } else if (cmd == DESTROY) {
         printf(1, "Container can't be destroyed while connected.\n");
-        exit(1);
+        goto error_exit;
       } else if (cmd == LIST) {
         if (print_help_inside_cnt() < 0) {
-          exit(1);
+          goto error_exit;
         }
       }
     } else {
       // command execution
       if (cmd == LIMIT && argc == 5) {
         if (pouch_limit_cgroup(container_name, argv[3], argv[4]) < 0) {
-          exit(1);
+          goto error_exit;
         }
+      } else if (cmd == BUILD) {
+        char* pouch_file_name = 0;
+        char* image_tag = 0;
+        char** options = &argv[2];
+        /* Parse build options: --file, --tag */
+        while (options < argv + argc) {
+          if (strcmp(*options, "--file") == 0) {
+            if (options + 1 >= argv + argc) {
+              printf(stderr, "Error: Expected file name after --file\n");
+              goto pouch_build_args_error;
+            }
+            if (pouch_file_name) {
+              printf(stderr,
+                     "Error: Specified more than one --file argument.\n");
+              goto pouch_build_args_error;
+            }
+            pouch_file_name = *(++options);
+          } else if (strcmp(*options, "--tag") == 0) {
+            if (options + 1 >= argv + argc) {
+              printf(stderr, "Error: Expected tag name after --tag\n");
+              goto pouch_build_args_error;
+            }
+            if (image_tag) {
+              printf(stderr,
+                     "Error: Specified more than one --tag argument.\n");
+              goto pouch_build_args_error;
+            }
+            image_tag = *(++options);
+          } else {
+            printf(stderr, "Error: Unexpected argument %s!\n", *options);
+            goto pouch_build_args_error;
+          }
+          ++options;
+        }
+        if (pouch_build(pouch_file_name, image_tag) < 0) {
+          goto error_exit;
+        }
+        goto ok_exit;
+      pouch_build_args_error:
+        printf(stderr, "\n");
+        print_pouch_build_help();
+        goto error_exit;
       } else if (pouch_cmd(container_name, image_name, pouch_file, cmd) < 0) {
         printf(1, "Pouch: operation failed.\n");
-        exit(1);
+        goto error_exit;
       }
     }
   }
-
+ok_exit:
   exit(0);
+error_exit:
+  exit(1);
 }

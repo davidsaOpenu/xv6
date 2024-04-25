@@ -1,0 +1,13 @@
+
+IMPORT hoho:kkkk
+
+RUN a b c d e f a b c d e f a b c d e f a b c d e f a b c d e f a b c d e f a b c d e f a b c d e f
+RUN a | a | c | k
+RUN nlll && aaa
+
+
+
+
+
+
+RUN a && b | c && k, 'dasdsa' ""lllll

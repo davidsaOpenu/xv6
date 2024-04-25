@@ -22,3 +22,7 @@ internal_fs_*
 cppcheck-report/
 cppcheck.xml
 required_changes.txt
+vectortests
+windows-debugging/
+*.log
+.idea/
