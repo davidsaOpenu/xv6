@@ -94,6 +94,30 @@
       },
       "revId": "75155d865d8fbd2a6bc7b89c7920ed7e45dc20a7",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e96997b2_b40467ef",
+        "filename": "runtests.exp",
+        "patchSetId": 4
+      },
+      "lineNbr": 254,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-04-26T15:25:03Z",
+      "side": 1,
+      "message": "Indeed, you\u0027re correct. A bind mount does not hide od1_aux. Below is a simple script that functions with two file systems under Linux. Please review the create_nested_directories function. It accomplishes what I initially intended for xv6. The `setup` and `rollback_device` functions are meant only for Linux.\"\n\n```\n#!/bin/bash\n\n# Define sizes in megabytes\nSIZE_MB\u003d500  # Increased size to meet the mkfs.xfs requirement\n\n# Define image and mount paths\nXFS_IMG\u003d\"/tmp/xfs.img\"\nNTFS_IMG\u003d\"/tmp/ntfs.img\"\nXFS_MOUNT\u003d\"/tmp/xfs\"\nNTFS_MOUNT\u003d\"/tmp/ntfs\"\n\nsetup() {\n    # free loop devices\n    losetup -D\n    \n    # install xfs and ntfs packages\n    dnf install xfsprogs ntfs-3g\n    \n    # Create files\n    dd if\u003d/dev/zero of\u003d$XFS_IMG bs\u003d1M count\u003d$SIZE_MB\n    dd if\u003d/dev/zero of\u003d$NTFS_IMG bs\u003d1M count\u003d$SIZE_MB\n\n    # Setup loop devices\n    LOOP_XFS\u003d$(losetup -f --show $XFS_IMG)\n    LOOP_NTFS\u003d$(losetup -f --show $NTFS_IMG)\n\n    # Format the devices\n    if ! mkfs.xfs $LOOP_XFS; then\n        echo \"Failed to format XFS filesystem.\"\n        exit 1\n    fi\n    if ! mkfs.ntfs -F $LOOP_NTFS; then\n        echo \"Failed to format NTFS filesystem.\"\n        exit 1\n    fi\n\n    # Create mount points\n    mkdir -p $XFS_MOUNT $NTFS_MOUNT\n\n    # Mount the filesystems\n    if ! mount -o loop $LOOP_XFS $XFS_MOUNT; then\n        echo \"Failed to mount XFS filesystem.\"\n        exit 1\n    fi\n    if ! mount -o loop $LOOP_NTFS $NTFS_MOUNT; then\n        echo \"Failed to mount NTFS filesystem.\"\n        exit 1\n    fi\n\n    echo \"XFS and NTFS filesystems successfully mounted on $XFS_MOUNT and $NTFS_MOUNT respectively\"\n}\n\nrollback_devices() {\n    # Find loop devices associated with the image files dynamically\n    LOOP_XFS\u003d$(losetup -l | grep $XFS_IMG | awk \u0027{print $1}\u0027)\n    LOOP_NTFS\u003d$(losetup -l | grep $NTFS_IMG | awk \u0027{print $1}\u0027)\n\n    # Unmount filesystems\n    if mountpoint -q $XFS_MOUNT; then\n        umount $XFS_MOUNT\n    fi\n    if mountpoint -q $NTFS_MOUNT; then\n        umount $NTFS_MOUNT\n    fi\n\n    # Detach loop devices if they were found\n    if [ -n \"$LOOP_XFS\" ]; then\n        losetup -d $LOOP_XFS\n    fi\n    if [ -n \"$LOOP_NTFS\" ]; then\n        losetup -d $LOOP_NTFS\n    fi\n\n    # Remove image files\n    rm -f $XFS_IMG $NTFS_IMG\n\n    # Remove mount directories\n    rmdir $XFS_MOUNT $NTFS_MOUNT\n\n    echo \"Cleanup complete. Filesystems unmounted, loop devices detached, and files removed.\"\n}\n\n\ncreate_nested_directories() {\n    local N\u003d3  # Number of nested folders\n    \n    # initail path variables\n    local xfs_path\u003d\"/tmp/xfs\"\n    local ntfs_path\u003d\"/tmp/ntfs\"\n    local x_path\u003d\"/tmp\"\n    local n_path\u003d\"/tmp\"\n    local mix_path\u003d\"/tmp\"\n    \n    \n    # Create directories and text files\n    for i in $(seq 1 $N); do\n        xfs_path\u003d\"$xfs_path/x$i\"\n        ntfs_path\u003d\"$ntfs_path/n$i\"\n        mkdir -p \"$xfs_path\"\n        mkdir -p \"$ntfs_path\"\n        echo \"x$i\" \u003e \"$xfs_path/x$i.txt\"\n        echo \"n$i\" \u003e \"$ntfs_path/n$i.txt\"\n    done\n\n \n    # Reset paths for binding\n    xfs_path\u003d\"/tmp/xfs\"\n    ntfs_path\u003d\"/tmp/ntfs\"\n    mix_path\u003d\"/tmp\"\n\n    # Bind mounts in nested structure /tmp/x1/n1/x2/n2/../xN/nN\n    for i in $(seq 1 $N); do\n        xfs_path\u003d\"$xfs_path/x$i\"\n        ntfs_path\u003d\"$ntfs_path/n$i\"\n        \n        mix_path\u003d\"$mix_path/x$i\"\n        mkdir -p \"$mix_path\"\n\tmount --bind \"$xfs_path\" \"$mix_path\"\n\t\n\tmix_path\u003d\"$mix_path/n$i\"\n\tmkdir -p \"$mix_path\"\n\tmount --bind \"$ntfs_path\" \"$mix_path\"\n    done\n\n\n    # Reset paths for vefirication\n    xfs_path\u003d\"/tmp/xfs\"\n    ntfs_path\u003d\"/tmp/ntfs\"\n    mix_path\u003d\"/tmp\"\n    \n    \n    # Verification of file contents\n    for i in $(seq 1 $N); do\n        mix_path\u003d\"$mix_path/x$i\"\n        x_content\u003d$(cat \"$mix_path/x$i.txt\")\n        \n        mix_path\u003d\"$mix_path/n$i\"\n        n_content\u003d$(cat \"$mix_path/n$i.txt\")\n        \n        if [ \"$x_content\" !\u003d \"x$i\" ]; then\n            echo \"Verification failed for x$i.txt\"\n            exit 1\n        fi\n        \n        if [ \"$n_content\" !\u003d \"n$i\" ]; then\n            echo \"Verification failed for n$i.txt\"\n            exit 1\n        fi\n    done\n\n    echo \"All files verified successfully.\"\n}\n\n\n# Main entry point\nif [ \"$(id -u)\" -ne 0 ]; then\n  echo \"This script must be run as root\"\n  exit 1\nfi\n\n\n\n# Command line argument processing\ncase \"$1\" in\n    setup)\n        setup\n        ;;\n    rollback)\n        rollback_devices\n        ;;\n    create-nested)\n        create_nested_directories\n        ;;\n    *)\n        echo \"Usage: $0 {setup|rollback|create-nested}\"\n        exit 1\n        ;;\nesac\n\n```",
+      "parentUuid": "15564a3c_8ffbc236",
+      "range": {
+        "startLine": 254,
+        "startChar": 5,
+        "endLine": 254,
+        "endChar": 37
+      },
+      "revId": "75155d865d8fbd2a6bc7b89c7920ed7e45dc20a7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
