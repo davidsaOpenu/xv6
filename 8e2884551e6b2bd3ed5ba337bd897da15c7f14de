@@ -1,0 +1,188 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d079e040_9be9ba58",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-04-26T15:52:05Z",
+      "side": 1,
+      "message": "Adding the binary  vectortests directly to .gitignore seems more straightforward",
+      "range": {
+        "startLine": 8,
+        "startChar": 0,
+        "endLine": 8,
+        "endChar": 97
+      },
+      "revId": "8e2884551e6b2bd3ed5ba337bd897da15c7f14de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "47fb177d_7240a09d",
+        "filename": "Makefile",
+        "patchSetId": 1
+      },
+      "lineNbr": 389,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-04-26T15:52:05Z",
+      "side": 1,
+      "message": "Consistency is affected.",
+      "range": {
+        "startLine": 388,
+        "startChar": 0,
+        "endLine": 389,
+        "endChar": 15
+      },
+      "revId": "8e2884551e6b2bd3ed5ba337bd897da15c7f14de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7f120357_3480b5f2",
+        "filename": "runtests.exp",
+        "patchSetId": 1
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-04-26T15:52:05Z",
+      "side": 1,
+      "message": "s/1/10",
+      "range": {
+        "startLine": 107,
+        "startChar": 24,
+        "endLine": 107,
+        "endChar": 25
+      },
+      "revId": "8e2884551e6b2bd3ed5ba337bd897da15c7f14de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b05e3db7_45449cf1",
+        "filename": "runtests.exp",
+        "patchSetId": 1
+      },
+      "lineNbr": 443,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-04-26T15:52:05Z",
+      "side": 1,
+      "message": "why this addition become necessary?",
+      "range": {
+        "startLine": 443,
+        "startChar": 4,
+        "endLine": 443,
+        "endChar": 11
+      },
+      "revId": "8e2884551e6b2bd3ed5ba337bd897da15c7f14de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2db0fd64_325c0ef5",
+        "filename": "runtests.exp",
+        "patchSetId": 1
+      },
+      "lineNbr": 445,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-04-26T15:52:05Z",
+      "side": 1,
+      "message": "same here",
+      "range": {
+        "startLine": 445,
+        "startChar": 0,
+        "endLine": 445,
+        "endChar": 11
+      },
+      "revId": "8e2884551e6b2bd3ed5ba337bd897da15c7f14de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "21aca3d1_e18a92f3",
+        "filename": "runtests.exp",
+        "patchSetId": 1
+      },
+      "lineNbr": 447,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-04-26T15:52:05Z",
+      "side": 1,
+      "message": "same here",
+      "range": {
+        "startLine": 447,
+        "startChar": 0,
+        "endLine": 447,
+        "endChar": 11
+      },
+      "revId": "8e2884551e6b2bd3ed5ba337bd897da15c7f14de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4ac2ca3a_13b376fa",
+        "filename": "runtests.exp",
+        "patchSetId": 1
+      },
+      "lineNbr": 714,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-04-26T15:52:05Z",
+      "side": 1,
+      "message": "nit 2x#",
+      "range": {
+        "startLine": 714,
+        "startChar": 0,
+        "endLine": 714,
+        "endChar": 3
+      },
+      "revId": "8e2884551e6b2bd3ed5ba337bd897da15c7f14de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e2389aa5_50261ce9",
+        "filename": "runtests.exp",
+        "patchSetId": 1
+      },
+      "lineNbr": 723,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-04-26T15:52:05Z",
+      "side": 1,
+      "message": "nit 2x#",
+      "range": {
+        "startLine": 723,
+        "startChar": 0,
+        "endLine": 723,
+        "endChar": 3
+      },
+      "revId": "8e2884551e6b2bd3ed5ba337bd897da15c7f14de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
