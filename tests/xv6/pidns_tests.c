@@ -378,7 +378,7 @@ int test_calling_fork_twice_after_unshare() {
     // child is pid 1
     assert_msg(getpid() == 1, "pid not equal to 1");
 
-    sleep(5); /*Changed to 5 to remove a zombie process appearing*/
+    sleep(5); /* Changed to 5 to remove a zombie process appearing */
 
     // pid 1 exits
     exit(0);
@@ -389,7 +389,7 @@ int test_calling_fork_twice_after_unshare() {
     // child is pid 2
     assert_msg(getpid() == 2, "pid not equal to 2");
 
-    // pid 1 exits
+    // pid 2 exits
     exit(0);
   }
 
