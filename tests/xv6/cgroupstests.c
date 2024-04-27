@@ -6,6 +6,7 @@
 #include "param.h"
 #include "types.h"
 #include "user.h"
+#include "wstatus.h"
 
 // for test.h
 #define PRINT(...) printf(1, __VA_ARGS__)
@@ -28,6 +29,9 @@ char suppress = 0;
 int failed = 0;
 
 char temp_path_g[MAX_PATH_LENGTH] = {0};
+
+// Must not be more than 10000000 or might raise integer overflow
+int TEST_CPU_DURATION = 1000000;
 
 // ######################################## Helper
 //  functions#######################
@@ -480,6 +484,171 @@ TEST(test_limiting_cpu_max_and_period) {
 
   // Disable cpu controller
   ASSERT_TRUE(disable_controller(CPU_CNT));
+}
+
+TEST(test_limiting_cpu_weight) {
+  // Enable cpu controller
+  ASSERT_TRUE(enable_controller(CPU_CNT));
+
+  // Check default weight
+  ASSERT_FALSE(strcmp(read_file(TEST_1_CPU_WEIGHT, 0), "weight - 100\n"));
+
+  // Update weight
+  ASSERT_TRUE(write_file(TEST_1_CPU_WEIGHT, "5000"));
+
+  // Check changes
+  ASSERT_FALSE(strcmp(read_file(TEST_1_CPU_WEIGHT, 0), "weight - 5000\n"));
+
+  // Update weight over max fails
+  ASSERT_FALSE(write_file(TEST_1_CPU_WEIGHT, "9999999"));
+
+  // Check changes
+  ASSERT_FALSE(strcmp(read_file(TEST_1_CPU_WEIGHT, 0), "weight - 5000\n"));
+
+  // Disable cpu controller
+  ASSERT_TRUE(disable_controller(CPU_CNT));
+}
+
+// How much cpu percent of the total cpu has the child used
+int test_child_cpu_percent() {
+  int time_before = uptime();
+  int child_cpu_time, parent_cpu_time;
+  int child_duration, parent_duration;
+  int parent_initial_cpu_time;
+  int wstatus;
+  int child_cpu_percentage;
+  int pid = fork();
+  // Child
+  if (pid == 0) {
+    // Move the child process to "/cgroup/test1/child1" cgroup.
+    if (!move_proc(CHILD_1_CGROUP_PROCS, getpid())) {
+      printf(1, "Failed to move child proc to %s\n", CHILD_1_CGROUP_PROCS);
+      exit(1);
+    }
+
+    child_cpu_time = ioctl(0, IOCTL_GET_PROCESS_CPU_TIME, 0);
+    while (child_cpu_time < TEST_CPU_DURATION) {
+      child_cpu_time = ioctl(0, IOCTL_GET_PROCESS_CPU_TIME, 0);
+    }
+
+    child_duration = uptime() - time_before;
+    temp_write(child_duration);
+
+    exit(0);
+  }
+  // father
+  // Move the parent process to "/cgroup/test1" cgroup.
+  if (!move_proc(TEST_1_CGROUP_PROCS, getpid())) {
+    printf(1, "Failed to move parent proc to %s", TEST_1_CGROUP_PROCS);
+    return -1;
+  }
+  parent_initial_cpu_time = ioctl(0, IOCTL_GET_PROCESS_CPU_TIME, 0);
+  parent_cpu_time = parent_initial_cpu_time;
+
+  while (parent_cpu_time - parent_initial_cpu_time < TEST_CPU_DURATION) {
+    parent_cpu_time = ioctl(0, IOCTL_GET_PROCESS_CPU_TIME, 0);
+  }
+  parent_duration = uptime() - time_before;
+
+  // Move the parent process back to "/cgroup" cgroup.
+  if (!move_proc(ROOT_CGROUP_PROCS, getpid())) {
+    printf(1, "Failed to move parent proc to %s", ROOT_CGROUP_PROCS);
+    return -1;
+  };
+
+  // Check that the process we returned is really in root cgroup.
+  if (!is_pid_in_group(ROOT_CGROUP_PROCS, getpid())) {
+    printf(1, "Parent proc's pid not in cgroup %s", ROOT_CGROUP_PROCS);
+    return -1;
+  }
+
+  // Wait for child to exit.
+
+  wait(&wstatus);
+  if (WEXITSTATUS(wstatus) != 0) {
+    printf(1, "Child proces failed with status %d", wstatus);
+    return -1;
+  };
+
+  // read child duration from file
+
+  child_duration = temp_read(0);
+  // Remove the temp file.
+  if (!temp_delete()) {
+    printf(1, "Failed to remove temp file");
+    return -1;
+  }
+
+  if (parent_duration > child_duration) {
+    child_cpu_percentage =
+        (parent_duration / (float)(child_duration * 2)) * 100;
+  } else {
+    child_cpu_percentage = 100 * (((2 * parent_duration) - child_duration) /
+                                  (float)(2 * parent_duration));
+  }
+
+  return child_cpu_percentage;
+}
+
+TEST(test_cpu_weight) {
+  char* parent_weight;
+  char* curr;
+  char* backup_parent_weight;
+  int child_cpu_percentage;
+  // create child cgroup
+  ASSERT_FALSE(mkdir(CHILD_1));
+
+  // Enable parent cpu controller - the parent have to enable controller first
+  ASSERT_TRUE(enable_controller(CPU_CNT));
+
+  // Enable child cpu controller
+  ASSERT_TRUE(write_file(CHILD_1_CGROUP_SUBTREE_CONTROL, "+cpu"));
+
+  parent_weight = read_file(TEST_1_CPU_WEIGHT, 0);
+  parent_weight[strlen(parent_weight) - 1] =
+      '\0';  // delete '\n' at end of string
+  curr = parent_weight + 1;
+
+  // set parent_weight to the last word in the string
+  while (*curr) {
+    if (*curr == ' ') {
+      parent_weight = curr + 1;  // word start after space
+    }
+    curr++;
+  }
+
+  // parent_weight point to a static buffer from read_file so we need to copy it
+  // to our own mem
+  backup_parent_weight = malloc(strlen(parent_weight) * sizeof(char));
+  strcpy(backup_parent_weight, parent_weight);
+  ASSERT_TRUE(backup_parent_weight);
+
+  // Use a large weight to make the other processes cpu use neglegable
+  ASSERT_TRUE(write_file(TEST_1_CPU_WEIGHT, "2000"));
+
+  ASSERT_TRUE(write_file(CHILD_1_CPU_WEIGHT, "300"));
+
+  child_cpu_percentage = test_child_cpu_percent();
+
+  // the child's cpu percentage should be around 75
+  ASSERT_TRUE(child_cpu_percentage > 65 && child_cpu_percentage < 85);
+
+  ASSERT_TRUE(write_file(CHILD_1_CPU_WEIGHT, "33"));
+
+  child_cpu_percentage = test_child_cpu_percent();
+
+  // the child's cpu percentage should be around 25
+  ASSERT_TRUE(child_cpu_percentage < 35 && child_cpu_percentage > 15);
+
+  ASSERT_TRUE(write_file(TEST_1_CPU_WEIGHT, backup_parent_weight));
+
+  // Disable child cpu controller - the child have to disable controller first
+  ASSERT_TRUE(write_file(CHILD_1_CGROUP_SUBTREE_CONTROL, "-cpu"));
+  // Disable parent cpu controller
+  ASSERT_TRUE(disable_controller(CPU_CNT));
+
+  // unlink child cgroup
+  ASSERT_FALSE(unlink(CHILD_1));
 }
 
 TEST(test_limiting_pids) {
@@ -2003,8 +2172,10 @@ int main(int argc, char* argv[]) {
   run_test(test_moving_process);
   run_test(test_enable_and_disable_all_controllers);
   run_test(test_limiting_pids);
+  run_test(test_limiting_cpu_weight);
   run_test(test_move_failure);
   run_test(test_fork_failure);
+  run_test(test_cpu_weight);
   run_test(test_cpu_stat);
   run_test(test_pid_current);
   run_test(test_setting_cpu_id);
