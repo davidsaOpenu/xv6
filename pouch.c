@@ -544,7 +544,7 @@ void print_help_outside_cnt() {
   printf(stderr, "      \ncontainers cgroups:\n");
   printf(stderr, "       pouch cgroup {cname} {state-object} [value]\n");
   printf(stderr, "          : limit given cgroup state-object\n");
-  printf(stderr, "          - {name} : container name\n");
+  printf(stderr, "          - {cname} : container name\n");
   printf(stderr,
          "          - {state-object} : cgroups state-object. Refer spec.\n");
   printf(stderr,
