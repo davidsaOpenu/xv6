@@ -102,7 +102,7 @@ int sys_ioctl(void) {
   int request = -1;
   int command;
 
-  int ret;
+  int ret, result;
   struct vfs_file *f;
   struct vfs_inode *ip;
 
@@ -144,7 +144,6 @@ int sys_ioctl(void) {
     return -1;
   }
 
-  int result;
   switch (request) {
     case IOCTL_GET_PROCESS_CPU_PERCENT:
       proc_lock();
@@ -156,7 +155,6 @@ int sys_ioctl(void) {
       result = myproc()->cpu_time;
       proc_unlock();
       return result;
-
     case TTYSETS:
       if ((command & DEV_DISCONNECT)) {
         tty_disconnect(ip);
