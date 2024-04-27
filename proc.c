@@ -506,6 +506,8 @@ void scheduler(void) {
   // Initialize the cpu account.
   cpu_account_initialize(&cpu);
 
+  cpu.cpu_id = c->apicid;
+
   for (;;) {
     // The amount of processes that have been scheduled in this run.
     unsigned int scheduled = 0;
@@ -521,6 +523,11 @@ void scheduler(void) {
 
     // Loop over process table looking for process to run.
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+      // If process is unused, continue.
+      if (p->state == UNUSED) {
+        continue;
+      }
+
       // Update proc information.
       cpu_account_schedule_proc_update(&cpu, p);
 
