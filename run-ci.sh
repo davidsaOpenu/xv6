@@ -7,7 +7,7 @@ NC='\033[0m' # No Color
 
 #########################################################################
 # clang-format
-# clang-format -style=google -dump-config > .clang-format
+clang-format -style=google -dump-config > .clang-format
 changed_files=$(find . -regex ".*\.[c|h]$" -exec clang-format -i {} \; \
     -exec git diff --name-only {} \;)
 
@@ -55,9 +55,8 @@ ERROR_CODE=20
 cppcheck --error-exitcode=${ERROR_CODE} \
     --inline-suppr --suppress=missingIncludeSystem \
     --enable=portability,information,performance,warning --inconclusive \
-    --suppress=checkLevelNormal -DSTORAGE_DEVICE_SIZE=1 "-I$(pwd)" \
-    --xml --xml-version=2 . 2> cppcheck.xml || \
-    { echo "${RED}Failed: please check cppcheck.xml for details.${NC}"; \
+    -DSTORAGE_DEVICE_SIZE=1 "-I$(pwd)" --xml --xml-version=2 . 2> cppcheck.xml \
+    || { echo "${RED}Failed: please check cppcheck.xml for details.${NC}"; \
     exit 1; }
 # Gerrit pluging creates htmlreports automatically from cppcheck.
 # cppcheck-htmlreport --file=cppcheck.xml --report-dir=cppcheck-report \
