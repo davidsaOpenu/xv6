@@ -97,6 +97,37 @@ int sys_usleep(void) {
   return 0;
 }
 
+static inline int ioctl_process_cpu(int request) {
+  int result;
+  proc_lock();
+  switch (request) {
+    case IOCTL_GET_PROCESS_CPU_PERCENT:
+      result = myproc()->cpu_percent;
+    case IOCTL_GET_PROCESS_CPU_TIME:
+      result = myproc()->cpu_time;
+  }
+  proc_unlock();
+  return result;
+}
+
+static inline void ioctl_tty_sets(struct vfs_inode *ip, int command) {
+  if ((command & DEV_DISCONNECT)) {
+    tty_disconnect(ip);
+  }
+
+  if ((command & DEV_CONNECT)) {
+    tty_connect(ip);
+  }
+
+  if ((command & DEV_ATTACH)) {
+    tty_attach(ip);
+  }
+
+  if ((command & DEV_DETACH)) {
+    tty_detach(ip);
+  }
+}
+
 int sys_ioctl(void) {
   int fd = -1;
   int request = -1;
@@ -109,6 +140,10 @@ int sys_ioctl(void) {
   if (argfd(0, &fd, &f) < 0 || argint(1, &request) < 0 ||
       argint(2, &command) < 0)
     return -1;
+
+  if (request == IOCTL_GET_PROCESS_CPU_PERCENT ||
+      request == IOCTL_GET_PROCESS_CPU_TIME)
+    return ioctl_process_cpu(request);
 
   if (!(command & DEV_CONNECT) && !(command & DEV_DISCONNECT) &&
       !(command & DEV_DETACH) && !(command & DEV_ATTACH)) {
@@ -144,35 +179,9 @@ int sys_ioctl(void) {
     return -1;
   }
 
-  int result;
   switch (request) {
-    case IOCTL_GET_PROCESS_CPU_PERCENT:
-      proc_lock();
-      result = myproc()->cpu_percent;
-      proc_unlock();
-      return result;
-    case IOCTL_GET_PROCESS_CPU_TIME:
-      proc_lock();
-      result = myproc()->cpu_time;
-      proc_unlock();
-      return result;
-
     case TTYSETS:
-      if ((command & DEV_DISCONNECT)) {
-        tty_disconnect(ip);
-      }
-
-      if ((command & DEV_CONNECT)) {
-        tty_connect(ip);
-      }
-
-      if ((command & DEV_ATTACH)) {
-        tty_attach(ip);
-      }
-
-      if ((command & DEV_DETACH)) {
-        tty_detach(ip);
-      }
+      ioctl_tty_sets(ip, command);
       break;
     case TTYGETS:
       ret = tty_gets(ip, command);
