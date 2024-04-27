@@ -59,7 +59,7 @@ if [ "$1" == "test" ]; then
     make build_oci
     # Run tests, dind required for building test oci images!
     docker run --mount type=bind,source="$(pwd)",target=/home/$(whoami)/xv6 \
-                --rm --privileged  $IMAGE_NAME \
+                --rm --privileged $IMAGE_NAME \
                 /home/$(whoami)/xv6/run-ci.sh
 elif [ "$1" == "interactive" ]; then
     # Run interactive command
