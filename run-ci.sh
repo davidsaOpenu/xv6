@@ -7,7 +7,7 @@ NC='\033[0m' # No Color
 
 #########################################################################
 # clang-format
-# clang-format -style=google -dump-config > .clang-format
+clang-format -style=google -dump-config > .clang-format
 changed_files=$(find . -regex ".*\.[c|h]$" -exec clang-format -i {} \; \
     -exec git diff --name-only {} \;)
 

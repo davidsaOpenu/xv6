@@ -21,6 +21,11 @@
 #define MAX_CGROUP_FILE_NAME_LENGTH \
   64  // maximum allowed length of cgroup file name
 #define MAX_PROC_FILE_NAME_LENGTH \
-  64  // maximum allowed length of proc file name
+  64                                 // maximum allowed length of proc file name
+#define MAX_CGROUP_CPU_WEIGHT 10000  // maximum allowed cpu weight
+#define MIN_CGROUP_CPU_WEIGHT 1      // minimum allowed cpu weight
+#define DEFAULT_CGROUP_CPU_WEIGHT 100  // default cpu weight
+#define DEFAULT_CPU_ACCOUNT_PERIOD_100MS \
+  1 * 100 * 1000  // default cpu account period - 100ms
 
 #endif /* XV6_PARAM_H */
