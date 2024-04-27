@@ -24,6 +24,47 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "29846411_3e132397",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-04-27T11:20:20Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "d079e040_9be9ba58",
+      "range": {
+        "startLine": 8,
+        "startChar": 0,
+        "endLine": 8,
+        "endChar": 97
+      },
+      "revId": "8e2884551e6b2bd3ed5ba337bd897da15c7f14de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8f0dd798_1598fc16",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-04-27T11:20:20Z",
+      "side": 1,
+      "message": "Going to apply ackd/done changes in the next patch set.\nReplied to all the comments, some has to be discussed - would like to have your help doing so.",
+      "revId": "8e2884551e6b2bd3ed5ba337bd897da15c7f14de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "47fb177d_7240a09d",
@@ -37,6 +78,30 @@
       "writtenOn": "2024-04-26T15:52:05Z",
       "side": 1,
       "message": "Consistency is affected.",
+      "range": {
+        "startLine": 388,
+        "startChar": 0,
+        "endLine": 389,
+        "endChar": 15
+      },
+      "revId": "8e2884551e6b2bd3ed5ba337bd897da15c7f14de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d59f7903_14e0dccf",
+        "filename": "Makefile",
+        "patchSetId": 1
+      },
+      "lineNbr": 389,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-04-27T11:20:20Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "47fb177d_7240a09d",
       "range": {
         "startLine": 388,
         "startChar": 0,
@@ -72,6 +137,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "d182b32a_814a8118",
+        "filename": "runtests.exp",
+        "patchSetId": 1
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-04-27T11:20:20Z",
+      "side": 1,
+      "message": "Actually, the reason I made this change is different. There pouch destroy container needs to be discussed too.\nIt expect a success message of container destroyed, but actually, the issue is that init also prints \"zombie\" on the destruction. That may lead to a mixed print of \"Pouch: c1 destroyed\" and \"zombie!\" - e.g. \"Pouch: c1zombie! destroyed.\nExpect will fail it. Running this test 10 times heavily. raises the chances for a failure.",
+      "parentUuid": "7f120357_3480b5f2",
+      "range": {
+        "startLine": 107,
+        "startChar": 24,
+        "endLine": 107,
+        "endChar": 25
+      },
+      "revId": "8e2884551e6b2bd3ed5ba337bd897da15c7f14de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "b05e3db7_45449cf1",
         "filename": "runtests.exp",
         "patchSetId": 1
@@ -83,6 +172,30 @@
       "writtenOn": "2024-04-26T15:52:05Z",
       "side": 1,
       "message": "why this addition become necessary?",
+      "range": {
+        "startLine": 443,
+        "startChar": 4,
+        "endLine": 443,
+        "endChar": 11
+      },
+      "revId": "8e2884551e6b2bd3ed5ba337bd897da15c7f14de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8bf11557_8d8b2349",
+        "filename": "runtests.exp",
+        "patchSetId": 1
+      },
+      "lineNbr": 443,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-04-27T11:20:20Z",
+      "side": 1,
+      "message": "Wanted to consult with you in this matter: It seems that sometime, the container starts asynchronously. Without waiting, running two pouch starts at the same time cause a race condition, and this test fails. Would like to discuss it further, and get some help.\nAny chance it has to do with https://trello.com/c/G3swzWVD/52-pouch-list-issue?",
+      "parentUuid": "b05e3db7_45449cf1",
       "range": {
         "startLine": 443,
         "startChar": 4,
@@ -116,6 +229,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "6021ae74_c4cabf6b",
+        "filename": "runtests.exp",
+        "patchSetId": 1
+      },
+      "lineNbr": 445,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-04-27T11:20:20Z",
+      "side": 1,
+      "message": "Discussion at #443",
+      "parentUuid": "2db0fd64_325c0ef5",
+      "range": {
+        "startLine": 445,
+        "startChar": 0,
+        "endLine": 445,
+        "endChar": 11
+      },
+      "revId": "8e2884551e6b2bd3ed5ba337bd897da15c7f14de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "21aca3d1_e18a92f3",
@@ -129,6 +266,30 @@
       "writtenOn": "2024-04-26T15:52:05Z",
       "side": 1,
       "message": "same here",
+      "range": {
+        "startLine": 447,
+        "startChar": 0,
+        "endLine": 447,
+        "endChar": 11
+      },
+      "revId": "8e2884551e6b2bd3ed5ba337bd897da15c7f14de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3860fca8_8614bb6d",
+        "filename": "runtests.exp",
+        "patchSetId": 1
+      },
+      "lineNbr": 447,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-04-27T11:20:20Z",
+      "side": 1,
+      "message": "Discussion at #443",
+      "parentUuid": "21aca3d1_e18a92f3",
       "range": {
         "startLine": 447,
         "startChar": 0,
@@ -162,6 +323,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "a9a2faa5_88d3d2fd",
+        "filename": "runtests.exp",
+        "patchSetId": 1
+      },
+      "lineNbr": 714,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-04-27T11:20:20Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4ac2ca3a_13b376fa",
+      "range": {
+        "startLine": 714,
+        "startChar": 0,
+        "endLine": 714,
+        "endChar": 3
+      },
+      "revId": "8e2884551e6b2bd3ed5ba337bd897da15c7f14de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "e2389aa5_50261ce9",
@@ -175,6 +360,30 @@
       "writtenOn": "2024-04-26T15:52:05Z",
       "side": 1,
       "message": "nit 2x#",
+      "range": {
+        "startLine": 723,
+        "startChar": 0,
+        "endLine": 723,
+        "endChar": 3
+      },
+      "revId": "8e2884551e6b2bd3ed5ba337bd897da15c7f14de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6153712b_919b8ecd",
+        "filename": "runtests.exp",
+        "patchSetId": 1
+      },
+      "lineNbr": 723,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-04-27T11:20:20Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "e2389aa5_50261ce9",
       "range": {
         "startLine": 723,
         "startChar": 0,
