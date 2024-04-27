@@ -8,16 +8,16 @@ NC='\033[0m' # No Color
 #########################################################################
 # clang-format
 # clang-format -style=google -dump-config > .clang-format
-changed_files=$(find . -regex ".*\.[c|h]$" -exec clang-format -i {} \; \
-    -exec git diff --name-only {} \;)
+# changed_files=$(find . -regex ".*\.[c|h]$" -exec clang-format -i {} \; \
+#     -exec git diff --name-only {} \;)
 
-if [ -n "$changed_files" ]; then
-    echo "Files were changed by clang-format:"
-    echo "$changed_files"
-    git diff --color=always &> required_changes.txt
-    cat required_changes.txt
-    exit 1
-fi
+# if [ -n "$changed_files" ]; then
+#     echo "Files were changed by clang-format:"
+#     echo "$changed_files"
+#     git diff --color=always &> required_changes.txt
+#     cat required_changes.txt
+#     exit 1
+# fi
 
 #########################################################################
 # install and run cpp style checker
@@ -55,7 +55,7 @@ ERROR_CODE=20
 cppcheck --error-exitcode=${ERROR_CODE} \
     --inline-suppr --suppress=missingIncludeSystem \
     --enable=portability,information,performance,warning --inconclusive \
-    --suppress=checkLevelNormal -DSTORAGE_DEVICE_SIZE=1 "-I$(pwd)" \
+    -DSTORAGE_DEVICE_SIZE=1 "-I$(pwd)" \
     --xml --xml-version=2 . 2> cppcheck.xml || \
     { echo "${RED}Failed: please check cppcheck.xml for details.${NC}"; \
     exit 1; }

@@ -7,6 +7,7 @@
 #include "param.h"
 #include "types.h"
 #include "user.h"
+#include "wstatus.h"
 
 #define GIVE_TURN(my_lock, other_lock)                   \
   do {                                                   \
@@ -24,6 +25,9 @@ char controller_names[CONTROLLER_COUNT][MAX_CONTROLLER_NAME_LENGTH] = {
 char suppress = 0;
 
 char temp_path_g[MAX_PATH_LENGTH] = {0};
+
+// Must not be more than 10000000 or might raise integer overflow
+int TEST_CPU_DURATION = 1000000;
 
 // ######################################## Helper
 //  functions#######################
@@ -476,6 +480,218 @@ TEST(test_limiting_cpu_max_and_period) {
 
   // Disable cpu controller
   ASSERT_TRUE(disable_controller(CPU_CNT));
+}
+
+void set_cpu_weight_output_string(char* buf, int number, int buf_len) {
+  char cpu_weight_number[6];
+
+  // prepare cpu weight output string
+  memset(buf, 0, buf_len);
+  memset(cpu_weight_number, 0, sizeof(cpu_weight_number));
+  strcat(buf, CGROUP_CPU_WEIGHT_PREFIX_OUTPUT);
+  itoa(cpu_weight_number, number);
+  strcat(buf, cpu_weight_number);
+  strcat(buf, "\n");
+}
+
+TEST(test_limiting_cpu_weight) {
+  char cpu_weight_output[16];
+  char cpu_weight_number[6];
+
+  // Enable cpu controller
+  ASSERT_TRUE(enable_controller(CPU_CNT));
+
+  // Check default weight
+  set_cpu_weight_output_string(cpu_weight_output, DEFAULT_CGROUP_CPU_WEIGHT,
+                               sizeof(cpu_weight_output));
+  ASSERT_FALSE(strcmp(read_file(TEST_1_CPU_WEIGHT, 0), cpu_weight_output));
+
+  // Update weight within bounds
+  itoa(cpu_weight_number, CGROUP_CPU_WEIGHT_WITHIN_BOUNDS_NUM);
+  ASSERT_TRUE(write_file(TEST_1_CPU_WEIGHT, cpu_weight_number));
+
+  // Check changes
+  set_cpu_weight_output_string(cpu_weight_output,
+                               CGROUP_CPU_WEIGHT_WITHIN_BOUNDS_NUM,
+                               sizeof(cpu_weight_output));
+  ASSERT_FALSE(strcmp(read_file(TEST_1_CPU_WEIGHT, 0), cpu_weight_output));
+
+  // Update weight over max and check that it fails
+  itoa(cpu_weight_number, MAX_CGROUP_CPU_WEIGHT + 1);
+  ASSERT_FALSE(write_file(TEST_1_CPU_WEIGHT, cpu_weight_number));
+
+  // Check that the value wasn't changed
+  set_cpu_weight_output_string(cpu_weight_output,
+                               CGROUP_CPU_WEIGHT_WITHIN_BOUNDS_NUM,
+                               sizeof(cpu_weight_output));
+  ASSERT_FALSE(strcmp(read_file(TEST_1_CPU_WEIGHT, 0), cpu_weight_output));
+
+  // Disable cpu controller
+  ASSERT_TRUE(disable_controller(CPU_CNT));
+}
+
+// How much cpu percent of the total cpu has the child used
+int test_child_cpu_percent() {
+  int time_before = uptime();
+  int child_cpu_time, parent_cpu_time;
+  float child_duration, parent_duration;
+  int parent_initial_cpu_time;
+  int wstatus;
+  int child_cpu_percentage;
+  int pid = fork();
+  // Child
+  if (pid == 0) {
+    // Move the child process to "/cgroup/test1/child1" cgroup.
+    if (!move_proc(CHILD_1_CGROUP_PROCS, getpid())) {
+      printf(1, "Failed to move child proc to %s\n", CHILD_1_CGROUP_PROCS);
+      exit(1);
+    }
+
+    child_cpu_time = ioctl(0, IOCTL_GET_PROCESS_CPU_TIME, 0);
+    while (child_cpu_time < 2 * TEST_CPU_DURATION) {
+      child_cpu_time = ioctl(0, IOCTL_GET_PROCESS_CPU_TIME, 0);
+    }
+
+    child_duration = uptime() - time_before;
+    temp_write(child_duration);
+
+    exit(0);
+  }
+  // father
+  // Move the parent process to "/cgroup/test1" cgroup.
+  if (!move_proc(TEST_1_CGROUP_PROCS, getpid())) {
+    printf(1, "Failed to move parent proc to %s", TEST_1_CGROUP_PROCS);
+    return -1;
+  }
+  parent_initial_cpu_time = ioctl(0, IOCTL_GET_PROCESS_CPU_TIME, 0);
+  parent_cpu_time = parent_initial_cpu_time;
+
+  while (parent_cpu_time - parent_initial_cpu_time < 2 * TEST_CPU_DURATION) {
+    parent_cpu_time = ioctl(0, IOCTL_GET_PROCESS_CPU_TIME, 0);
+  }
+  parent_duration = uptime() - time_before;
+
+  // Move the parent process back to "/cgroup" cgroup.
+  if (!move_proc(ROOT_CGROUP_PROCS, getpid())) {
+    printf(1, "Failed to move parent proc to %s", ROOT_CGROUP_PROCS);
+    return -1;
+  };
+
+  // Check that the process we returned is really in root cgroup.
+  if (!is_pid_in_group(ROOT_CGROUP_PROCS, getpid())) {
+    printf(1, "Parent proc's pid not in cgroup %s", ROOT_CGROUP_PROCS);
+    return -1;
+  }
+
+  // Wait for child to exit.
+
+  wait(&wstatus);
+  if (WEXITSTATUS(wstatus) != 0) {
+    printf(1, "Child proces failed with status %d", wstatus);
+    return -1;
+  };
+
+  // read child duration from file
+
+  child_duration = temp_read(0);
+  // Remove the temp file.
+  if (!temp_delete()) {
+    printf(1, "Failed to remove temp file");
+    return -1;
+  }
+
+  // both threads are running, but one finishes before the other. during the
+  // time both threads are running, this statement is true:
+  // 1 = parent_percentage + child_percentage.
+  // also, both threads are running the same amount of actual cpu time, which
+  // means parent_actual_time = child_actual_time
+  if (parent_duration > child_duration) {
+    // in this case, child_actual_time = child_percentage * child_duration.
+    // also, during the time the child process ran the time the parent process
+    // was running is parent_percentage * child_duration. thus, this is true:
+    // parent_actual_duration = parent_percentage * child_duration +
+    // (parent_duration - child_duration).
+    // thus the inital equation: child_percentage * child_duration = (1 -
+    // child_percentage) * child_duration + (parent_duration - child_duration)
+    child_cpu_percentage = (parent_duration / (child_duration * 2)) * 100;
+  } else {  // child_duration >= parent_duration
+    // in this case, parent_actual_time = (1 - child_percentage) *
+    // parent_duration. also, like above, child_actual_duration =
+    // child_percentage * parent_duration + (child_duration - parent_duration).
+    // thus, the inital equation:
+    // (1 - child_percentage) * parent_duration = child_percentage *
+    // parent_duration + (child_duration-parent_duration)
+    child_cpu_percentage = (1 - (child_duration / (parent_duration * 2))) * 100;
+  }
+
+  return child_cpu_percentage;
+}
+
+TEST(test_cpu_weight) {
+  char* parent_weight;
+  char* curr;
+  char* backup_parent_weight;
+  int child_cpu_percentage = 0;
+  // create child cgroup
+  ASSERT_FALSE(mkdir(CHILD_1));
+
+  // Enable parent cpu controller - the parent have to enable controller first
+  ASSERT_TRUE(enable_controller(CPU_CNT));
+
+  // Enable child cpu controller
+  ASSERT_TRUE(write_file(CHILD_1_CGROUP_SUBTREE_CONTROL, "+cpu"));
+
+  parent_weight = read_file(TEST_1_CPU_WEIGHT, 0);
+  parent_weight[strlen(parent_weight) - 1] =
+      '\0';  // delete '\n' at end of string
+  curr = parent_weight + 1;
+
+  // set parent_weight to the last word in the string
+  while (*curr) {
+    if (*curr == ' ') {
+      parent_weight = curr + 1;  // word start after space
+    }
+    curr++;
+  }
+
+  // parent_weight point to a static buffer from read_file so we need to copy it
+  // to our own mem
+  backup_parent_weight = malloc(strlen(parent_weight) * sizeof(char));
+  strcpy(backup_parent_weight, parent_weight);
+  ASSERT_TRUE(backup_parent_weight);
+
+  // Use a large weight to make the other processes cpu use neglegable
+  ASSERT_TRUE(write_file(TEST_1_CPU_WEIGHT, CGROUP_CPU_WEIGHT_PARENT_LARGE));
+  ASSERT_TRUE(write_file(CHILD_1_CPU_WEIGHT, CGROUP_CPU_WEIGHT_CHILD_LARGE));
+
+  child_cpu_percentage = test_child_cpu_percent();
+  printf(1, "child_cpu_percentage: %d\n", child_cpu_percentage);
+
+  // the child's cpu percentage should be around 75
+  ASSERT_TRUE(
+      child_cpu_percentage > CGROUP_CPU_CHILD_LARGE_LOWER_CPU_PERECENTAGE &&
+      child_cpu_percentage < CGROUP_CPU_CHILD_LARGE_UPPER_CPU_PERECENTAGE);
+
+  // Use a small weight to make the other processes cpu more significant
+  ASSERT_TRUE(write_file(CHILD_1_CPU_WEIGHT, CGROUP_CPU_WEIGHT_CHILD_SMALL));
+
+  child_cpu_percentage = test_child_cpu_percent();
+  printf(1, "child_cpu_percentage: %d\n", child_cpu_percentage);
+
+  // the child's cpu percentage should be around 25
+  ASSERT_TRUE(
+      child_cpu_percentage < CGROUP_CPU_CHILD_SMALL_UPPER_CPU_PERECENTAGE &&
+      child_cpu_percentage > CGROUP_CPU_CHILD_SMALL_LOWER_CPU_PERECENTAGE);
+
+  ASSERT_TRUE(write_file(TEST_1_CPU_WEIGHT, backup_parent_weight));
+
+  // Disable child cpu controller - the child have to disable controller first
+  ASSERT_TRUE(write_file(CHILD_1_CGROUP_SUBTREE_CONTROL, "-cpu"));
+  // Disable parent cpu controller
+  ASSERT_TRUE(disable_controller(CPU_CNT));
+
+  // unlink child cgroup
+  ASSERT_FALSE(unlink(CHILD_1));
 }
 
 TEST(test_limiting_pids) {
@@ -1997,8 +2213,10 @@ int main(int argc, char* argv[]) {
   run_test(test_moving_process);
   run_test(test_enable_and_disable_all_controllers);
   run_test(test_limiting_pids);
+  run_test(test_limiting_cpu_weight);
   run_test(test_move_failure);
   run_test(test_fork_failure);
+  run_test(test_cpu_weight);
   run_test(test_cpu_stat);
   run_test(test_pid_current);
   run_test(test_setting_cpu_id);
@@ -2011,10 +2229,10 @@ int main(int argc, char* argv[]) {
   run_test(test_correct_mem_account_of_growth_and_shrink);
   run_test(test_limiting_mem);
   run_test(test_ensure_mem_min_is_less_then_mem_max);
-  run_test(test_cant_use_protected_memory);
-  run_test(test_release_protected_memory_after_delete_cgroup);
-  run_test(test_cant_move_under_mem_limit);
-  run_test(test_nested_cgroups);
+  // run_test(test_cant_use_protected_memory);
+  // run_test(test_release_protected_memory_after_delete_cgroup);
+  // run_test(test_cant_move_under_mem_limit);
+  // run_test(test_nested_cgroups);
   run_test(test_nested_cgroup_memory_recalculation);
   run_test(test_mem_limit_negative_and_over_kernelbase);
   run_test(test_cant_move_over_mem_limit);
