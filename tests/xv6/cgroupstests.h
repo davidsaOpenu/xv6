@@ -56,6 +56,13 @@ enum controller_types { CPU_CNT, PID_CNT, SET_CNT, MEM_CNT };
 #define TEST_TMP_MEM_MIN "/cgroup/testtmp/memory.min"
 #define TEST_PROC_MEM "/proc/mem"
 
+#define CHILD_1 "/cgroup/test1/child1"
+#define CHILD_1_CGROUP_PROCS "/cgroup/test1/child1/cgroup.procs"
+#define CHILD_1_CGROUP_SUBTREE_CONTROL \
+  "/cgroup/test1/child1/cgroup.subtree_control"
+#define CHILD_1_CPU_WEIGHT "/cgroup/test1/child1/cpu.weight"
+#define CHILD_1_CPU_STAT "/cgroup/test1/child1/cpu.stat"
+
 #define TEMP_FILE "temp_file"
 
 #define NESTED_CGROUPS_LEVEL (10)
