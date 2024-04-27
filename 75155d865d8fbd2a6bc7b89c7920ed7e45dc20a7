@@ -142,6 +142,30 @@
       },
       "revId": "75155d865d8fbd2a6bc7b89c7920ed7e45dc20a7",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a6cd175d_d40a178b",
+        "filename": "runtests.exp",
+        "patchSetId": 4
+      },
+      "lineNbr": 254,
+      "author": {
+        "id": 1037966
+      },
+      "writtenOn": "2024-04-27T22:05:43Z",
+      "side": 1,
+      "message": "OK cool. I tried to fix the test description according to this Linux test:\n1. Steps 3 and 4 are executed simultaneously, and so are steps 5 and 6.\n2. The bind mounts to the `aux` directories create nested mount in the paths of the form: `od1/od1_aux/nd1_aux/.../nd{i-1}_aux/od{i}_aux`, therefore we check these paths instead of `od1/nd1/.../od{i-1}/nd{i}`.\n\nAnother issue raised when testing using long paths (big i value): the shell limits the maximum command length to 100 chars, causing the test to fail, therefore I set i to 3.",
+      "parentUuid": "ef7e9dfc_b111cd4e",
+      "range": {
+        "startLine": 254,
+        "startChar": 5,
+        "endLine": 254,
+        "endChar": 37
+      },
+      "revId": "75155d865d8fbd2a6bc7b89c7920ed7e45dc20a7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
