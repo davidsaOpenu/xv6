@@ -39,7 +39,9 @@ struct mount *getinitialrootmount(void) {
   return &mount_holder.mnt_list[0].mnt;
 }
 
-struct mount *getrootmount(void) { return myproc()->nsproxy->mount_ns->root; }
+struct mount *getrootmount(void) {
+  return myproc()->nsproxy->mount_ns->root;
+}
 
 void mntinit(void) {
   initlock(&mount_holder.mnt_list_lock, "mount_list");

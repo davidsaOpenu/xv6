@@ -17,7 +17,9 @@
  */
 struct obj_device g_tested_dev = {0};
 
-struct obj_device* objdeviceget(uint dev) { return &g_tested_dev; }
+struct obj_device* objdeviceget(uint dev) {
+  return &g_tested_dev;
+}
 
 void deviceput(uint dev) {}
 

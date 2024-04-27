@@ -61,7 +61,9 @@ int holding(struct spinlock *lk) {
 
 void release(struct spinlock *lk) { lk->locked = 0; }
 
-struct cgroup *proc_get_cgroup(void) { return 0; }
+struct cgroup *proc_get_cgroup(void) {
+  return 0;
+}
 
 void cgroup_mem_stat_pgfault_incr(struct cgroup *cgroup) {}
 
