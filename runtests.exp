@@ -70,6 +70,7 @@ proc start_container { argv id expect_str {image_name "img_a"} { exit_code 0 } }
     send "pouch start c$id $image_name\n"
     set timeout 3
     log_file -noappend [lindex $argv 0]
+    sleep 0.5
     expect "$expect_str"
     assert_on_exit_status $exit_code
 }
@@ -102,10 +103,9 @@ proc disconnect_container {argv} {
 # @argv - file name for logging
 proc destroy_container {argv id expect_str} {
     send "pouch destroy c$id\n"
-    sleep 1
-
     set timeout 5
     log_file -noappend [lindex $argv 0]
+    sleep 0.5
     expect "$expect_str"
     assert_on_exit_status
 }
@@ -196,6 +196,7 @@ proc rm_recursive_test {argv} {
     expect "helloworld"
 
     send "rm -r $initial_path\n"
+    sleep 0.5
     assert_on_exit_status
 
     send "cat $path/file.txt\n"
@@ -208,35 +209,36 @@ proc cp_copy_file_test {argv} {
 
     #bad args test
     send "cp f1\n"
-    expect "cp requires two arguments: source and target"
     sleep 0.5
+    expect "cp requires two arguments: source and target"
 
     #source file doesn't exist
     send "cp f1 f2\n"
-    expect "can't locate f1"
     sleep 0.5
+    expect "can't locate f1"
 
     #target dir doesn't exist
     send "echo test > f1\n"
     sleep 0.5
     send "cp f1 d1/f1\n"
+    sleep 0.5
     expect "can't create d1/f1, make sure the entire path exists"
 
     #test single file
-    sleep 0.5
     send "cp f1 f2\n"
     sleep 0.5
     send "cat f2\n"
-    expect "test"
     sleep 0.5
+    expect "test"
 
     #clean
     send "rm -r f1 f2\n"
+    sleep 1
     assert_on_exit_status
 }
 
 proc cp_copy_dir_test {argv} {
-    set timeout 2
+    set timeout 5
     log_file -noappend [lindex $argv 0]
 
     #one file in dir
@@ -280,6 +282,7 @@ proc cp_copy_dir_test {argv} {
 
     #clean
     send "rm -r d1 d2 d3 t1 a b\n"
+    sleep 2
     assert_on_exit_status
 }
 
@@ -431,8 +434,8 @@ proc mount_bind_test {argv} {
     send "mount -t bind d1 d2\n"
     sleep 0.5
     send "cat d1/somefile\n"
-    expect "test"
     sleep 0.5
+    expect "test"
     send "umount d1\n"
     sleep 0.5
 
@@ -446,8 +449,8 @@ proc mount_bind_test {argv} {
     send "rm d3/somefile\n"
     sleep 0.5
     send "cat d4/somefile\n"
-    expect "cat: cannot open d4/somefile"
     sleep 0.5
+    expect "cat: cannot open d4/somefile"
     send "umount d3\n"
     sleep 0.5
 
@@ -462,6 +465,7 @@ proc mount_bind_test {argv} {
     send "echo test > d5/somefile\n"
     sleep 0.5
     send "cat /somefile\n"
+    sleep 0.5
     expect "test"
     sleep 0.5
     send "umount d5\n"
@@ -473,14 +477,15 @@ proc mount_bind_test {argv} {
     send "echo test > somefile\n"
     sleep 0.5
     send "mount -t bind somefile d6\n"
-    expect "mount point is not a directory"
     sleep 0.5
+    expect "mount point is not a directory"
 
     send "cd ..\n"
     sleep 0.5
 
     #clean
     send "rm -r bind_tests\n"
+    sleep 0.5
     assert_on_exit_status
 }
 
@@ -505,6 +510,7 @@ proc umount_bind_mount_test {argv} {
 
     #clean
     send "rm -r orig bind_f\n"
+    sleep 2
     assert_on_exit_status
 }
 
@@ -517,6 +523,7 @@ proc pouch_start_test {argv} {
 
     set running [start_container $argv "1" "Pouch: c1 starting" "img_a"]
     set timeout 3
+    sleep 2
     set running [pid_check $argv "PID: 2"]
     sleep 2
 }
@@ -644,6 +651,7 @@ proc pouch_list_test {argv} {
 
     send "pouch list all\n"
     log_file -noappend [lindex $argv 0]
+    sleep 0.5
     assert_on_exit_status
     log_file -noappend [lindex $argv 0]
 
@@ -814,6 +822,7 @@ proc cgroup_io_states_test {argv} {
     
     sleep 1
     send "cat /cgroup/ctest/io.stat\n"
+    sleep 1
     expect "1:1 rbytes=95 wbytes=106 rios=95 wios=11"
     set running [destroy_container $argv "test" "Pouch: ctest destroyed"]
 }
