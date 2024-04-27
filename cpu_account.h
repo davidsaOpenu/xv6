@@ -4,11 +4,14 @@
 #include "cgroup.h"
 
 struct cpu_account {
-  unsigned int now;
-  unsigned int cpu_account_period;
-  unsigned int cpu_account_frame;
-  unsigned int process_cpu_time;
-  struct cgroup* cgroup;
+  unsigned int now;                 // steady clock now in microseconds
+  unsigned int cpu_account_period;  // The period to calculate cpu limiting by
+  unsigned int cpu_account_frame;   // The "period frame" number. Increases by
+                                    // one when a new frame starts
+  unsigned int
+      process_cpu_time;   // cpu's current assigned process used cpu time
+  unsigned int cpu_id;    // cpu apicid id number
+  struct cgroup* cgroup;  // cpu's current assigned process cgroup
 };
 
 /**
@@ -36,6 +39,14 @@ void cpu_account_schedule_proc_update(struct cpu_account* cpu, struct proc* p);
  */
 int cpu_account_schedule_process_decision(struct cpu_account* cpu,
                                           struct proc* p);
+
+/**
+ * Make a decision whether the given process can be scheduled.
+ * The decision is made according to the cpu weights of the cgroups.
+ * Returns zero for can not schedule or nonzero in case can schecule.
+ */
+int cpu_account_schedule_process_decision_by_weights(struct cpu_account* cpu,
+                                                     struct proc* p);
 
 /**
  * Event callback function to let the cpu account mechanism know that a process
