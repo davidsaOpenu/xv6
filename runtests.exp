@@ -737,9 +737,9 @@ expect "$ "
 #uncomment for expect debugging
 #exp_internal 1
 
-#set running [ioctl_syscall_test $argv]
-#set running [cgroupstests $argv]
-#set running [cgroup_io_states_test]
+set running [ioctl_syscall_test $argv]
+set running [cgroupstests $argv]
+set running [cgroup_io_states_test]
 
 #basic tests
 set running [cp_copy_file_test $argv]
