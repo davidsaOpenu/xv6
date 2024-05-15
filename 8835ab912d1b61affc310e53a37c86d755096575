@@ -48,6 +48,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "8a88c1de_03f041a1",
+        "filename": "runtests.exp",
+        "patchSetId": 1
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-05-15T20:38:33Z",
+      "side": 0,
+      "message": "Done",
+      "parentUuid": "f2430b7e_d40d59e4",
+      "range": {
+        "startLine": 14,
+        "startChar": 16,
+        "endLine": 14,
+        "endChar": 17
+      },
+      "revId": "8835ab912d1b61affc310e53a37c86d755096575",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "8873aaa1_ac0fa6b9",
@@ -95,6 +119,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "2b2994b1_bbc5ff4c",
+        "filename": "runtests.exp",
+        "patchSetId": 1
+      },
+      "lineNbr": 533,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-05-15T20:38:33Z",
+      "side": 0,
+      "message": "Good catch! Thanks for the explanation.",
+      "parentUuid": "5710a83e_caca74f0",
+      "range": {
+        "startLine": 533,
+        "startChar": 44,
+        "endLine": 533,
+        "endChar": 62
+      },
+      "revId": "8835ab912d1b61affc310e53a37c86d755096575",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "98823541_5aa96ebc",
@@ -132,6 +180,30 @@
       "side": 0,
       "message": "Would like your help to locate/create the relevant tickets.",
       "parentUuid": "98823541_5aa96ebc",
+      "range": {
+        "startLine": 740,
+        "startChar": 0,
+        "endLine": 742,
+        "endChar": 36
+      },
+      "revId": "8835ab912d1b61affc310e53a37c86d755096575",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "147bebd2_f106b87b",
+        "filename": "runtests.exp",
+        "patchSetId": 1
+      },
+      "lineNbr": 742,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-05-15T20:38:33Z",
+      "side": 0,
+      "message": "no need anymore https://review.gerrithub.io/c/davidsaOpenu/xv6/+/1194281",
+      "parentUuid": "6cf13f39_e9852c0d",
       "range": {
         "startLine": 740,
         "startChar": 0,

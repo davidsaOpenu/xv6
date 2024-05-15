@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "96a70472_72b40dfc",
+        "filename": "runtests.exp",
+        "patchSetId": 3
+      },
+      "lineNbr": 735,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-05-15T20:38:33Z",
+      "side": 1,
+      "message": "nit: spaces",
+      "range": {
+        "startLine": 735,
+        "startChar": 0,
+        "endLine": 735,
+        "endChar": 4
+      },
+      "revId": "9ed0a83cd5483df127083baac42c367649e7695b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}

@@ -161,6 +161,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "d0a6f4d3_bcc5cd52",
+        "filename": "runtests.exp",
+        "patchSetId": 1
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-05-15T20:38:33Z",
+      "side": 1,
+      "message": "We need a method to conduct stress tests, and a minimum of 10 iterations is required. If the problem of intermixed messages occurs as a result of this change request, it can be fixed (for example, by serializing pouch calls via the creation of a lock file) rather than concealed.",
+      "parentUuid": "d182b32a_814a8118",
+      "range": {
+        "startLine": 107,
+        "startChar": 24,
+        "endLine": 107,
+        "endChar": 25
+      },
+      "revId": "8e2884551e6b2bd3ed5ba337bd897da15c7f14de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "b05e3db7_45449cf1",
         "filename": "runtests.exp",
         "patchSetId": 1
@@ -196,6 +220,30 @@
       "side": 1,
       "message": "Wanted to consult with you in this matter: It seems that sometime, the container starts asynchronously. Without waiting, running two pouch starts at the same time cause a race condition, and this test fails. Would like to discuss it further, and get some help.\nAny chance it has to do with https://trello.com/c/G3swzWVD/52-pouch-list-issue?",
       "parentUuid": "b05e3db7_45449cf1",
+      "range": {
+        "startLine": 443,
+        "startChar": 4,
+        "endLine": 443,
+        "endChar": 11
+      },
+      "revId": "8e2884551e6b2bd3ed5ba337bd897da15c7f14de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7b28d13e_6385a1a7",
+        "filename": "runtests.exp",
+        "patchSetId": 1
+      },
+      "lineNbr": 443,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-05-15T20:38:33Z",
+      "side": 1,
+      "message": "Unlikely. https://trello.com/c/G3swzWVD/52-pouch-list-issue is from 2020 and has a comment \"Unable to reproduce\".\nMore likely that a race condition has been present from the start and has only become apparent due to the recent addition to the pouch.c file. By removing the sleep commands, we can address the issue. Should not be overly complex.",
+      "parentUuid": "8bf11557_8d8b2349",
       "range": {
         "startLine": 443,
         "startChar": 4,
