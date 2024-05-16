@@ -15,8 +15,8 @@ char *echoargv[] = {"echo", "ALL", "TESTS", "PASSED", 0};
 int stdout = 1;
 
 // does chdir() call iput(p->cwd) in a transaction?
-void iputtest(void) {
-  printf(stdout, "iput test\n");
+void iputtest(const char *fs_type) {
+  printf(stdout, "%s iput test\n", fs_type);
 
   if (mkdir("iputdir") < 0) {
     printf(stdout, "mkdir failed\n");
@@ -30,18 +30,18 @@ void iputtest(void) {
     printf(stdout, "unlink ../iputdir failed\n");
     exit(1);
   }
-  if (chdir("/") < 0) {
+  if (chdir("..") < 0) {
     printf(stdout, "chdir / failed\n");
     exit(1);
   }
-  printf(stdout, "iput test ok\n");
+  printf(stdout, "%s iput test ok\n", fs_type);
 }
 
 // does exit() call iput(p->cwd) in a transaction?
-void exitiputtest(void) {
+void exitiputtest(const char *fs_type) {
   int pid;
 
-  printf(stdout, "exitiput test\n");
+  printf(stdout, "%s exitiput test\n", fs_type);
 
   pid = fork();
   if (pid < 0) {
@@ -64,7 +64,7 @@ void exitiputtest(void) {
     exit(0);
   }
   wait(0);
-  printf(stdout, "exitiput test ok\n");
+  printf(stdout, "%s exitiput test ok\n", fs_type);
 }
 
 // does the error path in open() for attempt to write a
@@ -78,10 +78,10 @@ void exitiputtest(void) {
 //      for(i = 0; i < 10000; i++)
 //        yield();
 //    }
-void openiputtest(void) {
+void openiputtest(const char *fs_type) {
   int pid;
 
-  printf(stdout, "openiput test\n");
+  printf(stdout, "%s openiput test\n", fs_type);
   if (mkdir("oidir") < 0) {
     printf(stdout, "mkdir oidir failed\n");
     exit(1);
@@ -105,18 +105,18 @@ void openiputtest(void) {
     exit(1);
   }
   wait(0);
-  printf(stdout, "openiput test ok\n");
+  printf(stdout, "%s openiput test ok\n", fs_type);
 }
 
 // simple file system tests
 
-void opentest(void) {
+void opentest(const char *fs_type) {
   int fd;
 
-  printf(stdout, "open test\n");
-  fd = open("echo", 0);
+  printf(stdout, "%s open test\n", fs_type);
+  fd = open("/echo", 0);
   if (fd < 0) {
-    printf(stdout, "open echo failed!\n");
+    printf(stdout, "open /echo failed!\n");
     exit(1);
   }
 
@@ -136,13 +136,13 @@ void opentest(void) {
     close(fd);
   }
 
-  printf(stdout, "open test ok\n");
+  printf(stdout, "%s open test ok\n", fs_type);
 }
 
-void openexclusivetest(void) {
+void openexclusivetest(const char *fs_type) {
   int fd;
 
-  printf(stdout, "open exclusive test\n");
+  printf(stdout, "%s open exclusive test\n", fs_type);
   for (int i = 0; i < 2; i++) {
     fd = open("createthisexcl", O_CREATE | O_EXCL);
     if ((i == 0 && fd < 0) || (i > 0 && fd >= 0)) {
@@ -152,14 +152,14 @@ void openexclusivetest(void) {
     close(fd);
   }
 
-  printf(stdout, "open exclusive test ok\n");
+  printf(stdout, "%s open exclusive test ok\n", fs_type);
 }
 
-void writetest(void) {
+void writetest(const char *fs_type) {
   int fd;
   int i;
 
-  printf(stdout, "small file test\n");
+  printf(stdout, "%s small file test\n", fs_type);
   fd = open("small", O_CREATE | O_RDWR);
   if (fd >= 0) {
     printf(stdout, "creat small succeeded; ok\n");
@@ -199,13 +199,13 @@ void writetest(void) {
     printf(stdout, "unlink small failed\n");
     exit(1);
   }
-  printf(stdout, "small file test ok\n");
+  printf(stdout, "%s small file test ok\n", fs_type);
 }
 
-void writetest1(void) {
+void writetest1(const char *fs_type) {
   int i, fd, n;
 
-  printf(stdout, "big files test\n");
+  printf(stdout, "%s big files test\n", fs_type);
 
   fd = open("big", O_CREATE | O_RDWR);
   if (fd < 0) {
@@ -233,7 +233,7 @@ void writetest1(void) {
   for (;;) {
     i = read(fd, buf, 512);
     if (i == 0) {
-      if (n == MAXFILE - 1) {
+      if (n != MAXFILE) {
         printf(stdout, "read only %d blocks from big", n);
         exit(0);
       }
@@ -253,13 +253,13 @@ void writetest1(void) {
     printf(stdout, "unlink big failed\n");
     exit(1);
   }
-  printf(stdout, "big files ok\n");
+  printf(stdout, "%s big files test ok\n", fs_type);
 }
 
-void createtest(void) {
+void createtest(const char *fs_type) {
   int i, fd;
 
-  printf(stdout, "many creates, followed by unlink test\n");
+  printf(stdout, "%s many creates, followed by unlink test\n", fs_type);
 
   name[0] = 'a';
   name[2] = '\0';
@@ -274,11 +274,11 @@ void createtest(void) {
     name[1] = '0' + i;
     unlink(name);
   }
-  printf(stdout, "many creates, followed by unlink; ok\n");
+  printf(stdout, "%s many creates, followed by unlink; ok\n", fs_type);
 }
 
-void dirtest(void) {
-  printf(stdout, "mkdir test\n");
+void dirtest(const char *fs_type) {
+  printf(stdout, "%s mkdir test\n", fs_type);
 
   if (mkdir("dir0") < 0) {
     printf(stdout, "mkdir failed\n");
@@ -299,7 +299,7 @@ void dirtest(void) {
     printf(stdout, "unlink dir0 failed\n");
     exit(1);
   }
-  printf(stdout, "mkdir test ok\n");
+  printf(stdout, "%s mkdir test ok\n", fs_type);
 }
 
 int exectest(void) {
@@ -313,9 +313,11 @@ int exectest(void) {
 
 // simple fork and pipe read/write
 
-void pipe1(void) {
+void pipe1(const char *fs_type) {
   int fds[2], pid;
   int seq, i, n, cc, total;
+
+  printf(1, "%s pipe1 test\n", fs_type);
 
   if (pipe(fds) != 0) {
     printf(1, "pipe() failed\n");
@@ -358,7 +360,7 @@ void pipe1(void) {
     printf(1, "fork() failed\n");
     exit(1);
   }
-  printf(1, "pipe1 ok\n");
+  printf(1, "%s pipe1 test ok\n", fs_type);
 }
 
 // meant to be run w/ at most two CPUs
@@ -461,11 +463,11 @@ void mem(void) {
 
 // two processes write to the same file descriptor
 // is the offset shared? does inode locking work?
-void sharedfd(void) {
+void sharedfd(const char *fs_type) {
   int fd, pid, i, n, nc, np;
   char buf[10];
 
-  printf(1, "sharedfd test\n");
+  printf(1, "%s sharedfd test\n", fs_type);
 
   unlink("sharedfd");
   fd = open("sharedfd", O_CREATE | O_RDWR);
@@ -501,7 +503,7 @@ void sharedfd(void) {
   close(fd);
   unlink("sharedfd");
   if (nc == 10000 && np == 10000) {
-    printf(1, "sharedfd ok\n");
+    printf(1, "%s sharedfd test ok\n", fs_type);
   } else {
     printf(1, "sharedfd oops %d %d\n", nc, np);
     exit(1);
@@ -510,12 +512,12 @@ void sharedfd(void) {
 
 // four processes write different files at the same
 // time, to test block allocation.
-void fourfiles(void) {
+void fourfiles(const char *fs_type) {
   int fd, pid, i, j, n, total, pi;
   char *names[] = {"f0", "f1", "f2", "f3"};
   char *fname;
 
-  printf(1, "fourfiles test\n");
+  printf(1, "%s fourfiles test\n", fs_type);
 
   for (pi = 0; pi < 4; pi++) {
     fname = names[pi];
@@ -570,16 +572,32 @@ void fourfiles(void) {
     unlink(fname);
   }
 
-  printf(1, "fourfiles ok\n");
+  printf(1, "%s fourfiles test ok\n", fs_type);
+}
+
+void createmanyfiles(const char *fs_type, uint number_of_files_to_create) {
+  printf(stdout, "%s create many files\n", fs_type);
+  char filename[100] = "file";
+  for (int i = 0; i < number_of_files_to_create; i++) {
+    // generate filename
+    itoa(filename + 4, i);
+    int fd = open(filename, O_CREATE | O_RDWR);
+    if (fd < 0) {
+      printf(1, "create %s failed\n", filename);
+      exit(1);
+    }
+    close(fd);
+  }
+  printf(stdout, "%s create many files ok\n", fs_type);
 }
 
 // four processes create and delete different files in same directory
-void createdelete(void) {
+void createdelete(const char *fs_type) {
   enum { N = 20 };
   int pid, i, fd, pi;
   char name[32];
 
-  printf(1, "createdelete test\n");
+  printf(1, "%s createdelete test\n", fs_type);
 
   for (pi = 0; pi < 4; pi++) {
     pid = fork();
@@ -640,14 +658,14 @@ void createdelete(void) {
     }
   }
 
-  printf(1, "createdelete ok\n");
+  printf(1, "%s createdelete test ok\n", fs_type);
 }
 
 // can I unlink a file and still read it?
-void unlinkread(void) {
+void unlinkread(const char *fs_type) {
   int fd, fd1;
 
-  printf(1, "unlinkread test\n");
+  printf(1, "%s unlinkread test\n", fs_type);
   fd = open("unlinkread", O_CREATE | O_RDWR);
   if (fd < 0) {
     printf(1, "create unlinkread failed\n");
@@ -684,13 +702,13 @@ void unlinkread(void) {
   }
   close(fd);
   unlink("unlinkread");
-  printf(1, "unlinkread ok\n");
+  printf(1, "%s unlinkread test ok\n", fs_type);
 }
 
-void linktest(void) {
+void linktest(const char *fs_type) {
   int fd;
 
-  printf(1, "linktest\n");
+  printf(1, "%s linktest\n", fs_type);
 
   unlink("lf1");
   unlink("lf2");
@@ -744,11 +762,11 @@ void linktest(void) {
     exit(1);
   }
 
-  printf(1, "linktest ok\n");
+  printf(1, "%s linktest ok\n", fs_type);
 }
 
 // test concurrent create/link/unlink of the same file
-void concreate(void) {
+void concreate(const char *fs_type) {
   char file[3];
   int i, pid, n, fd;
   char fa[40];
@@ -757,7 +775,7 @@ void concreate(void) {
     char name[14];
   } de;
 
-  printf(1, "concreate test\n");
+  printf(1, "%s concreate test\n", fs_type);
   file[0] = 'C';
   file[2] = '\0';
   for (i = 0; i < 40; i++) {
@@ -832,15 +850,15 @@ void concreate(void) {
       wait(0);
   }
 
-  printf(1, "concreate ok\n");
+  printf(1, "%s concreate test ok\n", fs_type);
 }
 
 // another concurrent link/unlink/create test,
 // to look for deadlocks.
-void linkunlink() {
+void linkunlink(const char *fs_type) {
   int pid, i;
 
-  printf(1, "linkunlink test\n");
+  printf(1, "%s linkunlink test\n", fs_type);
 
   unlink("x");
   pid = fork();
@@ -866,15 +884,15 @@ void linkunlink() {
   else
     exit(0);
 
-  printf(1, "linkunlink ok\n");
+  printf(1, "%s linkunlink test ok\n", fs_type);
 }
 
 // directory that uses indirect blocks
-void bigdir(void) {
+void bigdir(const char *fs_type) {
   int i, fd;
   char name[10];
 
-  printf(1, "bigdir test\n");
+  printf(1, "%s bigdir test\n", fs_type);
   unlink("bd");
 
   fd = open("bd", O_CREATE);
@@ -907,13 +925,13 @@ void bigdir(void) {
     }
   }
 
-  printf(1, "bigdir ok\n");
+  printf(1, "%s bigdir test ok\n", fs_type);
 }
 
-void subdir(void) {
+void subdir(const char *fs_type) {
   int fd, cc;
 
-  printf(1, "subdir test\n");
+  printf(1, "%s subdir test\n", fs_type);
 
   unlink("ff");
   if (mkdir("dd") != 0) {
@@ -934,7 +952,7 @@ void subdir(void) {
     exit(1);
   }
 
-  if (mkdir("/dd/dd") != 0) {
+  if (mkdir("dd/dd") != 0) {
     printf(1, "subdir mkdir dd/dd failed\n");
     exit(1);
   }
@@ -978,10 +996,6 @@ void subdir(void) {
     exit(1);
   }
   if (chdir("dd/../../dd") != 0) {
-    printf(1, "chdir dd/../../dd failed\n");
-    exit(1);
-  }
-  if (chdir("dd/../../../dd") != 0) {
     printf(1, "chdir dd/../../dd failed\n");
     exit(1);
   }
@@ -1088,14 +1102,14 @@ void subdir(void) {
     exit(1);
   }
 
-  printf(1, "subdir ok\n");
+  printf(1, "%s subdir test ok\n", fs_type);
 }
 
 // test writes that are larger than the log.
-void bigwrite(void) {
+void bigwrite(const char *fs_type) {
   int fd, sz;
 
-  printf(1, "bigwrite test\n");
+  printf(1, "%s bigwrite test\n", fs_type);
 
   unlink("bigwrite");
   for (sz = 499; sz < 12 * 512; sz += 471) {
@@ -1116,13 +1130,13 @@ void bigwrite(void) {
     unlink("bigwrite");
   }
 
-  printf(1, "bigwrite ok\n");
+  printf(1, "%s bigwrite test ok\n", fs_type);
 }
 
-void bigfile(void) {
+void bigfile(const char *fs_type) {
   int fd, i, total, cc;
 
-  printf(1, "bigfile test\n");
+  printf(1, "%s bigfile test\n", fs_type);
 
   unlink("bigfile");
   fd = open("bigfile", O_CREATE | O_RDWR);
@@ -1169,14 +1183,14 @@ void bigfile(void) {
   }
   unlink("bigfile");
 
-  printf(1, "bigfile test ok\n");
+  printf(1, "%s bigfile test ok\n", fs_type);
 }
 
-void fourteen(void) {
+void fourteen(const char *fs_type) {
   int fd;
 
   // DIRSIZ is 14.
-  printf(1, "fourteen test\n");
+  printf(1, "%s fourteen test\n", fs_type);
 
   if (mkdir("12345678901234") != 0) {
     printf(1, "mkdir 12345678901234 failed\n");
@@ -1209,11 +1223,11 @@ void fourteen(void) {
     exit(1);
   }
 
-  printf(1, "fourteen ok\n");
+  printf(1, "%s fourteen test ok\n", fs_type);
 }
 
-void rmdot(void) {
-  printf(1, "rmdot test\n");
+void rmdot(const char *fs_type) {
+  printf(1, "%s rmdot test\n", fs_type);
   if (mkdir("dots") != 0) {
     printf(1, "mkdir dots failed\n");
     exit(1);
@@ -1230,8 +1244,8 @@ void rmdot(void) {
     printf(1, "rm .. worked!\n");
     exit(1);
   }
-  if (chdir("/") != 0) {
-    printf(1, "chdir / failed\n");
+  if (chdir("..") != 0) {
+    printf(1, "chdir .. failed\n");
     exit(1);
   }
   if (unlink("dots/.") == 0) {
@@ -1246,13 +1260,13 @@ void rmdot(void) {
     printf(1, "unlink dots failed!\n");
     exit(1);
   }
-  printf(1, "rmdot ok\n");
+  printf(1, "%s rmdot test ok\n", fs_type);
 }
 
-void dirfile(void) {
+void dirfile(const char *fs_type) {
   int fd;
 
-  printf(1, "dir vs file\n");
+  printf(1, "%s dir vs file\n", fs_type);
 
   fd = open("dirfile", O_CREATE);
   if (fd < 0) {
@@ -1303,17 +1317,18 @@ void dirfile(void) {
   }
   close(fd);
 
-  printf(1, "dir vs file OK\n");
+  printf(1, "%s dir vs file ok\n", fs_type);
 }
 
 // test that iput() is called at the end of _namei()
-void iref(void) {
-  int i, fd;
+void iref(const char *fs_type) {
+  int i, fd, depth;
 
-  printf(1, "empty file name\n");
+  printf(1, "%s empty file name\n", fs_type);
 
   // the 50 is NINODE
-  for (i = 0; i < 50 + 1; i++) {
+  depth = 50;
+  for (i = 0; i < depth + 1; i++) {
     if (mkdir("irefd") != 0) {
       printf(1, "mkdir irefd failed\n");
       exit(1);
@@ -1332,8 +1347,12 @@ void iref(void) {
     unlink("xx");
   }
 
-  chdir("/");
-  printf(1, "empty file name OK\n");
+  // Get back to the initial state
+  for (i = 0; i < depth; i++) {
+    chdir("..");
+  }
+
+  printf(1, "%s empty file name ok\n", fs_type);
 }
 
 // test that fork fails gracefully
@@ -1805,6 +1824,85 @@ void memtest() {
   printf(1, "memtest: memory ok\n");
 }
 
+// Assumes the current directory is inside the tested fs mount
+void all_fs_tests(const char *fs_type) {
+  createdelete(fs_type);
+  linkunlink(fs_type);
+  concreate(fs_type);
+  fourfiles(fs_type);
+  sharedfd(fs_type);
+  createmanyfiles(fs_type, 30);
+  bigwrite(fs_type);
+  opentest(fs_type);
+  openexclusivetest(fs_type);
+  writetest(fs_type);
+  writetest1(fs_type);
+  createtest(fs_type);
+  openiputtest(fs_type);
+  exitiputtest(fs_type);
+  iputtest(fs_type);
+  pipe1(fs_type);
+  rmdot(fs_type);
+  fourteen(fs_type);
+  bigfile(fs_type);
+  subdir(fs_type);
+  linktest(fs_type);
+  unlinkread(fs_type);
+  dirfile(fs_type);
+  iref(fs_type);
+  bigdir(fs_type);  // slow
+}
+
+void nativefs_all_tests(void) {
+  printf(stdout, "nativefs all tests\n");
+
+  unlink("nativefs_dir");
+  if (mkdir("nativefs_dir") < 0) {
+    printf(stdout, "mkdir native_fs_dir failed\n");
+    exit(1);
+  }
+  if (chdir("nativefs_dir") < 0) {
+    printf(stdout, "chdir native_fs_dir failed\n");
+    exit(1);
+  }
+
+  all_fs_tests("nativefs");
+
+  if (chdir("/") < 0) {
+    printf(stdout, "chdir / failed\n");
+    exit(1);
+  }
+
+  printf(stdout, "nativefs all tests ok\n");
+}
+
+void objfs_all_tests(void) {
+  printf(stdout, "objfs all tests\n");
+
+  unlink("objfs_dir");
+  if (mkdir("objfs_dir") < 0) {
+    printf(stdout, "mkdir objfs_dir failed\n");
+    exit(1);
+  }
+  if (mount(0, "objfs_dir", "objfs") != 0) {
+    printf(stdout, "failed to mount objfs to /objfs_dir\n");
+    exit(1);
+  }
+  if (chdir("objfs_dir") < 0) {
+    printf(stdout, "chdir objfs_dir failed\n");
+    exit(1);
+  }
+
+  all_fs_tests("objfs");
+
+  if (chdir("/") < 0) {
+    printf(stdout, "chdir / failed\n");
+    exit(1);
+  }
+
+  printf(stdout, "objfs all tests ok\n");
+}
+
 int main(int argc, char *argv[]) {
   printf(1, "usertests starting\n");
 
@@ -1817,44 +1915,21 @@ int main(int argc, char *argv[]) {
   printftest();
 
   argptest();
-  createdelete();
-  linkunlink();
-  concreate();
-  fourfiles();
-  sharedfd();
+
+  nativefs_all_tests();
+  objfs_all_tests();
 
   bigargtest();
-  bigwrite();
   bigargtest();
   bsstest();
   sbrktest();
   validatetest();
 
-  opentest();
-  openexclusivetest();
-  writetest();
-  writetest1();
-  createtest();
-
-  openiputtest();
-  exitiputtest();
-  iputtest();
-
   mem();
-  pipe1();
   preempt();
   exitwait();
 
-  rmdot();
-  fourteen();
-  bigfile();
-  subdir();
-  linktest();
-  unlinkread();
-  dirfile();
-  iref();
   forktest();
-  bigdir();  // slow
   memtest();
 
   uio();

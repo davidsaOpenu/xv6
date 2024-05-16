@@ -252,7 +252,7 @@ void obj_ilock(struct vfs_inode *vfs_ip) {
     inode_name(iname, ip->vfs_inode.inum);
     memset(&di, 0, sizeof(di));
     vector div = newvector(sizeof(di), 1);
-    if (log_get_object(iname, &div, 0) != NO_ERR) {
+    if (log_get_object(iname, &div) != NO_ERR) {
       panic("inode doesn't exists in the disk");
     }
     memmove_from_vector((char *)&di, div, 0, div.vectorsize);
@@ -369,7 +369,7 @@ int obj_readi(struct vfs_inode *vfs_ip, uint off, uint n, vector *dstvector) {
   if (off + n > size) n = size - off;
 
   vector datavector = newvector(size, 1);
-  if (log_get_object(ip->data_object_name, &datavector, off) !=
+  if (log_get_object(ip->data_object_name, &datavector) !=
       NO_ERR) {  // TODO(unknown): add support for vector
     panic("obj_readi failed reading object content");
   }
@@ -520,7 +520,7 @@ int obj_dirlink(struct vfs_inode *vfs_dp, char *name, uint inum) {
   inode_name(iname, inum);
   memset(&di, 0, sizeof(di));
   vector div = newvector(sizeof(di), 1);
-  if (log_get_object(iname, &div, 0) != NO_ERR) {
+  if (log_get_object(iname, &div) != NO_ERR) {
     panic("inode doesn't exists in the disk");
   }
   memmove_from_vector((char *)&di, div, 0, div.vectorsize);
