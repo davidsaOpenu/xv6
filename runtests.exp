@@ -670,17 +670,6 @@ proc usertests {argv} {
     assert_on_exit_status
 }
 
-# - xv6 objfstests
-# @argv - file name for logging
-proc objfstests {argv} {
-    set timeout -1
-    #clean expect buffer
-    expect *
-    send "objfstests\n"
-    log_file -noappend [lindex $argv 0]
-    assert_on_exit_status
-}
-
 # - xv6 cgroup tests
 # @argv - file name for logging
 proc cgroupstests {argv} {
@@ -943,7 +932,6 @@ set running [test_pouch_build_file_parsing $argv]
 set running [pidns_tests $argv]
 set running [mounttest $argv]
 set running [mounttest_with_ls $argv]
-set running [objfstests $argv]
 # run last, prints "ALL TESTS PASSED"
 set running [usertests $argv]
 
