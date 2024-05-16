@@ -150,7 +150,7 @@ static void finish_log_transactions() {
         "size");
   }
   vector logbookvector;
-  err = cache_get_object(LOGBOOK_OBJECT_ID, &logbookvector, 0);
+  err = cache_get_object(LOGBOOK_OBJECT_ID, &logbookvector);
   // vectormemcmp("finish_log_transactions", logbookvector, 0, (char*)&logbook,
   // logbookvector.vectorsize);
   if (err != NO_ERR) {
@@ -290,10 +290,9 @@ uint log_delete_object(const char* name) {
   return NO_ERR;
 }
 
-uint log_get_object(const char* name, vector* outputvector,
-                    uint read_object_from_offset) {
+uint log_get_object(const char* name, vector* outputvector) {
   acquiresleep(&loglock);
-  uint result = cache_get_object(name, outputvector, read_object_from_offset);
+  uint result = cache_get_object(name, outputvector);
   releasesleep(&loglock);
   return result;
 }

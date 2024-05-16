@@ -79,8 +79,7 @@ uint cache_rewrite_object(vector data, uint objectsize, uint offset,
                           const char* name);
 uint cache_delete_object(const char* name);
 uint cache_object_size(const char* name, uint* output);
-uint cache_get_object(const char* name, vector* outputvector,
-                      uint read_object_from_offset);
+uint cache_get_object(const char* name, vector* outputvector);
 
 /**
  * Remove the object from the objects cache but not form the disk.

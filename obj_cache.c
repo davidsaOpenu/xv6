@@ -116,12 +116,7 @@ uint cache_rewrite_object(vector data, uint objectsize, uint offset,
     releasesleep(&cachelock);
     return rv;
   }
-  // 2. check if object is small enough to be cached
-  if (objectsize > CACHE_MAX_OBJECT_SIZE) {
-    releasesleep(&cachelock);
-    return NO_ERR;
-  }
-  // 3. search the cache for an object with the specified name
+  // 2. search the cache for an object with the specified name
   int found = 0;
   struct obj_cache_entry* e = obj_cache.head.prev;
   misses++;
@@ -134,6 +129,16 @@ uint cache_rewrite_object(vector data, uint objectsize, uint offset,
       found = 1;
       break;
     }
+  }
+  // 2. check if object is too big to be cached
+  if (objectsize > CACHE_MAX_OBJECT_SIZE) {
+    // If it's already cached remove it from cache
+    if (found) {
+      move_to_back(e);
+      e->object_id[0] = 0;
+    }
+    releasesleep(&cachelock);
+    return NO_ERR;
   }
   // 4. if found cache it. otherwise, evict using LRU policy
   if (found) {
@@ -206,8 +211,7 @@ uint cache_object_size(const char* name, uint* output) {
   return err;
 }
 
-uint cache_get_object(const char* name, vector* outputvector,
-                      uint read_object_from_offset) {
+uint cache_get_object(const char* name, vector* outputvector) {
   acquiresleep(&cachelock);
   // 1. check if the desired object is already in the cache
   for (struct obj_cache_entry* e = obj_cache.head.prev; e != &obj_cache.head;
@@ -228,16 +232,16 @@ uint cache_get_object(const char* name, vector* outputvector,
     releasesleep(&cachelock);
     panic("cache get object failed to get object size");
   }
-  if (size > CACHE_MAX_OBJECT_SIZE) {
-    releasesleep(&cachelock);
-    return NO_ERR;
-  }
   uint rv = get_object(name, NULL, outputvector);
   if (rv != NO_ERR) {
     releasesleep(&cachelock);
     return rv;
   }
   // 4. store the object in some cache entry for later use
+  if (size > CACHE_MAX_OBJECT_SIZE) {
+    releasesleep(&cachelock);
+    return NO_ERR;
+  }
   struct obj_cache_entry* e = obj_cache.head.prev;
   move_to_front(e);
   e->size = size;
