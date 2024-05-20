@@ -104,7 +104,9 @@ OBJDUMP = $(TOOLPREFIX)objdump
 ########## CFLAGS ##########
 CFLAGS = -static -MD -m32 -mno-sse -gstabs -std=gnu99 -Wall -Werror -Wstack-usage=4096 \
 	-fno-pic -fno-builtin -fno-strict-aliasing -fno-omit-frame-pointer $(OFLAGS) \
-	-I$(MAKEFILE_DIRECTORY)
+	-I$(MAKEFILE_DIRECTORY) -I$(MAKEFILE_DIRECTORY)/tests/framework
+HOST_TESTS_CFLAGS = -static -m32 -MD -std=gnu99 -Wall -Werror -Wno-builtin-declaration-mismatch -I$(MAKEFILE_DIRECTORY) \
+	-I$(MAKEFILE_DIRECTORY)/tests/host/ -I$(MAKEFILE_DIRECTORY)/tests/framework/ -DHOST_TESTS
 
 #x86
 HOST_CPU_TSC_FREQ := $(shell cat /proc/cpuinfo | grep -i "cpu mhz" | head -n 1 | rev | cut -d ' ' -f 1 | rev | cut -d '.' -f 1)*1000
@@ -258,7 +260,8 @@ clean: windows_debugging_clean
 	rm -f *.tex *.dvi *.idx *.aux *.log *.ind *.ilg \
 	*.o *.d *.asm *.sym vectors.S bootblock entryother \
 	initcode initcode.out kernel xv6.img fs.img kernelmemfs mkfs \
-	.gdbinit vectortests \
+	.gdbinit objfs_tests kvector_tests \
+	tests/host/*.o tests/xv6/*.o tests/xv6/*.d tests/xv6/*.asm tests/xv6/*.sym \
 	$(UPROGS) \
 	$(INTERNAL_DEV)
 
@@ -373,16 +376,20 @@ windows_debugging_clean:
 
 # Object file system related files
 # TODO integrate with the rest of xv6 sources - would be done in later part.
-run-objfs-tests:
-	$(CC) $(CLAGS) \
-		obj_disk.c obj_cache.c obj_log.c tests/host/obj_fs_tests.c obj_fs_tests_utilities.c \
-		-std=gnu99 -DSTORAGE_DEVICE_SIZE=67108864 \
-		-o tests
-	./tests
-
-run-vector-tests:
-	$(CC) $(CLAGS) -DUNITTESTS=1 \
-		kvector.h kvector.c tests/host/unittests.h tests/host/kvectortest.c \
+objfs_tests: string.c obj_disk.c obj_cache.c obj_log.c kvector.c tests/host/common_mocks.c tests/host/obj_fs_tests.c
+	$(CC) $(HOST_TESTS_CFLAGS) $(OFLAGS) \
+		obj_disk.c obj_cache.c obj_log.c kvector.c tests/host/common_mocks.c tests/host/obj_fs_tests.c \
 		-std=gnu99 \
-		-o vectortests
-	./vectortests
+		-include tests/host/common_mocks.h \
+		-o objfs_tests
+
+kvector_tests: string.c kvector.c tests/host/kvectortest.c tests/host/common_mocks.c
+	$(CC) $(HOST_TESTS_CFLAGS) $(OFLAGS) \
+		kvector.c tests/host/kvectortest.c tests/host/common_mocks.c \
+		-std=gnu99 \
+		-o kvector_tests
+
+host-tests: kvector_tests objfs_tests
+
+host-tests-debug: OFLAGS = -Og -ggdb
+host-tests-debug: host-tests
