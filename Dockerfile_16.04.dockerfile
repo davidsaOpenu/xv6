@@ -14,6 +14,7 @@ RUN if [ "$BUILD_LINTING_TOOLS" = "true" ]; then \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
     g++ \
+    gcc-muiltilib \
     make \
     libpcre3-dev \
     curl \

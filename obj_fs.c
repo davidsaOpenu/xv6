@@ -127,11 +127,10 @@ struct vfs_inode *obj_fsinit(uint dev) {
 struct vfs_inode *obj_ialloc(uint dev, short type) {
   int inum = new_inode_number();
   char iname[INODE_NAME_LENGTH];
-  struct obj_dinode di;
+  struct obj_dinode di = {0};
   char oname[MAX_OBJECT_NAME_LENGTH];
   struct vfs_inode *ip;
 
-  memset(&di, 0, sizeof(di));
   di.vfs_dinode.type = type;
   di.vfs_dinode.nlink = 0;
   di.data_object_name[0] = 0;  // not initialized
@@ -240,7 +239,7 @@ struct vfs_inode *obj_idup(struct vfs_inode *ip) {
 // Lock the given inode.
 // Reads the inode from disk if necessary.
 void obj_ilock(struct vfs_inode *vfs_ip) {
-  struct obj_dinode di;
+  struct obj_dinode di = {0};
   struct obj_inode *ip = container_of(vfs_ip, struct obj_inode, vfs_inode);
   char iname[INODE_NAME_LENGTH];
 
@@ -250,7 +249,6 @@ void obj_ilock(struct vfs_inode *vfs_ip) {
 
   if (ip->vfs_inode.valid == 0) {
     inode_name(iname, ip->vfs_inode.inum);
-    memset(&di, 0, sizeof(di));
     vector div = newvector(sizeof(di), 1);
     if (log_get_object(iname, &div) != NO_ERR) {
       panic("inode doesn't exists in the disk");
