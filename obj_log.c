@@ -5,11 +5,8 @@
 #include "obj_disk.h"
 #include "obj_fs.h"
 #include "sleeplock.h"
-#ifndef KERNEL_TESTS
 #include "defs.h"  // import `panic`
-#else
-#include "obj_fs_tests_utilities.h"  // impot mock `panic`
-#endif
+
 
 /**
  * The loglock protect the logbook from multiple actions occuring at the same

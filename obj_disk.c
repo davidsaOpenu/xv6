@@ -2,22 +2,11 @@
 #pragma GCC diagnostic ignored "-Wstack-usage="
 
 #include "obj_disk.h"
-
 #include "kvector.h"
 #include "sleeplock.h"
 #include "types.h"
-#include "vfs_file.h"
+#include "defs.h"
 
-#ifndef KERNEL_TESTS
-#include "defs.h"  // import `panic`
-#else
-#include "obj_fs_tests_utilities.h"  // impot mock `panic`
-#include "string.h"
-#endif
-
-#ifndef STORAGE_DEVICE_SIZE
-#error "STORAGE_DEVICE_SIZE must be defined when using the mock storage device"
-#endif
 
 #define entry_index_to_entry_offset(index) \
   super_block.objects_table_offset + index * sizeof(ObjectsTableEntry)
@@ -212,7 +201,7 @@ void init_obj_fs() {
   super_block.objects_table_offset = sizeof(struct objsuperblock);
   super_block.store_offset =
       super_block.objects_table_offset +
-      200 * sizeof(ObjectsTableEntry);  // initial state only
+      INITIAL_OBJECT_TABLE_SIZE * sizeof(ObjectsTableEntry);  // initial state
   super_block.bytes_occupied =
       sizeof(super_block) +
       INITIAL_OBJECT_TABLE_SIZE * sizeof(ObjectsTableEntry);
@@ -262,12 +251,14 @@ uint add_object(const void* object, uint size, const char* name) {
   if (err != NO_ERR) {
     return err;
   }
-  // 2. find first unocuupied entry of the objects table
+  // 2. find first unoccupied entry of the objects table
   // then occupy it and allocate space for the new object.
   acquiresleep(&disklock);
   uint leftmost_disk_allocation_offset = STORAGE_DEVICE_SIZE;
+  // We start to search after the superblock and entries table,
+  // minus 1 since indexing starts in 0
   uint i;
-  for (i = 0; i < get_object_table_size(); i++) {
+  for (i = OBJ_ROOTINO - 1; i < get_object_table_size(); i++) {
     ObjectsTableEntry* entry = objects_table_entry(i);
     if (entry->disk_offset < leftmost_disk_allocation_offset)
       leftmost_disk_allocation_offset = entry->disk_offset;
@@ -280,6 +271,7 @@ uint add_object(const void* object, uint size, const char* name) {
   if (leftmost_disk_allocation_offset - super_block.store_offset >=
       sizeof(ObjectsTableEntry)) {
     set_store_offset(super_block.store_offset + sizeof(ObjectsTableEntry));
+    super_block.bytes_occupied += sizeof(ObjectsTableEntry);
     ObjectsTableEntry* entry = objects_table_entry(i);
     return find_space_and_populate_entry(entry, object, name, size);
   }
@@ -407,6 +399,9 @@ uint check_add_object_validality(uint size, const char* name) {
   if (strlen(name) > MAX_OBJECT_NAME_LENGTH) {
     return OBJECT_NAME_TOO_LONG;
   }
+  if (STORAGE_DEVICE_SIZE < size) {
+    return NO_DISK_SPACE_FOUND;
+  }
   for (uint i = 0; i < get_object_table_size(); ++i) {
     if (objects_table_entry(i)->occupied &&
         obj_id_cmp(objects_table_entry(i)->object_id, name) == 0) {
@@ -419,6 +414,9 @@ uint check_add_object_validality(uint size, const char* name) {
 uint check_rewrite_object_validality(uint size, const char* name) {
   if (strlen(name) > MAX_OBJECT_NAME_LENGTH) {
     return OBJECT_NAME_TOO_LONG;
+  }
+  if (STORAGE_DEVICE_SIZE < size) {
+    return NO_DISK_SPACE_FOUND;
   }
   return NO_ERR;
 }

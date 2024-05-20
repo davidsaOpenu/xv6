@@ -2,13 +2,8 @@
 
 #include "obj_disk.h"
 #include "sleeplock.h"
-#include "string.h"
-
-#ifndef KERNEL_TESTS
 #include "defs.h"  // import `panic`
-#else
-#include "obj_fs_tests_utilities.h"  // impot mock `panic`
-#endif
+
 
 // the default cache has 32 objects of 8KB each for total of 256KB.
 #ifndef CACHE_MAX_OBJECT_SIZE
@@ -245,7 +240,8 @@ uint cache_get_object(const char* name, vector* outputvector) {
   struct obj_cache_entry* e = obj_cache.head.prev;
   move_to_front(e);
   e->size = size;
-  memmove_from_vector((char*)e->data, *outputvector, 0, e->size);
+  memmove_from_vector((char*)e->data, *outputvector, 0,
+                      outputvector->vectorsize);
   memmove(e->object_id, name, obj_id_bytes(name));
   releasesleep(&cachelock);
   return NO_ERR;
