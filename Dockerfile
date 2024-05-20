@@ -45,6 +45,9 @@ RUN cmake -G "Unix Makefiles" -DLLVM_ENABLE_PROJECTS="clang" \
     make clang-format && \
     cp bin/clang-format /usr/local/bin
 
+# Install packages for host unit tests
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y gcc-mulitlib
+
 # Create a non-root user with the same username,uid,gid
 # as the user running the container
 ARG USERNAME

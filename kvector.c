@@ -6,16 +6,9 @@
  **************/
 #include "kvector.h"
 
+#include "defs.h"
 #include "mmu.h"
 #include "types.h"
-
-#ifndef UNITTESTS
-#include "defs.h"
-#else
-#include <string.h>
-
-#include "tests/host/unitmock.h"
-#endif
 
 #define check_existence(vp, onerror) \
   if ((vp) == NULL) return onerror
@@ -73,7 +66,7 @@ unsigned int countactualpages(vector v) {
 }
 
 // vector operations
-char* getelementpointer(vector v, unsigned int index) {
+char* getelementpointer(const vector v, unsigned int index) {
   if (v.valid == 1 && v.vectorsize > index) {
     unsigned int pageindex, pageoffset;
     getpageforindex(v, index, &pageindex, &pageoffset);
@@ -148,6 +141,10 @@ unsigned int setbyte(vector v, unsigned int index, char* databyte) {
 void constructarray(char** head, char** tail, unsigned int numberofelements,
                     unsigned int elementsize, int* error) {
   unsigned int pointersspace = 2 * sizeof(char*);
+  if (elementsize > (PGSIZE - pointersspace)) {
+    panic("kvector element size is too big");
+  }
+
   unsigned int elementsperpage = (PGSIZE - pointersspace) / elementsize;
   unsigned int requiredpages =
       numberofelements / elementsperpage +
@@ -247,31 +244,18 @@ vector slicevector(vector original, unsigned int startfrom,
   return original;
 }
 
-unsigned int vectormemcmp(char* label, vector v, unsigned int vectorstartoffset,
-                          char* m, unsigned int bytes) {
-  cprintf("Checking complience in %s:", label);
+uint vectormemcmp(const vector v, void* m, uint bytes) {
+  uint left_bytes = bytes;
+  for (uint i = 0; (i < v.vectorsize) && (0 < left_bytes); i++) {
+    uint bytes_to_compare = min(v.typesize, left_bytes);  // NOLINT
+    int retval = memcmp(((uchar*)m) + i * v.typesize, getelementpointer(v, i),
+                        bytes_to_compare);
+    if (!retval) return retval;
 
-  unsigned int byteindex = 0;
-  // int identical = 1;
-  // Format string with 0x%x because cprintf formating doesn't support %u.
-  for (byteindex = 0; byteindex < bytes; byteindex++) {
-    char* elementpointer = getelementpointer(v, byteindex + vectorstartoffset);
-    if (elementpointer == NULL) {
-      cprintf("Vector is 0x%x bytes, could not access byte number 0x%x.",
-              byteindex + 1, byteindex + 2);
-      cprintf("Vector actual length is: 0x%x.\n", v.vectorsize);
-      return 0;
-    } else if (m[byteindex] !=
-               *getelementpointer(v, byteindex + vectorstartoffset)) {
-      cprintf("Diff in v[0x%x]=%d vs. m[0x%x]=%d. offset=0x%x\n",
-              byteindex + vectorstartoffset,
-              *getelementpointer(v, byteindex + vectorstartoffset), byteindex,
-              m[byteindex], vectorstartoffset);
-      return 0;
-    }
+    left_bytes -= bytes_to_compare;
   }
-  cprintf("success.\n");
-  return 1;  // = identical
+
+  return 0;
 }
 
 unsigned int copysubvector(vector* dstvector, vector* srcvector,
