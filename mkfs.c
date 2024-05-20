@@ -20,7 +20,7 @@
   } while (0)
 #endif
 
-#define NINODES 300
+#define NINODES 500
 
 // Disk layout:
 // [ boot block | sb block | log | inode blocks | free bit map | data blocks ]
