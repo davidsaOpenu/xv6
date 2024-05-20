@@ -139,14 +139,13 @@ uint get_total_memory();
 vector newvector(unsigned int, unsigned int);
 void freevector(vector*);
 uint setelement(vector, unsigned int, char*);
-char* getelementpointer(vector, unsigned int);
+char* getelementpointer(const vector, unsigned int);
 void memmove_into_vector_bytes(vector, unsigned int, char*, unsigned int);
 void memmove_into_vector_elements(vector, unsigned int, char*, unsigned int);
 void memmove_from_vector(char* dst, vector vec, unsigned int elementoffset,
                          unsigned int elementcount);
 vector slicevector(vector, unsigned int, unsigned int);
-uint vectormemcmp(char* lbl, vector v, unsigned int vectorstartoffset, char* m,
-                  unsigned int bytes);
+uint vectormemcmp(const vector v, void* m, uint bytes);
 uint copysubvector(vector* dstvector, vector* srcvector, unsigned int srcoffset,
                    unsigned int count);
 
@@ -235,6 +234,11 @@ void releasesleep(struct sleeplock*);
 int holdingsleep(struct sleeplock*);
 void initsleeplock(struct sleeplock*, char*);
 
+// When running host tests we use the host's libc which
+// presents a bit different string method signatures.
+#ifdef HOST_TESTS
+#include <string.h>  // // NOLINT(build/include_what_you_use)
+#else
 // string.c
 int memcmp(const void*, const void*, uint);
 void* memmove(void*, const void*, uint);
@@ -245,6 +249,7 @@ int strncmp(const char*, const char*, uint);
 int strcmp(const char* p, const char* q);
 char* strncpy(char*, const char*, int);
 void* memcpy(void*, const void*, uint);
+#endif
 
 // syscall.c
 int argint(int, int*);
@@ -294,7 +299,7 @@ void cgroup_remove_io_device(struct cgroup* cgroup_ptr,
                              struct vfs_inode* io_node);
 
 // klib.c
-int atoi(char* str);
+int atoi(const char* str);
 int itoa(char* buf, int n);
 int utoa(char* buf, unsigned int n);
 int intlen(int n);

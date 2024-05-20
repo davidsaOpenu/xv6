@@ -59,7 +59,7 @@ ERROR_CODE=20
 cppcheck --error-exitcode=${ERROR_CODE} \
     --inline-suppr --suppress=missingIncludeSystem \
     --enable=portability,information,performance,warning --inconclusive \
-    -DSTORAGE_DEVICE_SIZE=1 "-I$(pwd)" \
+    --suppress=checkLevelNormal -DSTORAGE_DEVICE_SIZE=1 "-I$(pwd)" \
     --xml --xml-version=2 . 2> cppcheck.xml || \
     { echo "${RED}Failed: please check cppcheck.xml for details.${NC}"; \
     exit 1; }
@@ -68,21 +68,30 @@ cppcheck --error-exitcode=${ERROR_CODE} \
 #    --source-dir=. --title="Cppcheck Report"
 
 ########################################################################
-# compile
+#  Run guest tests
 make clean
 make
 
-########################################################################
-#  Run tests
 LOG_FILE="mylog.txt"
 ./runtests.exp $LOG_FILE
 
-
-########################################################################
-#  Last verification
 lines=$(tail -5 $LOG_FILE | grep  "ALL TESTS PASSED" | wc -l)
 if [ $lines -ne 1 ]; then
     echo "ALL TESTS PASSED string was not found"
+    exit 1
+fi
+
+#  Run host tests
+make clean
+make host-tests
+
+HOST_TESTS_LOG_FILE="host_tests_log.txt"
+./kvector_tests >$HOST_TESTS_LOG_FILE
+./objfs_tests >>$HOST_TESTS_LOG_FILE
+
+lines=$(cat $HOST_TESTS_LOG_FILE | grep  "FAILED" | wc -l)
+if [ $lines -ne 0 ]; then
+    echo "FAILED string was found -- host tests failed"
     exit 1
 fi
 
