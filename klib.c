@@ -2,7 +2,7 @@
  * Get int representation of number in string.
  * String must be null terminated.
  */
-int atoi(char* str) {
+int atoi(const char* str) {
   int res = 0;
   for (int i = 0; str[i] != '\0'; ++i) {
     if (str[i] < '0' || str[i] > '9') return -1;

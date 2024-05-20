@@ -109,6 +109,9 @@ RUN  if [ "$BUILD_LINTING_TOOLS" = "true" ]; then \
     cp bin/clang-format /usr/local/bin; \
     fi
 
+# Install packages for host unit tests
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y gcc-multilib
+
 # Create a non-root user with the same username,uid,gid
 # as the user running the container
 ARG USERNAME

@@ -71,6 +71,11 @@
  * TODO make it a thread safe.
  */
 
+// Set default storage device size
+#ifndef STORAGE_DEVICE_SIZE
+#define STORAGE_DEVICE_SIZE 327680
+#endif
+
 // The object table is of variable size.
 // However, this is its default initial size.
 // During the creation and deletion of files
