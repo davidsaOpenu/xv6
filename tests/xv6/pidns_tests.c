@@ -1,6 +1,6 @@
 #define _GNU_SOURCE
+#include "../framework/tester.h"
 #include "syscall.h"
-#include "tester.h"
 #include "types.h"
 #include "user.h"
 
