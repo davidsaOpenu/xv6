@@ -11,7 +11,7 @@
 
 char buf[8192];
 char name[3];
-char *echoargv[] = {"echo", "ALL", "TESTS", "PASSED", 0};
+char *echoargv[] = {"/echo", "ALL", "TESTS", "PASSED", 0};
 int stdout = 1;
 
 // does chdir() call iput(p->cwd) in a transaction?
@@ -304,7 +304,7 @@ void dirtest(const char *fs_type) {
 
 int exectest(void) {
   printf(stdout, "exec test\n");
-  if (exec("echo", echoargv) < 0) {
+  if (exec("/echo", echoargv) < 0) {
     printf(stdout, "exec echo failed\n");
     return 1;
   }
@@ -1348,7 +1348,7 @@ void iref(const char *fs_type) {
   }
 
   // Get back to the initial state
-  for (i = 0; i < depth; i++) {
+  for (i = 0; i < depth + 1; i++) {
     chdir("..");
   }
 
@@ -1593,7 +1593,7 @@ void bigargtest(void) {
           "                 ";
     args[MAXARG - 1] = 0;
     printf(stdout, "bigarg test\n");
-    exec("echo", args);
+    exec("/echo", args);
     printf(stdout, "bigarg test ok\n");
     fd = open("bigarg-ok", O_CREATE);
     close(fd);
@@ -1691,7 +1691,7 @@ void uio() {
 
 void argptest() {
   int fd;
-  fd = open("init", O_RDONLY);
+  fd = open("/init", O_RDONLY);
   if (fd < 0) {
     printf(2, "open failed\n");
     exit(1);
@@ -1831,7 +1831,7 @@ void all_fs_tests(const char *fs_type) {
   concreate(fs_type);
   fourfiles(fs_type);
   sharedfd(fs_type);
-  createmanyfiles(fs_type, 30);
+  createmanyfiles(fs_type, 100);
   bigwrite(fs_type);
   opentest(fs_type);
   openexclusivetest(fs_type);
@@ -1868,11 +1868,10 @@ void nativefs_all_tests(void) {
 
   all_fs_tests("nativefs");
 
-  if (chdir("/") < 0) {
-    printf(stdout, "chdir / failed\n");
+  if (chdir("..") < 0) {
+    printf(stdout, "chdir .. failed\n");
     exit(1);
   }
-
   printf(stdout, "nativefs all tests ok\n");
 }
 
@@ -1895,10 +1894,18 @@ void objfs_all_tests(void) {
 
   all_fs_tests("objfs");
 
-  if (chdir("/") < 0) {
-    printf(stdout, "chdir / failed\n");
+  if (chdir("..") < 0) {
+    printf(stdout, "chdir ..failed\n");
     exit(1);
   }
+
+  // TODO(SM): insert these lines only after objfs multiple devices bug fix
+#if 0
+  if (umount("objfs_dir") < 0) {
+    printf(stdout, "umount objfs failed\n");
+    exit(1);
+  }
+#endif
 
   printf(stdout, "objfs all tests ok\n");
 }
