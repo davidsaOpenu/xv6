@@ -1,3 +1,4 @@
+#include "../framework/tester.h"
 #include "fcntl.h"
 #include "fs.h"
 #include "memlayout.h"
@@ -5,7 +6,6 @@
 #include "param.h"
 #include "stat.h"
 #include "syscall.h"
-#include "tester.h"
 #include "traps.h"
 #include "types.h"
 #include "user.h"
