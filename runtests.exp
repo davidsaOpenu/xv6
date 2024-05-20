@@ -140,6 +140,36 @@ proc pouch_basic_tests {argv} {
     set running [pouch_destroy_test $argv]
 }
 
+# Test the 'rm' userspace utility with recursive flag
+proc rm_recursive_test {argv} {
+    set timeout -1
+    log_file -noappend [lindex $argv 0]
+
+    set depth 10
+    set initial_path "/d1"
+    set path "/"
+    for {set i 1} {$i <= $depth} {incr i} {
+        append path "/d${i}"
+        send "mkdir $path\n"
+        assert_on_exit_status
+    }
+
+    send "echo helloworld > $path/file.txt\n"
+    assert_on_exit_status
+
+    send "rm $initial_path\n"
+    expect "cannot unlink $initial_path"
+
+    send "cat $path/file.txt\n"
+    expect "helloworld"
+
+    send "rm -r $initial_path\n"
+    assert_on_exit_status
+
+    send "cat $path/file.txt\n"
+    expect "cat: cannot open $path/file.txt"
+}
+
 proc cp_copy_file_test {argv} {
     set timeout -1
     log_file -noappend [lindex $argv 0]
@@ -167,6 +197,10 @@ proc cp_copy_file_test {argv} {
     send "cat f2\n"
     expect "test"
     sleep 0.5
+
+    #clean
+    send "rm -r f1 f2\n"
+    assert_on_exit_status
 }
 
 proc cp_copy_dir_test {argv} {
@@ -211,6 +245,10 @@ proc cp_copy_dir_test {argv} {
     send "cat /b/c\n"
     sleep 0.5
     expect "test"
+
+    #clean
+    send "rm -r d1 d2 d3 t1 a b\n"
+    assert_on_exit_status
 }
 
 proc cp_simple_objfs_nativefs_copy_test {argv} {
@@ -248,6 +286,10 @@ proc cp_simple_objfs_nativefs_copy_test {argv} {
     send "umount d5/objfs1\n"
     assert_on_exit_status
     send "umount d5/objfs2\n"
+    assert_on_exit_status
+
+    #clean
+    send "rm -r d5 d6\n"
     assert_on_exit_status
 }
 
@@ -337,6 +379,8 @@ proc cp_recursive_objfs_nativefs_test {argv} {
     # Clean
     send "umount /obj_mnt\n"
     assert_on_exit_status
+    send "rm -r /nd1 /obj_mnt\n"
+    assert_on_exit_status
 }
 
 proc mount_bind_test {argv} {
@@ -402,6 +446,10 @@ proc mount_bind_test {argv} {
 
     send "cd ..\n"
     sleep 0.5
+
+    #clean
+    send "rm -r bind_tests\n"
+    assert_on_exit_status
 }
 
 # - xv6 umount test
@@ -422,6 +470,10 @@ proc umount_bind_mount_test {argv} {
     assert_on_exit_status
     send "cat bind_f/tfile\n"
     expect "cat: cannot open bind_f/tfile"
+
+    #clean
+    send "rm -r orig bind_f\n"
+    assert_on_exit_status
 }
 
 # - This test start the container
@@ -677,22 +729,43 @@ proc pouch_info_container_test {argv} {
 # - xv6 usertests
 # @argv - file name for logging
 proc usertests {argv} {
-
     set timeout -1
     #clean expect buffer
     expect *
+
+    send "mkdir usertests_dir\n"
+    assert_on_exit_status
+    send "cd usertests_dir\n"
+    assert_on_exit_status
+
     send "usertests\n"
     log_file -noappend [lindex $argv 0]
     assert_on_exit_status
+
+    send "cd ..\n"
+    # TODO(SM): insert these lines only after objfs multiple devices bug fix
+    #send "rm -r usertests_dir\n"
 }
 
 # - xv6 cgroup tests
 # @argv - file name for logging
 proc cgroupstests {argv} {
-
     set timeout -1
+    #clean expect buffer
+    expect *
+
+    send "mkdir cgroup_tests_dir\n"
+    assert_on_exit_status
+    send "cd cgroup_tests_dir\n"
+    assert_on_exit_status
+
     send "cgroupstests\n"
     log_file -noappend [lindex $argv 0]
+    assert_on_exit_status
+
+    send "cd ..\n"
+    assert_on_exit_status
+    send "rm -r cgroup_tests_dir\n"
     assert_on_exit_status
 }
 
@@ -751,8 +824,19 @@ proc cgroup_io_states_test {} {
 proc pidns_tests {argv} {
 
     set timeout -1
+
+    send "mkdir pidns_test_dir\n"
+    assert_on_exit_status
+    send "cd pidns_test_dir\n"
+    assert_on_exit_status
+
     send "pidns_tests\n"
     log_file -noappend [lindex $argv 0]
+    assert_on_exit_status
+
+    send "cd ..\n"
+    assert_on_exit_status
+    send "rm -r pidns_test_dir\n"
     assert_on_exit_status
 }
 
@@ -818,6 +902,7 @@ set running [cgroupstests $argv]
 set running [cgroup_io_states_test]
 
 #basic tests
+set running [rm_recursive_test $argv]
 set running [cp_copy_file_test $argv]
 set running [cp_copy_dir_test $argv]
 set running [mount_bind_test $argv]

@@ -1,15 +1,14 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../../kvector.h"
-#include "unittests.h"
+#include "common_mocks.h"
+#include "defs.h"
+#include "kvector.h"
+#include "test.h"
 
 #define isInfoEqual(info1, info2)                                    \
   ((info1).age == (info2).age && (info1).height == (info2).height && \
    strcmp((info1).name, (info2).name) == 0)  // NOLINT
-
-// external functions
-void initTestingEnvironment();
 
 // API BEING TESTED
 vector newvector(unsigned int size, unsigned int typesize);
@@ -22,37 +21,19 @@ void memmove_from_vector(char* dst, vector vec, unsigned int elementoffset,
                          unsigned int elementcount);
 char* getelementpointer(vector v, unsigned int index);
 
-int initializeVectorTest() {
-  char testName[] = "initializeVectorTest";
-  int vectorsize;
-  int typesize;
-  int passedTest = 1;
+TEST(test_initialize_vector) {
   vector v;
 
-  for (vectorsize = 1; vectorsize < 1000; vectorsize += 100) {
-    for (typesize = 1; typesize < 100; typesize += 20) {
-      // create new vector
+  for (int vectorsize = 1; vectorsize < 1000; vectorsize += 100) {
+    for (int typesize = 1; typesize < 100; typesize += 20) {
       v = newvector(vectorsize, typesize);
-      // check the success of the initialization
-      if (v.valid == 0) {
-        // vector is not valid
-        FAILTEST(testName);
-        printf(
-            "Failed to initialize vector with size = %d and typesize = %d.\n",
-            vectorsize, typesize);
-        freevector(&v);
-        return FAIL;
-      }
+      ASSERT_TRUE(v.valid);
+      freevector(&v);
     }
   }
-  PASSTEST(testName);
-  freevector(&v);
-  return PASS;
 }
 
-int readAndWriteDataTest() {
-  char testName[] = "readAndWriteDataTest";
-
+TEST(test_read_and_write_data) {
   // Some composite data
   struct info {
     int age;
@@ -80,113 +61,66 @@ int readAndWriteDataTest() {
       struct info currentStudent;
       memmove_from_vector((char*)(&currentStudent), composite[currentVector],
                           currentElement, 1);
-      if (!(isInfoEqual(currentStudent, students[currentElement]))) {
-        FAILTEST(testName);
-        printf("Expected Equal values: (%d ?= %d ), (%f ?= %f), (%s ?= %s).\n",
-               currentStudent.age, students[currentElement].age,
-               currentStudent.height, students[currentElement].height,
-               currentStudent.name, students[currentElement].name);
-        return FAIL;
-      }
+      ASSERT_TRUE(isInfoEqual(currentStudent, students[currentElement]));
     }
   }
-  PASSTEST(testName);
-  return PASS;
 }
 
-int moveBytesTest() {
-  char testName[] = "moveBytesTest";
-
+TEST(test_move_bytes) {
   vector v = newvector(3, 1);
   char str[] = "abc";
   memmove_into_vector_bytes(v, 0, str, 3);
-  char str2[] = {0, 0, 0, 0};
+  char str2[sizeof(str)] = {0};
   memmove_from_vector(str2, v, 0, 3);
 
-  int result1 = (strcmp(str, str2) == 0);
-  if (result1 == 1) {
-    PASSTEST(testName);
-    return PASS;
-  } else {
-    FAILTEST(testName);
-    return FAIL;
-  }
+  ASSERT_TRUE(!strcmp(str, str2));
 }
 
-int moveBytesWithOffsetTest() {
-  char testName[] = "moveBytesWithOffsetTest";
-
+TEST(test_move_bytes_with_offset) {
   vector v = newvector(3, 1);
   char str[] = "abc";
   memmove_into_vector_bytes(v, 1, str, 2);  // "ab" --> vector[empty, a, b]
-  char str2[] = {0, 0, 0, 0};               // str2 is empty string
+  char str2[sizeof(str)] = {0};             // str2 is empty string
   memmove_from_vector(str2, v, 1, 2);       // str2 = {'a','b',0}
 
-  int result1 = (strcmp("ab", str2) == 0);
-  if (result1 == 1) {
-    PASSTEST(testName);
-    return PASS;
-  } else {
-    FAILTEST(testName);
-    return FAIL;
-  }
+  ASSERT_TRUE(!strcmp("ab", str2));
 }
 
-int moveElementsTest() {
-  char testName[] = "moveElementsTest";
-
+TEST(test_move_elements) {
   vector v = newvector(3, sizeof(int));
   int numbers[] = {10, 20, 40};
   memmove_into_vector_elements(v, 0, (char*)numbers, 3);
 
-  int result = 1;
   for (int i = 0; i < 3; i++) {
-    result = result && (*(int*)getelementpointer(v, i) == numbers[i]);
-  }
-  if (result) {
-    PASSTEST(testName);
-    return PASS;
-  } else {
-    FAILTEST(testName);
-    return FAIL;
+    ASSERT_TRUE(*(int*)getelementpointer(v, i) == numbers[i]);
   }
 }
 
-int moveElementsWithOffsetTest() {
-  char testName[] = "moveElementsWithOffsetTest";
-
+TEST(test_move_elements_with_offset) {
   vector v = newvector(3, sizeof(int));
   int numbers[] = {10, 20, 40};
   memmove_into_vector_elements(v, 1, (char*)numbers, 2);
 
-  int result = 1;
   for (int i = 1; i < 3; i++) {
-    result = result && (*(int*)getelementpointer(v, i) == numbers[i - 1]);
-  }
-  if (result) {
-    PASSTEST(testName);
-    return PASS;
-  } else {
-    FAILTEST(testName);
-    return FAIL;
+    ASSERT_TRUE(*(int*)getelementpointer(v, i) == numbers[i - 1]);
   }
 }
 
+// Should be called before each test
+void init_test() { init_mocks_environment(); }
+
+INIT_TESTS_PLATFORM();
+
 int main() {
-  // Initialize mock
-  initTestingEnvironment();
+  SET_TEST_INITIALIZER(&init_test);
 
-  // Define custom messages for success or failure
-  char PASS_OR_FAIL_MESSAGES[2][50] = {"AT LEAST ONE TEST HAS FAILED.",
-                                       "ALL TESTS HAVE PASSED."};
+  run_test(test_initialize_vector);
+  run_test(test_read_and_write_data);
+  run_test(test_move_bytes);
+  run_test(test_move_bytes_with_offset);
+  run_test(test_move_elements);
+  run_test(test_move_elements_with_offset);
 
-  // Run all tests and save the overall success as a result
-  int testResult = initializeVectorTest() && moveBytesWithOffsetTest() &&
-                   moveBytesTest() && moveElementsTest() &&
-                   moveElementsWithOffsetTest() && readAndWriteDataTest();
-
-  // Print message
-  printf("TEST STATUS: %s\n", PASS_OR_FAIL_MESSAGES[testResult]);
-
-  return !testResult;
+  PRINT_TESTS_RESULT("KVECTORTESTS");
+  return CURRENT_TESTS_RESULT();
 }

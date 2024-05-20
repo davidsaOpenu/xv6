@@ -4,13 +4,9 @@
 #include "mmu.h"
 #include "mutex.h"
 #include "param.h"
+#include "test.h"
 #include "types.h"
 #include "user.h"
-
-// for test.h
-#define PRINT(...) printf(1, __VA_ARGS__)
-
-#include "test.h"
 
 #define GIVE_TURN(my_lock, other_lock) \
   mutex_unlock(&other_lock);           \
@@ -24,8 +20,6 @@ char controller_names[CONTROLLER_COUNT][MAX_CONTROLLER_NAME_LENGTH] = {
     "cpu", "pid", "set", "mem"};
 
 char suppress = 0;
-
-int failed = 0;
 
 char temp_path_g[MAX_PATH_LENGTH] = {0};
 
@@ -1810,7 +1804,7 @@ void nested_cgroup_mem_recalc_scenario2(int kernel_total_mem, char* min_value) {
     /* first, try to allocate the free memory in the kernel + 1 PAGE. This
      * should fail */
     itoa(exceeding_memory_value, atoi(min_value) * (depth_cnt + 1) + PGSIZE);
-    ASSERT_FALSE(write_file(temp_path_g, exceeding_memory_value))
+    ASSERT_FALSE(write_file(temp_path_g, exceeding_memory_value));
 
     /* allocate only 10% of memory now */
     ASSERT_TRUE(write_file(temp_path_g, min_value));
@@ -1991,6 +1985,8 @@ TEST(test_nested_cgroup_memory_recalculation) {
   nested_cgroup_mem_recalc_scenario4(kernel_total_mem);
 }
 
+INIT_TESTS_PLATFORM();
+
 int main(int argc, char* argv[]) {
   // comment out for debug messages
   set_suppress(1);
@@ -2032,11 +2028,6 @@ int main(int argc, char* argv[]) {
   run_test(test_umount_cgroup_fs);
   run_test_break_msg(test_kernel_freem_mem);
 
-  if (failed) {
-    printf(1, "[    CGROUPTESTS FAILED    ]\n");
-    exit(1);
-  } else {
-    printf(1, "[    CGROUPTESTS PASSED    ]\n");
-    exit(0);
-  }
+  PRINT_TESTS_RESULT("CGROUPTESTS");
+  return CURRENT_TESTS_RESULT();
 }
