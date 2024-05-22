@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "14dd4d33_f162bce6",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1037966
+      },
+      "writtenOn": "2024-05-22T14:44:10Z",
+      "side": 1,
+      "message": "@davidsa@openu.ac.il\n\nThe changes of this commit are:\n\nFixes:\n1. Improve the tests \"framework\": now it can be used by both user tests and host tests. Its code resides now in \"tests/framework\". A common host test mocks was added. Future work is still required in order to convert some user tests to use this framework and not \"tester.h\"\n\n2. Convert the kvector host tests to use the new framework.\n\n3. Fix all objfs host tests.\n\n4. Add kvector and objfs to CI\n\n5. Support recursive removal of files by the `rm` usespace utility \u0027-r\u0027 flag. Also test this feature.\n\n5. Fix CI: When each test ran successfully, running them as part of the CI make them fail, as tests don\u0027t clean their files. Clean all tests using the \u0027rm -r\u0027 command. Also fixed linter comments of old code.\n\n6. Fix kvector memcmp function, which allow us to compare the content of a kvector without allocating memory and copy the kvector content into it.\n\nBug Fixes:\n\n1. `kvector.c`: An element size must be less than page size. This was not verified by kvector, and caused a divide by zero bug. Fix: Verify it.\n\n2. `obj_cache.c`: Wrong parameter passed to \u0027memmove_from_vector()\u0027 -- total size instead of num of elements. It wasn\u0027t discovered before since the usages of kvector were wrong -- they used it as array of elements in size 1 instead of array of elements in size of struct/object.\n\n3. `obj_disk.c`: In `add_object()` The search of free space to the new object starts from inode 0, therefore considering the superblock and blocks table, and later on the \"actual\" objects offset in the disk are subtracted from leftmost allocation space found. When the disk is full, it causes a pointer arithmetic underflow, which causes double disk usage (by multiple different objects).\n\n4. `obj_disk.c`: When the objects table is full but there is still space on the disk, the table is extended, but the occupied bytes counter is not updated, so the statistics is wrong (also affects tests)\n\n5. `obj_disk.c`: Upon adding or resizing of an object, there is noverification of its size, causing underflow in `find_empty_space()` and thus allocating already used disk space.\n\n6. mkdir.c: This userspace utility returns 0 even upon failure, and thus makes some tests pass even when the dir creation failed.",
+      "revId": "b0fd9238776a97d2333a4d7c08b00582be41412b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
