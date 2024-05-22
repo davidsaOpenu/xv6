@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a7da171e_f4121a00",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1037966
+      },
+      "writtenOn": "2024-05-22T14:09:24Z",
+      "side": 1,
+      "message": "The changes of this commit are:\n\nFixes:\n1. Unify nativefs and objfs tests and prevent massive code duplication: now both fs call the same tests -- each in its own fs mount.\n2. In `obj_fs.c`: remove unused param \u0027offset\u0027 which passed by obj_fs.c and reaches to obj_cache.c altough it\u0027s not used. This unused param confused me, thinking \u0027offset\u0027 is not handled right by objfs reads. (The offset logic happens in obj_fs.c)\n\n\nBug Fixes:\n1. In `obj_cache.c`: If an object is already cached and its size is increased over maximum cached size by calling `cache_rewrite_object()` -- the object will not be removed from the cache, but its old copy will still be stored there. Causing further reads of this object to return wrong data.\n\tFix: Remove object from cache if it becomes too big.\n\n2. In `obj_cache.c`: If an object size is bigger than cache max object size, the function cache_get_object() will return error instead of read it from the disk. Fix: First read try to read from cache, if not present read from disk and only then if the size fits store it in cache.\n\t\n3. In `usertests.c`: one of the test conditions in `writebig()` does not verify all scenarios, which might lead to test pass even when there are errors. It origins in the MIT public xv6 code.",
+      "revId": "a7e5253b8745cd22a031b5e0601f26408de601f4",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
