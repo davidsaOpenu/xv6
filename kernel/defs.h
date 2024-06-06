@@ -4,6 +4,7 @@
 #include "types.h"
 
 struct buf;
+union buf_id;
 struct context;
 struct file;
 struct inode;
@@ -33,6 +34,12 @@ struct buf* bread(uint, uint);
 void brelse(struct buf*);
 void bwrite(struct buf*);
 void invalidateblocks(uint);
+
+// buf_cache.c
+void buf_cache_init(void);
+void buf_cache_invalidate_blocks(uint dev);
+struct buf* buf_cache_get(uint dev, const union buf_id* id, uint alloc_flags);
+void buf_cache_release(struct buf* b);
 
 // console.c
 void consoleclear(void);
