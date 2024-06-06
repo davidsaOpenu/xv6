@@ -26,8 +26,6 @@ struct buf {
   uint flags;
   uint alloc_flags;
   uint dev;
-  // TODO(SM): Remove the next member when nativefs uses the new buffers cache
-  uint blockno;
   union buf_id id;
   struct sleeplock lock;
   uint refcnt;

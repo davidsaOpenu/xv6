@@ -29,11 +29,8 @@ struct dev_stat;
 struct cgroup_io_device_statistics_s;
 
 // bio.c
-void binit(void);
 struct buf* bread(uint, uint);
-void brelse(struct buf*);
 void bwrite(struct buf*);
-void invalidateblocks(uint);
 
 // buf_cache.c
 void buf_cache_init(void);

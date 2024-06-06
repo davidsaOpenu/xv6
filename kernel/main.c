@@ -43,7 +43,6 @@ int main(void) {
   pinit();                                     // process table
   tvinit();                                    // trap vectors
   buf_cache_init();                            // buffer cache
-  binit();                                     // buffer cache
   vfs_fileinit();                              // file table
   objfsinit();                                 // objfs disk
   ideinit();                                   // disk

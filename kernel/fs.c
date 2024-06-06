@@ -47,7 +47,7 @@ void readsb(int dev, struct superblock *sb) {
 
   bp = bread(dev, 1);
   memmove(sb, bp->data, sizeof(*sb));
-  brelse(bp);
+  buf_cache_release(bp);
 }
 
 // Zero a block.
@@ -57,7 +57,7 @@ static void bzero(int dev, int bno) {
   bp = bread(dev, bno);
   memset(bp->data, 0, BSIZE);
   log_write(bp);
-  brelse(bp);
+  buf_cache_release(bp);
 }
 
 // Blocks.
@@ -78,12 +78,12 @@ static uint balloc(uint dev) {
       if ((bp->data[bi / 8] & m) == 0) {  // Is block free?
         bp->data[bi / 8] |= m;            // Mark block in use.
         log_write(bp);
-        brelse(bp);
+        buf_cache_release(bp);
         bzero(dev, b + bi);
         return b + bi;
       }
     }
-    brelse(bp);
+    buf_cache_release(bp);
   }
   panic("balloc: out of blocks");
 }
@@ -102,7 +102,7 @@ static void bfree(int dev, uint b) {
   if ((bp->data[bi / 8] & m) == 0) panic("freeing free block");
   bp->data[bi / 8] &= ~m;
   log_write(bp);
-  brelse(bp);
+  buf_cache_release(bp);
 }
 
 // Inodes.
@@ -220,10 +220,10 @@ struct vfs_inode *ialloc(uint dev, short type) {
       memset(dip, 0, sizeof(*dip));
       dip->vfs_dinode.type = type;
       log_write(bp);  // mark it allocated on the disk
-      brelse(bp);
+      buf_cache_release(bp);
       return iget(dev, inum);
     }
-    brelse(bp);
+    buf_cache_release(bp);
   }
 
   panic("ialloc: no inodes");
@@ -250,7 +250,7 @@ void iupdate(struct vfs_inode *vfs_ip) {
   dip->size = ip->size;
   memmove(dip->addrs, ip->addrs, sizeof(ip->addrs));
   log_write(bp);
-  brelse(bp);
+  buf_cache_release(bp);
 }
 
 // Find the inode with number inum on device dev
@@ -337,7 +337,7 @@ void ilock(struct vfs_inode *vfs_ip) {
     ip->vfs_inode.nlink = dip->vfs_dinode.nlink;
     ip->size = dip->size;
     memmove(ip->addrs, dip->addrs, sizeof(ip->addrs));
-    brelse(bp);
+    buf_cache_release(bp);
     ip->vfs_inode.valid = 1;
     if (ip->vfs_inode.type == 0) panic("ilock: no type");
   }
@@ -418,7 +418,7 @@ static uint bmap(struct inode *ip, uint bn) {
       a[bn] = addr = balloc(ip->vfs_inode.dev);
       log_write(bp);
     }
-    brelse(bp);
+    buf_cache_release(bp);
     return addr;
   }
 
@@ -449,7 +449,7 @@ static void itrunc(struct vfs_inode *vfs_ip) {
     for (j = 0; j < NINDIRECT; j++) {
       if (a[j]) bfree(ip->vfs_inode.dev, a[j]);
     }
-    brelse(bp);
+    buf_cache_release(bp);
     bfree(ip->vfs_inode.dev, ip->addrs[NDIRECT]);
     ip->addrs[NDIRECT] = 0;
   }
@@ -500,7 +500,7 @@ int readi(struct vfs_inode *vfs_ip, uint off, uint n, vector *dstvector) {
                               (char *)(bp->data + off % BSIZE), m);
     // vectormemcmp("readi", *dstvector, dstoffset, (char*)(bp->data + off %
     // BSIZE), m);
-    brelse(bp);
+    buf_cache_release(bp);
   }
   return n;
 }
@@ -530,7 +530,7 @@ int writei(struct vfs_inode *vfs_ip, char *src, uint off, uint n) {
             BSIZE - off % BSIZE);
     memmove(bp->data + off % BSIZE, src, m);
     log_write(bp);
-    brelse(bp);
+    buf_cache_release(bp);
   }
 
   if (n > 0 && off > ip->size) {

@@ -76,8 +76,8 @@ static void install_trans(void) {
     bwrite(dbuf);                            // write dst to disk
     cgroup_mem_stat_file_dirty_decr(dbuf->cgroup);
     cgroup_mem_stat_file_dirty_aggregated_incr(dbuf->cgroup);
-    brelse(lbuf);
-    brelse(dbuf);
+    buf_cache_release(lbuf);
+    buf_cache_release(dbuf);
   }
 }
 
@@ -90,7 +90,7 @@ static void read_head(void) {
   for (i = 0; i < log.lh.n; i++) {
     log.lh.block[i] = lh->block[i];
   }
-  brelse(buf);
+  buf_cache_release(buf);
 }
 
 // Write in-memory log header to disk.
@@ -105,7 +105,7 @@ static void write_head(void) {
     hb->block[i] = log.lh.block[i];
   }
   bwrite(buf);
-  brelse(buf);
+  buf_cache_release(buf);
 }
 
 static void recover_from_log(void) {
@@ -171,8 +171,8 @@ static void write_log(void) {
     struct buf *from = bread(log.dev, log.lh.block[tail]);  // cache block
     memmove(to->data, from->data, BSIZE);
     bwrite(to);  // write the log
-    brelse(from);
-    brelse(to);
+    buf_cache_release(from);
+    buf_cache_release(to);
   }
 }
 
@@ -194,7 +194,7 @@ static void commit() {
 //   bp = bread(...)
 //   modify bp->data[]
 //   log_write(bp)
-//   brelse(bp)
+//   buf_cache_release(bp)
 void log_write(struct buf *b) {
   int i;
 
@@ -210,10 +210,10 @@ void log_write(struct buf *b) {
 
   acquire(&log.lock);
   for (i = 0; i < log.lh.n; i++) {
-    if (log.lh.block[i] == b->blockno)  // log absorbtion
+    if (log.lh.block[i] == b->id.blockno)  // log absorbtion
       break;
   }
-  log.lh.block[i] = b->blockno;
+  log.lh.block[i] = b->id.blockno;
   if (i == log.lh.n) {
     log.lh.n++;
     b->cgroup = proc_get_cgroup();
