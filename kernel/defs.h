@@ -315,8 +315,13 @@ int intlen(int n);
 // min between two numbers
 #define min(x, y) (x) > (y) ? (y) : (x)
 
+// max of two numbers
+#define max(x, y) (x) > (y) ? (x) : (y)
+
 // if x is bigger that 0 return x, else return 0
 #define at_least_zero(x) (x) > 0 ? (x) : (0)
+
+#define ARRAY_LEN(arr) (sizeof(arr) / sizeof((arr)[0]))
 
 /** Return codes:
  * - RESULT_ERROR_OPERATION upon error related to the executed operation.

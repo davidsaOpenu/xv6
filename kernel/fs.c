@@ -247,7 +247,7 @@ void iupdate(struct vfs_inode *vfs_ip) {
   dip->vfs_dinode.major = ip->vfs_inode.major;
   dip->vfs_dinode.minor = ip->vfs_inode.minor;
   dip->vfs_dinode.nlink = ip->vfs_inode.nlink;
-  dip->size = ip->size;
+  dip->size = ip->vfs_inode.size;
   memmove(dip->addrs, ip->addrs, sizeof(ip->addrs));
   log_write(bp);
   buf_cache_release(bp);
@@ -335,7 +335,7 @@ void ilock(struct vfs_inode *vfs_ip) {
     ip->vfs_inode.major = dip->vfs_dinode.major;
     ip->vfs_inode.minor = dip->vfs_dinode.minor;
     ip->vfs_inode.nlink = dip->vfs_dinode.nlink;
-    ip->size = dip->size;
+    ip->vfs_inode.size = dip->size;
     memmove(ip->addrs, dip->addrs, sizeof(ip->addrs));
     buf_cache_release(bp);
     ip->vfs_inode.valid = 1;
@@ -454,7 +454,7 @@ static void itrunc(struct vfs_inode *vfs_ip) {
     ip->addrs[NDIRECT] = 0;
   }
 
-  ip->size = 0;
+  ip->vfs_inode.size = 0;
   iupdate(&ip->vfs_inode);
 }
 
@@ -467,7 +467,7 @@ void stati(struct vfs_inode *vfs_ip, struct stat *st) {
   st->ino = ip->vfs_inode.inum;
   st->type = ip->vfs_inode.type;
   st->nlink = ip->vfs_inode.nlink;
-  st->size = ip->size;
+  st->size = ip->vfs_inode.size;
 }
 
 // PAGEBREAK!
@@ -488,8 +488,8 @@ int readi(struct vfs_inode *vfs_ip, uint off, uint n, vector *dstvector) {
     return read_result;
   }
 
-  if (off > ip->size || off + n < off) return -1;
-  if (off + n > ip->size) n = ip->size - off;
+  if (off > ip->vfs_inode.size || off + n < off) return -1;
+  if (off + n > ip->vfs_inode.size) n = ip->vfs_inode.size - off;
 
   unsigned int dstoffset = 0;
   for (tot = 0; tot < n; tot += m, off += m, dstoffset += m) {
@@ -521,7 +521,7 @@ int writei(struct vfs_inode *vfs_ip, char *src, uint off, uint n) {
     return devsw[ip->vfs_inode.major].write(vfs_ip, src, n);
   }
 
-  if (off > ip->size || off + n < off) return -1;
+  if (off > ip->vfs_inode.size || off + n < off) return -1;
   if (off + n > MAXFILE * BSIZE) return -1;
 
   for (tot = 0; tot < n; tot += m, off += m, src += m) {
@@ -533,8 +533,8 @@ int writei(struct vfs_inode *vfs_ip, char *src, uint off, uint n) {
     buf_cache_release(bp);
   }
 
-  if (n > 0 && off > ip->size) {
-    ip->size = off;
+  if (n > 0 && off > ip->vfs_inode.size) {
+    ip->vfs_inode.size = off;
     iupdate(&ip->vfs_inode);
   }
   return n;
@@ -551,7 +551,7 @@ int isdirempty(struct vfs_inode *vfs_dp) {
   struct inode *dp = container_of(vfs_dp, struct inode, vfs_inode);
   direntryvec = newvector(sizeof(de), 1);
 
-  for (off = 2 * sizeof(de); off < dp->size; off += sizeof(de)) {
+  for (off = 2 * sizeof(de); off < dp->vfs_inode.size; off += sizeof(de)) {
     if (dp->vfs_inode.i_op.readi(&dp->vfs_inode, off, sizeof(de),
                                  &direntryvec) != sizeof(de))
       panic("isdirempty: readi");
@@ -574,7 +574,7 @@ struct vfs_inode *dirlookup(struct vfs_inode *vfs_dp, char *name, uint *poff) {
 
   if (dp->vfs_inode.type != T_DIR) panic("dirlookup not DIR");
 
-  for (off = 0; off < dp->size; off += sizeof(de)) {
+  for (off = 0; off < dp->vfs_inode.size; off += sizeof(de)) {
     if (readi(&dp->vfs_inode, off, sizeof(de), &direntryvec) != sizeof(de))
       panic("dirlookup read");
     // vectormemcmp("dirlookup", direntryvec,0, (char *) &de, sizeof(de));
@@ -608,7 +608,7 @@ int dirlink(struct vfs_inode *vfs_dp, char *name, uint inum) {
   }
 
   // Look for an empty dirent.
-  for (off = 0; off < dp->size; off += sizeof(de)) {
+  for (off = 0; off < dp->vfs_inode.size; off += sizeof(de)) {
     if (readi(&dp->vfs_inode, off, sizeof(de), &direntryvec) != sizeof(de))
       panic("dirlink read");
     memmove_from_vector((char *)&de, direntryvec, 0, sizeof(de));
