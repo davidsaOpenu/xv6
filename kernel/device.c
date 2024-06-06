@@ -96,7 +96,7 @@ void deviceput(uint dev) {
       release(&dev_holder.lock);
 
       dev_holder.loopdevs[dev].ip->i_op.iput(dev_holder.loopdevs[dev].ip);
-      invalidateblocks(LOOP_DEVICE_TO_DEV(dev));
+      buf_cache_invalidate_blocks(LOOP_DEVICE_TO_DEV(dev));
 
       acquire(&dev_holder.lock);
       dev_holder.loopdevs[dev].ip = 0;
