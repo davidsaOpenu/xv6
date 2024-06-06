@@ -17,9 +17,9 @@ enum controller_types { CPU_CNT, PID_CNT, SET_CNT, MEM_CNT };
 // #define MEM_SIZE 230686720
 
 // The const was calculated in an old state of the project.
-// The fix that I needed to subtract 64k bytes.
+// The fix that I needed to subtract 128k bytes.
 // TODO(unknown): Calculated dynamically.
-#define MEM_SIZE 230424576
+#define MEM_SIZE 230359040
 
 #define CGROUP "cgroup"
 #define ROOT_CGROUP "/cgroup"

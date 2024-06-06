@@ -6,6 +6,7 @@
 OBJS = \
 	kvector.o\
 	bio.o\
+	buf_cache.o\
 	console.o\
 	device.o\
 	exec.o\

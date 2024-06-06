@@ -99,7 +99,7 @@ internal_fs_%: mkfs
 	echo $@ >> $(CURDIR)/images/metadata/all_images
 	cd $(CURDIR)/images/extracted/$@ && find . -type f -exec ls -la {} \; > $(CURDIR)/images/metadata/img_$*.attr
 	./mkfs $@ 1 $$(find $(CURDIR)/images/extracted/$@ -type f) $(CURDIR)/images/metadata/img_$*.attr
-	
+
 
 fs.img: user kernel/kernel.bin mkfs $(UPROGS_ABS) $(UPROGS_TESTS) $(INTERNAL_DEV) $(TEST_ASSETS)
 	./mkfs $@ 0 README $(UPROGS_ABS) $(INTERNAL_DEV) $(TEST_ASSETS) $(UPROGS_TESTS) $(CURDIR)/images/metadata/all_images
@@ -216,7 +216,7 @@ windows_debugging_clean:
 
 .PHONY: dist-test dist windows_debugging windows_debugging_mkdir windows_debugging_clean docs
 
-host-tests: 
+host-tests:
 	$(MAKE) -C tests/host
 
 host-tests-debug: OFLAGS = -Og -ggdb
