@@ -10,7 +10,6 @@
 // that also keeps one to one correspondence between a physical inode and it's
 // vfs_inode counterpart
 struct inode {
-  uint size;
   uint addrs[NDIRECT + 1];
   struct vfs_inode vfs_inode;
 };
