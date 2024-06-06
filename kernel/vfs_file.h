@@ -145,6 +145,7 @@ struct vfs_inode {
   short major;
   short minor;
   short nlink;
+  uint size;
   struct inode_operations i_op;
 };
 
