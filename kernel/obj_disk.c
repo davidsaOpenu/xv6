@@ -196,6 +196,21 @@ uint get_object_table_size(struct obj_device* device) {
          sizeof(ObjectsTableEntry);
 }
 
+static void copy_bufs_vector_to_disk(char* address, vector bufs, uint size) {
+  uint copied_bytes = 0;
+  struct buf* curr_buf;
+
+  if (0 < size) {
+    for (uint buf_index = 0; buf_index < bufs.vectorsize; buf_index++) {
+      uint block_size = min(BUF_DATA_SIZE, size - copied_bytes);
+      memmove_from_vector((char*)&curr_buf, bufs, buf_index, 1);
+      memmove(address + copied_bytes, curr_buf->data, block_size);
+      curr_buf->flags &= ~B_DIRTY;
+      copied_bytes += block_size;
+    }
+  }
+}
+
 void init_obj_device(uint dev) {
   struct obj_device* device = objdeviceget(dev);
 
@@ -236,8 +251,8 @@ void init_obj_device(uint dev) {
 }
 
 uint find_space_and_populate_entry(struct obj_device* device,
-                                   ObjectsTableEntry* entry, const void* object,
-                                   const char* name, uint size) {
+                                   ObjectsTableEntry* entry, const char* name,
+                                   vector bufs, uint size) {
   void* address = find_empty_space(device, size);
   if (!address) {
     return NO_DISK_SPACE_FOUND;
@@ -245,7 +260,7 @@ uint find_space_and_populate_entry(struct obj_device* device,
   memmove(entry->object_id, name, obj_id_bytes(name));
   entry->disk_offset = address - (void*)device->memory_storage;
   entry->size = size;
-  memmove(address, object, size);
+  copy_bufs_vector_to_disk(address, bufs, size);
   entry->occupied = 1;
   device->sb.bytes_occupied += size;
   device->sb.occupied_objects += 1;
@@ -254,7 +269,7 @@ uint find_space_and_populate_entry(struct obj_device* device,
   return NO_ERR;
 }
 
-uint add_object(uint dev, const void* object, uint size, const char* name) {
+uint add_object(uint dev, const char* name, vector bufs, uint size) {
   uint err = NO_ERR;
   struct obj_device* device = objdeviceget(dev);
 
@@ -276,7 +291,7 @@ uint add_object(uint dev, const void* object, uint size, const char* name) {
     if (entry->disk_offset < leftmost_disk_allocation_offset)
       leftmost_disk_allocation_offset = entry->disk_offset;
     if (!entry->occupied) {
-      err = find_space_and_populate_entry(device, entry, object, name, size);
+      err = find_space_and_populate_entry(device, entry, name, bufs, size);
       goto unlock;
     }
   }
@@ -288,7 +303,7 @@ uint add_object(uint dev, const void* object, uint size, const char* name) {
         device->sb.store_offset + sizeof(ObjectsTableEntry);
     device->sb.bytes_occupied += sizeof(ObjectsTableEntry);
     ObjectsTableEntry* entry = objects_table_entry(device, i);
-    err = find_space_and_populate_entry(device, entry, object, name, size);
+    err = find_space_and_populate_entry(device, entry, name, bufs, size);
     goto unlock;
   }
 
@@ -302,10 +317,10 @@ put_dev:
   return err;
 }
 
-uint rewrite_object(uint dev, vector data, uint objectsize,
-                    uint write_starting_offset, const char* name) {
+uint write_object(uint dev, const char* name, vector bufs, uint objectsize) {
   uint err;
   struct obj_device* device = objdeviceget(dev);
+  char* obj_addr;
 
   // 1. check for name contraints validity
   err = check_rewrite_object_validality(objectsize, name);
@@ -323,32 +338,26 @@ uint rewrite_object(uint dev, vector data, uint objectsize,
   device->sb.bytes_occupied -= entry->size;
   if (entry->size >= objectsize) {
     // 3.A - the new object written is smaller or equals the the original.
-    void* address = (void*)((uint)device->memory_storage + entry->disk_offset +
-                            write_starting_offset);
-    /* TODO(unknown)? instead of data.vectorsize
-     * add parameter 'datasize' */
-    memmove_from_vector(address, data, 0, data.vectorsize);
+    obj_addr = device->memory_storage + entry->disk_offset;
     entry->size = objectsize;
   } else {
     // 3.B - the new object is larger
     entry->occupied = 0;
     device->sb.occupied_objects -= 1;
-    void* new_object_address = find_empty_space(device, objectsize);
-    void* data_destination_address =
-        (void*)((uint)new_object_address + write_starting_offset);
+    obj_addr = find_empty_space(device, objectsize);
     entry->occupied = 1;
     device->sb.occupied_objects += 1;
-    if (!new_object_address) {
-      err = NO_DISK_SPACE_FOUND;
-      goto unlock;
+    if (!obj_addr) {
+      releasesleep(&device->disklock);
+      return NO_DISK_SPACE_FOUND;
     }
-    memmove(new_object_address,
-            (void*)((uint)device->memory_storage + entry->disk_offset),
-            entry->size);
-    memmove_from_vector(data_destination_address, data, 0, data.vectorsize);
     entry->size = objectsize;
-    entry->disk_offset = new_object_address - (void*)device->memory_storage;
+    entry->disk_offset = (void*)obj_addr - (void*)device->memory_storage;
   }
+
+  // 4. Write the object content
+  copy_bufs_vector_to_disk(obj_addr, bufs, objectsize);
+
   device->sb.bytes_occupied += objectsize;
   write_super_block(device);
   err = NO_ERR;
@@ -387,10 +396,12 @@ put_dev:
   return err;
 }
 
-uint get_object(uint dev, const char* name, void* output,
-                vector* outputvector) {
+uint get_object(uint dev, const char* name, vector bufs) {
   uint err = NO_ERR;
   struct obj_device* device = objdeviceget(dev);
+  char* obj_addr;
+  struct buf* curr_buf;
+  uint copied_bytes = 0;
 
   // 1. make sure the name is of legal length
   if (strlen(name) > MAX_OBJECT_NAME_LENGTH) {
@@ -406,12 +417,23 @@ uint get_object(uint dev, const char* name, void* output,
     goto unlock;
   }
   // 3. read the objects offset in disk, then read the object into
-  // output address and vector
+  // the output bufs
   ObjectsTableEntry* entry = objects_table_entry(device, i);
-  void* address = (void*)((uint)device->memory_storage + entry->disk_offset);
-  if (output != NULL) memmove(output, address, entry->size);
-  if (outputvector != NULL)
-    memmove_into_vector_bytes(*outputvector, 0, address, entry->size);
+  if (entry->size > (bufs.vectorsize * BUF_DATA_SIZE)) {
+    releasesleep(&device->disklock);
+    return BUFFER_TOO_SMALL;
+  }
+
+  obj_addr = device->memory_storage + entry->disk_offset;
+  for (uint buf_index = 0; buf_index < bufs.vectorsize; buf_index++) {
+    uint block_size = min(BUF_DATA_SIZE,  // NOLINT(build/include_what_you_use)
+                          entry->size - copied_bytes);
+    memmove_from_vector((char*)&curr_buf, bufs, buf_index, 1);
+    memmove(curr_buf->data, obj_addr + copied_bytes, block_size);
+    curr_buf->flags |= B_VALID;
+    copied_bytes += block_size;
+  }
+
   err = NO_ERR;
 
 unlock:

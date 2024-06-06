@@ -16,8 +16,8 @@ kvector_tests:  kvector_ktbin.o kvector_tests.o common_mocks.o
 common_mocks.o: common_mocks.c common_mocks.h
 	$(CC) $(HOST_CFLAGS) $(OFLAGS) -c -o $@ $<
 
-%_ktbin.o: ../../kernel/%.c ../../kernel/%.h
-	$(CC) $(HOST_CFLAGS) $(OFLAGS) -c -o $@ $<
+%_ktbin.o: ../../kernel/%.c
+	$(CC) $(CFLAGS) $(OFLAGS) -c -o $@ $<
 
 %_tests.o: %_tests.c common_mocks.h ../framework/test.h
 	$(CC) $(HOST_CFLAGS) $(OFLAGS) -c -o $@ $<

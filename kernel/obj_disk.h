@@ -91,6 +91,7 @@
 #define OBJECT_NAME_TOO_LONG 3
 #define OBJECTS_TABLE_FULL 4
 #define NO_DISK_SPACE_FOUND 5
+#define BUFFER_TOO_SMALL 6
 
 // In the future, this can be set the size of SHA256 digest.
 #define OBJECT_ID_LENGTH MAX_OBJECT_NAME_LENGTH
@@ -148,14 +149,13 @@ void init_obj_device(uint dev);
  *   OBJECT_NAME_TOO_LONG - the object exceedes `MAX_OBJECT_NAME_LENGTH`.
  *
  */
-uint add_object(uint dev, const void* object, uint size, const char* name);
+uint add_object(uint dev, const char* name, vector bufs, uint size);
 
 /**
  * This functions receives an object of size 'objectsize'
- * and rewrites some of its content which is specified
- * by the offset parameter.
+ * and writes its content.
  * This function will then write the data contained in the vector
- * to the file, starting the given offset.
+ * to the file.
  * If the new size is larger than the located one for the object, the method
  * search for a new address for the object. Before searching, the method
  * "deallocate" the object for the search. By that, the search method might
@@ -165,8 +165,7 @@ uint add_object(uint dev, const void* object, uint size, const char* name);
  *   NO_ERR            - no error occured.
  *   OBJECT_NOT_EXISTS - object with this name already exists.
  */
-uint rewrite_object(uint dev, vector object, uint objectsize,
-                    uint write_starting_offset, const char* name);
+uint write_object(uint dev, const char* name, vector bufs, uint objectsize);
 
 /**
  * Delete the specific object from the objects table. The bytes on the disk
@@ -186,13 +185,22 @@ uint delete_object(uint dev, const char* name);
 uint object_size(uint dev, const char* name, uint* output);
 
 /**
- * Copy the desired object from the device storage to the output buffer.
- * The method assumes enough storage is given.
+ * Copy the desired object from the device storage to the output buf pointers
+ * vector.
  * The method returns a code indicates the error occured.
  *   NO_ERR            - no error occured.
  *   OBJECT_NOT_EXISTS - no object with this name exists.
+ *   BUFFER_TOO_SMALL  - the given buffer is too small
  */
-uint get_object(uint dev, const char* name, void* output, vector* outputvector);
+uint get_object(uint dev, const char* name, vector bufs);
+
+/**
+ * The following methods are utility methods to help restore the disk in case
+ * of state failures. The usages are fixing a corrupted disk by utility
+ * applications. The methods are accessing the disk in RAW and without safety
+ * guards. This methods should only be used by functions in this file and
+ * disk-restore applications.
+ */
 
 /**
  * Returns the object index in the objects table.
