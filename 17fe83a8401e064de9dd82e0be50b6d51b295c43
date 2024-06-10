@@ -1,6 +1,29 @@
 {
   "comments": [
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "26f75c08_ae2677ae",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 8
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-06-10T06:40:27Z",
+      "side": 1,
+      "message": "Lets remove those 2 lines. 106-runtestsexp-accepted-unexpecte card seems unrelated to the https://review.gerrithub.io/c/davidsaOpenu/xv6/+/1193852 (Pouch: c1 destroyed\" can\u0027t happen when an attempt to destroy a container occurred from inside the container. When the attempt to destroy the container happens from inside the container \"pouch\" utility returns command usage pattern as an output and that\u0027s what was missed by expect)",
+      "range": {
+        "startLine": 20,
+        "startChar": 0,
+        "endLine": 21,
+        "endChar": 13
+      },
+      "revId": "17fe83a8401e064de9dd82e0be50b6d51b295c43",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "c5e6526c_acbf3908",
@@ -31,6 +54,23 @@
       "writtenOn": "2024-06-10T05:41:44Z",
       "side": 1,
       "message": "recheck",
+      "revId": "17fe83a8401e064de9dd82e0be50b6d51b295c43",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "abdef70c_8a50d422",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-06-10T06:40:27Z",
+      "side": 1,
+      "message": "We can proceed with merging this change without the cgroup tests for now. I\u0027ve created a new card for that https://trello.com/c/BBYOWyDy/288-re-enable-cgroup-tests",
       "revId": "17fe83a8401e064de9dd82e0be50b6d51b295c43",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
