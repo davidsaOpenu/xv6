@@ -16,6 +16,23 @@
       "message": "recheck",
       "revId": "051536e205b44e9099b6110ae3e0f207bb736c23",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2c4a3148_b793ce60",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-06-13T13:45:15Z",
+      "side": 1,
+      "message": "following the removal of 2 old docker images (for 16.04 and 22.04)",
+      "revId": "051536e205b44e9099b6110ae3e0f207bb736c23",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
