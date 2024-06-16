@@ -67,6 +67,24 @@
       "message": "@sagi1.marom@gmail.com could you please take a look at  http://192.114.0.189/jenkins/job/xv6-22.04/2411/console\n\n11:33:51 gcc -static -m32 -MD -std\u003dgnu99 -Wall -Werror -Wno-builtin-declaration-mismatch -I/home/jenkins/xv6 -I/home/jenkins/xv6/tests/host/ -I/home/jenkins/xv6/tests/framework/ -DHOST_TESTS -O2 \\\n11:33:51 \tkvector.c tests/host/kvectortest.c tests/host/common_mocks.c \\\n11:33:51 \t-std\u003dgnu99 \\\n11:33:51 \t-o kvector_tests\n11:33:51 In file included from defs.h:240,",
       "revId": "051536e205b44e9099b6110ae3e0f207bb736c23",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2ac5ada3_a2b6fc78",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1037966
+      },
+      "writtenOn": "2024-06-16T10:19:38Z",
+      "side": 1,
+      "message": "@davidsa@openu.ac.il This is the same docker problem. It seems that it ran on the old docker image. When you deleted the old image and triggered the CI again, the docker build failed, I guess that later someone ran the CI on another source code version, which contains the old Dockerfile, causing the old docker to be built. Can you build the new docker image manually on the CI machine?",
+      "parentUuid": "438f5560_2d38d477",
+      "revId": "051536e205b44e9099b6110ae3e0f207bb736c23",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
