@@ -4,6 +4,7 @@ FROM ubuntu:22.04 as base
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
     g++ \
+    gcc-muiltilib \
     make \
     libpcre3-dev \
     curl \
