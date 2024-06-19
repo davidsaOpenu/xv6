@@ -42,19 +42,11 @@ fi
 # build the docker image if it does not exist
 
 # Check if the Docker image exists
-if ! docker image inspect $IMAGE_NAME &> /dev/null; then
-    echo "Docker image $IMAGE_NAME not found. Building..."
-    docker build --build-arg USERNAME=$(whoami) \
-                --build-arg GRPNAME=$(id -gn) \
-                --build-arg UID=$(id -u) \
-                --build-arg BUILD_LINTING_TOOLS=$LINTING_FLAG \
-                --build-arg GID=$(id -g) -t $IMAGE_NAME -f $DOCKERFILE .
-    exit 0
-elif [ "$1" == "build" ]; then
-    echo "Docker image $IMAGE_NAME already exists. \
-    Use 'docker rmi $IMAGE_NAME' to remove it."
-    exit 0
-fi
+docker build --build-arg USERNAME=$(whoami) \
+             --build-arg GRPNAME=$(id -gn) \
+             --build-arg UID=$(id -u) \
+             --build-arg BUILD_LINTING_TOOLS=$LINTING_FLAG \
+             --build-arg GID=$(id -g) -t $IMAGE_NAME -f $DOCKERFILE .
 
 #########################################################################
 # test the docker image using the run-ci.sh script or intaractive mode
