@@ -85,6 +85,24 @@
       "parentUuid": "438f5560_2d38d477",
       "revId": "051536e205b44e9099b6110ae3e0f207bb736c23",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2aa5528a_94c3a6a0",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-06-19T14:37:43Z",
+      "side": 1,
+      "message": "@sagi1.marom@gmail.com thanks for looking. https://review.gerrithub.io/c/davidsaOpenu/xv6/+/1196516 is about to fix it.",
+      "parentUuid": "2ac5ada3_a2b6fc78",
+      "revId": "051536e205b44e9099b6110ae3e0f207bb736c23",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
