@@ -38,21 +38,14 @@ else
     IMAGE_NAME="xv6-test-image"
 fi
 
-#########################################################################
-# build the docker image if it does not exist
 
-# Check if the Docker image exists
-docker build --build-arg USERNAME=$(whoami) \
-             --build-arg GRPNAME=$(id -gn) \
-             --build-arg UID=$(id -u) \
-             --build-arg BUILD_LINTING_TOOLS=$LINTING_FLAG \
-             --build-arg GID=$(id -g) -t $IMAGE_NAME -f $DOCKERFILE .
-
-#########################################################################
-# test the docker image using the run-ci.sh script or intaractive mode
-
-# Check the first argument to determine what to do
-if [ "$1" == "test" ]; then
+if [ "$1" == "build" ]; then
+    docker build --build-arg USERNAME=$(whoami) \
+                --build-arg GRPNAME=$(id -gn) \
+                --build-arg UID=$(id -u) \
+                --build-arg BUILD_LINTING_TOOLS=$LINTING_FLAG \
+                --build-arg GID=$(id -g) -t $IMAGE_NAME -f $DOCKERFILE .
+elif [ "$1" == "test" ]; then
     # Run tests
     docker run --mount type=bind,source="$(pwd)",target=/home/$(whoami)/xv6 \
                 --rm $IMAGE_NAME \
