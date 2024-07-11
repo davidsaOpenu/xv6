@@ -16,16 +16,62 @@ proc pid_check { argv expect_str} {
     assert_on_exit_status
 }
 
+proc assert_no_pouch_images { argv } {
+    set timeout 3
+    log_file -noappend [lindex $argv 0]
+
+    send "pouch images\n"
+    expect "No images available"
+    expect "$ "
+}
+
+proc assert_abc_pouch_images { argv } {
+    set timeout 3
+    log_file -noappend [lindex $argv 0]
+    send "pouch images\n"
+    expect "Pouch images available:"
+    expect "img_a"
+    expect "img_b"
+    expect "img_c"
+    expect "$ "
+}
+
+proc prepare_pouch_images { argv } {
+    set timeout 3
+    assert_no_pouch_images $argv
+
+    # copy /internal_fs_[abc] to /images/img_[abc]:
+    foreach var {a b c} {
+        send "cp /internal_fs_$var /images/img_$var\n"
+        log_file -noappend [lindex $argv 0]
+        assert_on_exit_status
+    }
+
+    log_file -noappend [lindex $argv 0]
+    assert_abc_pouch_images $argv
+}
+
+proc remove_pouch_images { argv } {
+    assert_abc_pouch_images $argv
+    # remove /images/img_[abc]:
+    foreach var {a b c} {
+        send "rm /images/img_$var\n"
+        log_file -noappend [lindex $argv 0]
+        assert_on_exit_status
+    }
+    assert_no_pouch_images $argv
+}
+
 # - wrapper for container start command
 # @argv - file name for logging
 # @id - int for specifiyng container name
 # @expect_str - the string to expect
-proc start_container { argv id expect_str} {
-
-    send "pouch start c$id\n"
+proc start_container { argv id expect_str {image_name "img_a"} { exit_code 0 } } {
+    send "pouch start c$id $image_name\n"
     set timeout 3
     log_file -noappend [lindex $argv 0]
     expect "$expect_str"
+    assert_on_exit_status $exit_code
 }
 
 # - wrapper for pouch connect command
@@ -61,6 +107,7 @@ proc destroy_container {argv id expect_str} {
     set timeout 5
     log_file -noappend [lindex $argv 0]
     expect "$expect_str"
+    assert_on_exit_status
 }
 
 proc assert_on_exit_status {{code 0} {wait_for_last_exit 1}} {
@@ -79,7 +126,7 @@ proc assert_on_exit_status {{code 0} {wait_for_last_exit 1}} {
         set result $expect_out(1,string)
     }
     if { $result != $code } {
-        puts "TEST HAS FAILED exit = $result" ; exit 1;
+        puts "TEST HAS FAILED exit = $result, not $code" ; exit 1;
     }
     expect {
         "$ "
@@ -109,11 +156,9 @@ proc pouch_stress_test {argv} {
 
     set timeout 3
     for {set x 0} {$x < 10} {incr x} {
-        set running [start_container $argv "1" "Pouch: c1 starting"]
-        set running [assert_on_exit_status 0 1]
+        set running [start_container $argv "1" "Pouch: c1 starting" "img_a"]
         sleep 0.5
         set running [destroy_container $argv "1" "Pouch: c1 destroyed"]
-        set running [assert_on_exit_status 0 1]
         sleep 0.5
         log_file -noappend [lindex $argv 0]
     }
@@ -470,30 +515,11 @@ proc umount_bind_mount_test {argv} {
 # @argv - file name for logging
 proc pouch_start_test {argv} {
 
-    set running [start_container $argv "1" "Pouch: c1 starting"]
+    set running [start_container $argv "1" "Pouch: c1 starting" "img_a"]
     set timeout 3
     set running [pid_check $argv "PID: 2"]
     sleep 2
 }
-
-proc pouch_images_command {argv} {
-    set timeout 3
-    log_file -noappend [lindex $argv 0]
-
-    #no images yet
-    send "pouch images\n"
-    expect "$ "
-
-    #create image and test if recognized
-    send "mkdir /images/test_image\n"
-    expect "$ "
-
-    send "pouch images\n"
-    expect "test_image"
-    expect "$ "
-    sleep 1
-}
-
 
 # - * This test checks container connection after it was started,
 # - once the container is connected the pid should be 1
@@ -550,7 +576,6 @@ proc pouch_destroy_test {argv} {
     expect -re {c1\s+2\s+[0-9]+\s+[0-9]+}
 
     set running [destroy_container $argv "1" "Pouch: c1 destroyed"]
-    assert_on_exit_status
 
     set timeout 3
     send "ls c1\n"
@@ -588,13 +613,13 @@ proc command_exit_status_test {argv} {
 # - 'Cannot find tty' because there are only 3 containers available
 # @argv - file name for logging
 proc pouch_to_many_cnts_test {argv} {
-    set running [start_container $argv "1" "Pouch: c1 starting"]
+    set running [start_container $argv "1" "Pouch: c1 starting" "img_a"]
     # sleep 1
-    set running [start_container $argv "2" "Pouch: c2 starting"]
+    set running [start_container $argv "2" "Pouch: c2 starting" "img_b"]
     # sleep 1
-    set running [start_container $argv "3" "Pouch: c3 starting"]
+    set running [start_container $argv "3" "Pouch: c3 starting" "img_c"]
     # sleep 1
-    set running [start_container $argv "4" "Pouch: cannot create more containers"]
+    set running [start_container $argv "4" "Pouch: cannot create more containers" "img_a" 1]
 
 }
 
@@ -660,7 +685,7 @@ proc pouch_cgroup_already_exists {argv} {
     log_file -noappend [lindex $argv 0]
     assert_on_exit_status
     set timeout 3
-    set running [start_container $argv "5" "cgroup already exists"]
+    set running [start_container $argv "5" "cgroup already exists" "img_a" 1]
     log_file -noappend [lindex $argv 0]
     expect "Pouch: Failed to create cgroup with the given name. Consider another container name: c5"
 }
@@ -682,8 +707,10 @@ proc pouch_disconnect_outside_container_test {argv} {
     expect {
        "Pouch: no container is connected"
     }
-    sleep 2
+    assert_on_exit_status 1
+    sleep 1
     send "pouch disconnect\n"
+    sleep 1
     set timeout 3
     log_file -noappend [lindex $argv 0]
     assert_on_exit_status
@@ -758,8 +785,7 @@ proc cgroupstests {argv} {
 proc cgroup_io_states_test {argv} {
     set timeout 2
 
-    set running [start_container $argv "temp" "Pouch: ctemp starting"]
-    assert_on_exit_status
+    set running [start_container $argv "temp" "Pouch: ctemp starting" "img_a"]
     sleep 1
     send "cat /cgroup/ctemp/io.stat\n"
     expect "1:1 rbytes=0 wbytes=0 rios=0 wios=0"
@@ -781,9 +807,9 @@ proc cgroup_io_states_test {argv} {
        "Console connected"
     }
     set running [destroy_container $argv "temp" "Pouch: ctemp destroyed"]
-
-    set running [start_container $argv "test" "Pouch: ctest starting"]
-    assert_on_exit_status
+    
+    set running [start_container $argv "test" "Pouch: ctest starting" "img_a"]
+    
     sleep 1
     send "cat /cgroup/ctest/io.stat\n"
     expect "1:1 rbytes=95 wbytes=106 rios=95 wios=11"
@@ -816,22 +842,6 @@ proc mounttest {argv} {
     set timeout -1
     send "mounttest\n"
     log_file -noappend [lindex $argv 0]
-    assert_on_exit_status
-}
-
-# - xv6 mntns test with ls
-# @argv - file name for logging
-proc mounttest_with_ls {argv} {
-
-    send "mkdir test_dir_mount_test\n"
-    assert_on_exit_status
-    send "mount internal_fs_a test_dir_mount_test\n"
-    assert_on_exit_status
-    send "ls test_dir_mount_test\n"
-    assert_on_exit_status
-    send "umount test_dir_mount_test\n"
-    assert_on_exit_status
-    send "rm test_dir_mount_test\n"
     assert_on_exit_status
 }
 
@@ -955,6 +965,21 @@ proc test_pouch_build_file_parsing {argv} {
     }
 }
 
+proc test_internal_images {argv} {
+    # For each one of internal_fs_[a,b,c], mount it, check if it is mounted, unmount it, check if it is unmounted.
+    set timeout 3
+    set internal_images [list a b c]
+    foreach elem $internal_images {
+        send "mkdir /m$elem\n"
+        assert_on_exit_status
+        send "mount internal_fs_$elem /m$elem\n"
+        assert_on_exit_status
+        send "ls /m$elem\n"
+        send "umount /m$elem\n"
+        assert_on_exit_status
+    }
+}
+
 #-------------------------------------------------------------------------
 #-MAIN--------------------------------------------------------------------
 #-------------------------------------------------------------------------
@@ -985,7 +1010,8 @@ expect "$ "
 
 #uncomment for expect debugging
 #exp_internal 1
-
+set running [mounttest $argv]
+set running [prepare_pouch_images $argv]
 set running [ioctl_syscall_test $argv]
 # set running [cgroupstests $argv] # ERR
 set running [cgroup_io_states_test $argv]
@@ -998,7 +1024,6 @@ set running [mount_bind_test $argv]
 set running [umount_bind_mount_test $argv]
 set running [pouch_basic_tests $argv]
 set running [command_exit_status_test $argv]
-set running [pouch_images_command $argv]
 
 # scenario tests
 set running [cp_simple_objfs_nativefs_copy_test $argv]
@@ -1012,13 +1037,14 @@ set running [pouch_disconnect_outside_container_test $argv]
 set running [pouch_info_container_test $argv]
 set running [pouch_cgroup_limit_test $argv]
 
+set running[remove_pouch_images $argv]
+
 set running [test_pouch_build_valid_args $argv]
 set running [test_pouch_build_invalid_args $argv]
 set running [test_pouch_build_file_parsing $argv]
 
 set running [pidns_tests $argv]
-set running [mounttest $argv]
-set running [mounttest_with_ls $argv]
+set running [test_internal_images $argv]
 # run last, prints "ALL TESTS PASSED"
 set running [usertests $argv]
 

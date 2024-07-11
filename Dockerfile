@@ -1,25 +1,27 @@
 FROM ubuntu:22.04 as base
-
+ENV DEBIAN_FRONTEND=noninteractive
 # Update package lists and install dependencies
-RUN apt-get update
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    g++ \
-    make \
-    libpcre3-dev \
-    curl \
-    tar \
-    python3 \
-    vim \
-    git \
-    cmake \
-    sudo \
-    python3.10-venv \
-    qemu-kvm \
-    libvirt-daemon-system \
-    libvirt-clients \
-    bridge-utils \
-    virt-manager \
-    expect
+RUN apt-get update && \
+    apt-get install -y \
+        g++ \
+        make \
+        libpcre3-dev \
+        curl \
+        tar \
+        python3 \
+        vim \
+        git \
+        cmake \
+        sudo \
+        python3.10-venv \
+        qemu-kvm \
+        libvirt-daemon-system \
+        libvirt-clients \
+        bridge-utils \
+        virt-manager \
+        expect \
+        jq \
+        gcc-multilib # for host unit tests
 
 # Download and extract Cppcheck
 WORKDIR /opt
@@ -45,9 +47,6 @@ RUN cmake -G "Unix Makefiles" -DLLVM_ENABLE_PROJECTS="clang" \
     make clang-format && \
     cp bin/clang-format /usr/local/bin
 
-# Install packages for host unit tests
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y gcc-multilib
-
 # Create a non-root user with the same username,uid,gid
 # as the user running the container
 ARG USERNAME
@@ -56,6 +55,13 @@ ARG UID
 ARG GID
 RUN groupadd -g $GID $GRPNAME
 RUN useradd -u $UID -g $GID -s /bin/bash $USERNAME
+
+# Install cpplint+bashate for the user in a venv, and activate it.
+ENV XV6_VENV=/xv6-venv
+RUN python3 -m venv $XV6_VENV
+ENV PATH=$XV6_VENV/bin:$PATH
+RUN pip install cpplint bashate && \
+    chmod -R 777 $XV6_VENV
 
 # Change user
 USER $USERNAME
