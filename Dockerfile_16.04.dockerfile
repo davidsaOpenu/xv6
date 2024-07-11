@@ -8,11 +8,11 @@ FROM ubuntu:16.04 as base
 # Note: Building with linting enabled significantly increases the build time.
 #       Consider this if time is a constraint.
 ARG BUILD_LINTING_TOOLS
-
+ENV DEBIAN_FRONTEND=noninteractive
 # Update package lists and install dependencies
 RUN if [ "$BUILD_LINTING_TOOLS" = "true" ]; then \
     apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    apt-get install -y \
     g++ \
     make \
     libpcre3-dev \
@@ -40,7 +40,8 @@ RUN if [ "$BUILD_LINTING_TOOLS" = "true" ]; then \
     tk-dev \
     libxml2-dev \
     libxmlsec1-dev \
-    libffi-dev; \
+    libffi-dev \
+    jq; \
     fi
 # libvirt-clients causes an error when installing on Ubuntu 16.04
 
@@ -122,6 +123,12 @@ RUN if [ "$BUILD_LINTING_TOOLS" = "true" ]; then \
 
 # Change user
 USER $USERNAME
+
+# Install cpplint+bashate for the user
+ENV XV6_VENV=/home/$USERNAME/xv6-venv
+RUN python3 -m venv $XV6_VENV && \
+    $XV6_VENV/bin/activate && \
+    pip install cpplint bashate
 
 # Set the working directory inside the container
 WORKDIR /home/$USERNAME/xv6
