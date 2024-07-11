@@ -1,5 +1,4 @@
-#define MUTEX_PREFIX "MUTEX_"
-#define MUTEX_SEPERATOR "_"
+#define MUTEX_PREFIX "/mutex/"
 #define MAX_INT_ASCII_DIGITS 10
 #define MUTEX_SIZE sizeof(MUTEX_PREFIX) + MAX_INT_ASCII_DIGITS + 1
 
