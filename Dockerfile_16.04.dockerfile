@@ -40,7 +40,8 @@ RUN if [ "$BUILD_LINTING_TOOLS" = "true" ]; then \
     tk-dev \
     libxml2-dev \
     libxmlsec1-dev \
-    libffi-dev; \
+    libffi-dev \
+    jq; \
     fi
 # libvirt-clients causes an error when installing on Ubuntu 16.04
 
@@ -122,6 +123,11 @@ RUN if [ "$BUILD_LINTING_TOOLS" = "true" ]; then \
 
 # Change user
 USER $USERNAME
+
+# Install cpplint+bashate for the user
+RUN python3 -m venv $VENV && \
+    . $VENV/bin/activate && \
+    pip install cpplint bashate
 
 # Set the working directory inside the container
 WORKDIR /home/$USERNAME/xv6

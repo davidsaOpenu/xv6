@@ -19,7 +19,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libvirt-clients \
     bridge-utils \
     virt-manager \
-    expect
+    expect \
+    jq
 
 # Download and extract Cppcheck
 WORKDIR /opt
@@ -59,6 +60,11 @@ USER $USERNAME
 
 # Set the working directory inside the container
 WORKDIR /home/$USERNAME/xv6
+
+# Install cpplint+bashate for the user
+RUN python3 -m venv $VENV && \
+    . $VENV/bin/activate && \
+    pip install cpplint bashate
 
 # Set the default command to start the container
 CMD ["/bin/bash"]
