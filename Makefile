@@ -246,16 +246,32 @@ ifeq ($(TEST_POUCHFILES), 1)
 endif
 
 INTERNAL_DEV=\
-	internal_fs_a\
-	internal_fs_b\
+	internal_fs_a \
+	internal_fs_b \
 	internal_fs_c
 
-internal_fs_%: mkfs
-	dd if=/dev/zero of=$@ count=80
-	./mkfs $@ 1
+# Docker build & skopeo copy, create OCI images.
+images/img_internal_fs_%: images/build/img_internal_fs_%.Dockerfile
+	docker build -t xv6_internal_fs_$* -f images/build/img_internal_fs_$*.Dockerfile images/build
+	skopeo copy docker-daemon:xv6_internal_fs_$*:latest oci:images/img_internal_fs_$*
 
-fs.img: mkfs README $(INTERNAL_DEV)  $(UPROGS) _pouch # $(UPROGS)
-	./mkfs fs.img 0 README $(UPROGS) $(INTERNAL_DEV) $(TEST_ASSETS)
+
+# This is a dummy target to rebuild the OCI images for the internal fs.
+# You should run this target if you have made changes to the internal fs build.
+OCI_IMAGES = $(patsubst %, images/img_%, $(INTERNAL_DEV))
+build_oci: $(OCI_IMAGES)
+
+# internal_fs_%_img is a direcotry with the relevant OCI image to use for the internal fs build.
+internal_fs_%: mkfs
+	mkdir -p $(CURDIR)/images/metadata
+	./images/oci_image_extractor.sh $(CURDIR)/images/extracted/$@ $(CURDIR)/images/img_$@
+	echo $@ >> $(CURDIR)/images/metadata/all_images
+	cd $(CURDIR)/images/extracted/$@ && find . -type f -exec ls -la {} \; > $(CURDIR)/images/metadata/img_$*.attr
+	./mkfs $@ 1 $$(find $(CURDIR)/images/extracted/$@ -type f) $(CURDIR)/images/metadata/img_$*.attr
+	
+
+fs.img: mkfs README $(INTERNAL_DEV) $(UPROGS) _pouch # $(UPROGS)
+	./mkfs fs.img 0 README $(UPROGS) $(INTERNAL_DEV) $(TEST_ASSETS) $(CURDIR)/images/metadata/all_images
 
 -include *.d
 
@@ -263,12 +279,17 @@ fs.img: mkfs README $(INTERNAL_DEV)  $(UPROGS) _pouch # $(UPROGS)
 #	rm -rf mkfs bootblock.o fs.img xv6.img pouch.asm pouch.d pouch.o pouch.sym
 
 clean: windows_debugging_clean
-	rm -f *.tex *.dvi *.idx *.aux *.log *.ind *.ilg \
-	*.o *.d *.asm *.sym vectors.S bootblock entryother \
-	initcode initcode.out kernel xv6.img fs.img kernelmemfs mkfs \
-	.gdbinit vectortests \
-	$(UPROGS) \
-	$(INTERNAL_DEV)
+	rm -rf *.tex *.dvi *.idx *.aux *.log *.ind *.ilg \
+		*.o *.d *.asm *.sym vectors.S bootblock entryother \
+		initcode initcode.out kernel xv6.img fs.img kernelmemfs mkfs \
+		.gdbinit vectortests \
+		$(UPROGS) \
+		$(INTERNAL_DEV) \
+		images/metadata images/extracted
+
+clean_oci:
+	rm -rf images/img_internal_fs_*
+	docker rmi -f $(shell docker images -q -f "reference=xv6_internal_fs_*") > /dev/null 2>&1 || true
 
 # make a printout
 FILES = $(shell grep -v '^\#' runoff.list)

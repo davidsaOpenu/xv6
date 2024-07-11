@@ -19,7 +19,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libvirt-clients \
     bridge-utils \
     virt-manager \
-    expect
+    expect \
+    jq
 
 # Download and extract Cppcheck
 WORKDIR /opt
