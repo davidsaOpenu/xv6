@@ -2,7 +2,6 @@
 
 set -euo # errexit,nounset,pipefail
 
-VENV=/tmp/xv6-venv
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
@@ -22,9 +21,7 @@ fi
 
 #########################################################################
 # install and run cpp style checker
-python3 -m venv $VENV
-. $VENV/bin/activate
-pip install cpplint
+source $XV6_VENV/bin/activate
 # build/include_what_you_use relates to libc headers - see NOLINT() in files.
 # runtime/printf recommands to choose the right one out of libc s/n/printf/c.
 FILTERS=-legal/copyright,-readability/casting,-build/include_subdir,
@@ -33,15 +30,14 @@ find . -regex ".*\.[c|h]$" | xargs cpplint --filter=$FILTERS
 
 ########################################################################
 # install and run bashate
-pip install bashate
-find . -iname "*.sh" -exec bashate {} \; > $VENV/bashate-out
-cat $VENV/bashate-out
+find . -iname "*.sh" -exec bashate {} \; > $XV6_VENV/bashate-out
+cat $XV6_VENV/bashate-out
 
 # Grep returns 0 if the string was found and 1 otherwise.
 # ! negate the return value of grep to fail the tests if
 #  warnings/errors were found.
-! grep "warning(s) found" $VENV/bashate-out 1>/dev/null || exit 1
-! grep "error(s) found" $VENV/bashate-out 1>/dev/null || exit 1
+! grep "warning(s) found" $XV6_VENV/bashate-out 1>/dev/null || exit 1
+! grep "error(s) found" $XV6_VENV/bashate-out 1>/dev/null || exit 1
 
 # Check whitespaces in .sh files
 # Second grep is a cheat for the return value together with "!" for set -euo.
