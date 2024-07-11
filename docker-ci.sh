@@ -38,17 +38,34 @@ else
     IMAGE_NAME="xv6-test-image"
 fi
 
-
+DOCKER_IMAGE_EXISTS=$(docker images -q $IMAGE_NAME)
 if [ "$1" == "build" ]; then
-    docker build --build-arg USERNAME=$(whoami) \
-                --build-arg GRPNAME=$(id -gn) \
-                --build-arg UID=$(id -u) \
-                --build-arg BUILD_LINTING_TOOLS=$LINTING_FLAG \
-                --build-arg GID=$(id -g) -t $IMAGE_NAME -f $DOCKERFILE .
-elif [ "$1" == "test" ]; then
-    # Run tests
+    if [ -z "$DOCKER_IMAGE_EXISTS" ]; then
+        echo "Building Docker image $IMAGE_NAME"
+        docker build --build-arg USERNAME=$(whoami) \
+                    --build-arg GRPNAME=$(id -gn) \
+                    --build-arg UID=$(id -u) \
+                    --build-arg BUILD_LINTING_TOOLS=$LINTING_FLAG \
+                    --build-arg GID=$(id -g) -t $IMAGE_NAME -f $DOCKERFILE .
+        exit 0
+    else
+        echo "Docker image $IMAGE_NAME already exists."
+        echo "Use 'docker rmi $IMAGE_NAME' to remove it."
+        exit 1
+    fi
+fi
+
+
+#########################################################################
+# test the docker image using the run-ci.sh script or intaractive mode
+
+# Check the first argument to determine what to do
+if [ "$1" == "test" ]; then
+    #### Generate OCI images locally
+    make build_oci
+    # Run tests, dind required for building test oci images!
     docker run --mount type=bind,source="$(pwd)",target=/home/$(whoami)/xv6 \
-                --rm $IMAGE_NAME \
+                --rm --privileged  $IMAGE_NAME \
                 /home/$(whoami)/xv6/run-ci.sh
 elif [ "$1" == "interactive" ]; then
     # Run interactive command
@@ -58,7 +75,7 @@ elif [ "$1" == "interactive" ]; then
     fi
     docker run -it \
         --mount type=bind,source="$(pwd)",target=/home/$(whoami)/xv6 \
-        --rm $IMAGE_NAME $3
+        --rm --privileged $IMAGE_NAME $3
 else
     echo "Invalid command: $1"
     exit 1
