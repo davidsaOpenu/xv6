@@ -27,8 +27,7 @@ char* argv[] = {"sh", 0};
  *   @output: none
  *   @return: 0 - OK, != 0 - FAILURE
  */
-static int pouch_cmd(char* container_name, char* image_name, char* pouch_file,
-                     enum p_cmd);
+static int pouch_cmd(char* container_name, char* image_name, enum p_cmd);
 
 /*
  *   Pouch fork:
@@ -38,7 +37,7 @@ static int pouch_cmd(char* container_name, char* image_name, char* pouch_file,
  *   @output: none
  *   @return: 0 - OK, <0 - FAILURE
  */
-static int pouch_fork(char* container_name);
+static int pouch_fork(char* container_name, char* image_name);
 
 /*
  *   Finding a tty:
@@ -56,7 +55,8 @@ static int find_tty(char* tty_name);
  *   @output: tty_name, pid
  *   @return: 0 - OK, <0 - FAILURE
  */
-static int read_from_cconf(char* container_name, char* tty_name, int* pid);
+static int read_from_cconf(char* container_name, char* tty_name, int* pid,
+                           char* image_name);
 
 /*
  *   Write to conf:
@@ -65,7 +65,8 @@ static int read_from_cconf(char* container_name, char* tty_name, int* pid);
  *   @output: none
  *   @return: 0 - OK, <0 - FAILURE
  */
-static int write_to_cconf(char* container_name, char* tty_name, int pid);
+static int write_to_cconf(char* container_name, char* tty_name, int pid,
+                          char* image_name);
 
 /*
  *   Init pouch cgroup:
@@ -100,10 +101,26 @@ static int pouch_limit_cgroup(char* container_name, char* cgroup_state_obj,
  *   Prepate cgroup name:
  *   - Create a path in cgroup fs for corresponding cname
  *   @input: container_name
- *   @output: none
- *   @return: 0 - OK, <0 - FAILURE
+ *   @output: cgcname
  */
-static int prepare_cgroup_cname(char* container_name, char* cgcname);
+static void prepare_cgroup_cname(const char* container_name, char* cgcname);
+
+/*
+ *   Prepare image mount path:
+ *   - Create a path in cgroup fs for corresponding cname
+ *   @input: container_name
+ *   @output: image_mount_point
+ */
+static void prepare_image_mount_path(const char* container_name,
+                                     char* image_mount_point);
+
+/*
+ *   Prepare image name to path:
+ *   - Create a path in cgroup fs for corresponding cname
+ *   @input: image_name
+ *   @output: image_path
+ */
+static void image_name_to_path(const char* image_name, char* image_path);
 
 /*
  *   Write to pconf
