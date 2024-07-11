@@ -195,11 +195,11 @@ void fsinit(uint dev) {
   struct superblock *sb = container_of(vfs_sb, struct superblock, vfs_sb);
 
   readsb(dev, sb);
-  cprintf(
+  /* cprintf(
       "sb: size %d nblocks %d ninodes %d nlog %d logstart %d "
       "inodestart %d bmap start %d\n",
       sb->size, sb->nblocks, sb->vfs_sb.ninodes, sb->nlog, sb->logstart,
-      sb->inodestart, sb->bmapstart);
+      sb->inodestart, sb->bmapstart);*/
 }
 
 // PAGEBREAK!
