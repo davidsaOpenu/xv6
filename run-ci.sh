@@ -24,7 +24,6 @@ fi
 # install and run cpp style checker
 python3 -m venv $VENV
 . $VENV/bin/activate
-pip install cpplint
 # build/include_what_you_use relates to libc headers - see NOLINT() in files.
 # runtime/printf recommands to choose the right one out of libc s/n/printf/c.
 FILTERS=-legal/copyright,-readability/casting,-build/include_subdir,
@@ -33,7 +32,6 @@ find . -regex ".*\.[c|h]$" | xargs cpplint --filter=$FILTERS
 
 ########################################################################
 # install and run bashate
-pip install bashate
 find . -iname "*.sh" -exec bashate {} \; > $VENV/bashate-out
 cat $VENV/bashate-out
 

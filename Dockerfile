@@ -2,24 +2,26 @@ FROM ubuntu:22.04 as base
 
 # Update package lists and install dependencies
 RUN apt-get update
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    g++ \
-    make \
-    libpcre3-dev \
-    curl \
-    tar \
-    python3 \
-    vim \
-    git \
-    cmake \
-    sudo \
-    python3.10-venv \
-    qemu-kvm \
-    libvirt-daemon-system \
-    libvirt-clients \
-    bridge-utils \
-    virt-manager \
-    expect
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
+    apt-get install -y \
+        g++ \
+        make \
+        libpcre3-dev \
+        curl \
+        tar \
+        python3 \
+        vim \
+        git \
+        cmake \
+        sudo \
+        python3.10-venv \
+        qemu-kvm \
+        libvirt-daemon-system \
+        libvirt-clients \
+        bridge-utils \
+        virt-manager \
+        expect \
+        jq
 
 # Download and extract Cppcheck
 WORKDIR /opt
@@ -59,6 +61,11 @@ USER $USERNAME
 
 # Set the working directory inside the container
 WORKDIR /home/$USERNAME/xv6
+
+# Install cpplint+bashate for the user
+RUN python3 -m venv $VENV && \
+    . $VENV/bin/activate && \
+    pip install cpplint bashate
 
 # Set the default command to start the container
 CMD ["/bin/bash"]
