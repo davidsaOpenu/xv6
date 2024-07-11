@@ -9,6 +9,11 @@
 #include "user.h"
 
 #define POUCH_GLOBAL_LOCK_NAME "pouch_glk"
+#define IMAGE_MOUNT_DIR "/mnt/"
+
+#define CONFIG_KEY_PPID "PPID:"
+#define CONFIG_KEY_NAME "NAME:"
+#define CONFIG_KEY_IMAGE "IMAGE:"
 
 /*
  *   Helper consts
@@ -376,9 +381,45 @@ error:
   return -1;
 }
 
-static int prepare_cgroup_cname(char* container_name, char* cg_cname) {
+static void prepare_cgroup_cname(const char* container_name, char* cg_cname) {
+  if (strlen(container_name) + strlen("/cgroup/") > MAX_PATH_LENGTH) {
+    panic("Container name is too long");
+  }
   strcpy(cg_cname, "/cgroup/");
   strcat(cg_cname, container_name);
+}
+
+static void prepare_image_mount_path(const char* container_name,
+                                     char* image_mount_point) {
+  struct stat mnt_base_path;
+  if (stat(IMAGE_MOUNT_DIR, &mnt_base_path) < 0) {
+    if (mkdir(IMAGE_MOUNT_DIR) < 0) {
+      panic("Cannot create image mount dir");
+    }
+  }
+  if (strlen(container_name) + strlen(IMAGE_MOUNT_DIR) > MAX_PATH_LENGTH) {
+    panic("Container name is too long");
+  }
+  strcpy(image_mount_point, IMAGE_MOUNT_DIR);
+  strcat(image_mount_point, container_name);
+}
+
+static void image_name_to_path(const char* image_name, char* image_path) {
+  if (strlen(image_name) + strlen(IMAGE_DIR) > MAX_PATH_LENGTH) {
+    panic("Image name is too long");
+  }
+  strcpy(image_path, IMAGE_DIR);
+  strcat(image_path, image_name);
+}
+
+static int image_exists(char* image_name) {
+  char buf[MAX_PATH_LENGTH];
+  struct stat st;
+
+  image_name_to_path(image_name, buf);
+  if (stat(buf, &st) < 0) {
+    return -1;
+  }
   return 0;
 }
 
@@ -418,42 +459,50 @@ static int pouch_print_images() {
     return -1;
   }
 
-  if (st.type == T_DIR) {
-    strcpy(buf, IMAGE_DIR);
-    p = buf + strlen(buf);
-    *p++ = '/';
-    while (read(fd, &de, sizeof(de)) == sizeof(de)) {
-      if (de.inum == 0) continue;
-      memmove(p, de.name, DIRSIZ);
-      p[DIRSIZ] = 0;
-      if (stat(buf, &st) < 0) {
-        printf(1, "Cannot stat %s\n", buf);
-        continue;
-      }
-      // ignore anything that is not a directory inside the images dir
-      if (st.type != T_DIR) continue;
-      strcpy(dir, fmtname(buf));
-      if (strncmp(dir, ".", 1) != 0) {
-        printf(1, "%s\n", dir);
-      }
-    }
-  } else {
+  bool printed_first = false;
+  if (st.type != T_DIR) {
     printf(stderr, "%s should be a directory\n", IMAGE_DIR);
     return -1;
   }
+
+  strcpy(buf, IMAGE_DIR);
+  p = buf + strlen(buf);
+  *p++ = '/';
+  while (read(fd, &de, sizeof(de)) == sizeof(de)) {
+    if (de.inum == 0) continue;
+    memmove(p, de.name, DIRSIZ);
+    p[DIRSIZ] = 0;
+    if (stat(buf, &st) < 0) {
+      printf(1, "Cannot stat %s\n", buf);
+      continue;
+    }
+    strcpy(dir, fmtname(buf));
+    if (strncmp(dir, ".", 1) != 0) {
+      if (!printed_first) {
+        printf(1, "Pouch images available:\n");
+        printed_first = true;
+      }
+      printf(1, "%s\n", dir);
+    }
+  }
+
+  if (!printed_first) {
+    printf(1, "No images available\n");
+  }
+
   close(fd);
   return 0;
 }
 
-static int pouch_cmd(char* container_name, char* image_name, char* pouch_file,
-                     enum p_cmd cmd) {
+static int pouch_cmd(char* container_name, char* image_name, enum p_cmd cmd) {
   int tty_fd;
   int pid;
   char tty_name[10];
   char cg_cname[256];
+  char mnt_point[256];
 
   if (cmd == START) {
-    return pouch_fork(container_name);
+    return pouch_fork(container_name, image_name);
   }
 
   if (cmd == LIST) {
@@ -470,7 +519,7 @@ static int pouch_cmd(char* container_name, char* image_name, char* pouch_file,
     return 0;
   }
 
-  if (read_from_cconf(container_name, tty_name, &pid) < 0) {
+  if (read_from_cconf(container_name, tty_name, &pid, image_name) < 0) {
     return -1;
   }
 
@@ -505,6 +554,13 @@ static int pouch_cmd(char* container_name, char* image_name, char* pouch_file,
       return -1;
     }
     if (remove_from_pconf(tty_name) < 0) return -1;
+
+    prepare_image_mount_path(container_name, mnt_point);
+    // umount not needed as the container is already destroyed,
+    // and mount lives only inside the container.
+    if (unlink(mnt_point) < 0) {
+      return -1;
+    }
 
     if (is_connected_tty(tty_fd)) {
       if (disconnect_tty(tty_fd) < 0) return -1;
@@ -613,9 +669,9 @@ static int remove_from_pconf(char* ttyname) {
 }
 
 static int read_from_pconf(char* ttyname, char* cname) {
-  char ttyc[] = "tty.cX";
+  char ttyc[] = "/tty.cX";
   int ttyc_fd;
-  ttyc[5] = ttyname[4];
+  ttyc[6] = ttyname[4];
   if ((ttyc_fd = open(ttyc, O_RDWR)) < 0) {
     printf(stderr, "cannot open %s fd\n", ttyc);
     return -1;
@@ -696,11 +752,15 @@ static int get_connected_cname(char* cname) {
   return 0;
 }
 
-static int read_from_cconf(char* container_name, char* tty_name, int* pid) {
+static int read_from_cconf(char* container_name, char* tty_name, int* pid,
+                           char* image_name) {
   char pid_str[sizeof("PPID:") + 10];
   int cont_fd = -1;
 
-  cont_fd = open(container_name, 0);
+  char container_file[CNTNAMESIZE + sizeof("/")];
+  strcpy(container_file, "/");
+  strcat(container_file, container_name);
+  cont_fd = open(container_file, 0);
   if (cont_fd < 0) {
     printf(stderr, "There is no container: %s in a started stage\n",
            container_name);
@@ -714,13 +774,44 @@ static int read_from_cconf(char* container_name, char* tty_name, int* pid) {
 
   tty_name[sizeof("/ttyX") - 1] = 0;
 
-  if (read(cont_fd, pid_str, sizeof(pid_str)) < sizeof("PPID:") + 2) {
+  int i = 0;
+  char c;
+  while (read(cont_fd, &c, 1) > 0) {
+    if (c == '\n') {
+      pid_str[i] = 0;
+      break;
+    }
+    pid_str[i++] = c;
+  }
+  pid_str[i] = '\0';
+
+  // make sure it begins with PPID:
+  if (strncmp(pid_str, "PPID:", sizeof("PPID:") - 1) != 0) {
     printf(stderr, "CONT PID NOT FOUND\n");
     goto error;
   }
 
-  pid_str[sizeof(pid_str) - 1] = 0;
+  // parse the pid
   *pid = atoi(pid_str + sizeof("PPID:"));
+
+  // skip container name "NAME: container_name":
+  i = 0;
+  while (read(cont_fd, &c, 1) > 0) {
+    if (c == '\n') {
+      break;
+    }
+  }
+
+  // read image name
+  i = 0;
+  while (read(cont_fd, &c, 1) > 0) {
+    if (c == '\n') {
+      image_name[i] = 0;
+      break;
+    }
+    image_name[i++] = c;
+  }
+  image_name[i] = '\0';
 
   close(cont_fd);
   return 0;
@@ -730,23 +821,27 @@ error:
   return -1;
 }
 
-static int write_to_cconf(char* container_name, char* tty_name, int pid) {
+static int write_to_cconf(char* container_name, char* tty_name, int pid,
+                          char* image_name) {
   int cont_fd = open(container_name, O_CREATE | O_RDWR);
   if (cont_fd < 0) {
     printf(stderr, "cannot open %s\n", container_name);
     return -1;
   }
-  printf(cont_fd, "%s\nPPID: %d\nNAME: %s\n", tty_name, pid, container_name);
+  printf(cont_fd, "%s\n%s %d\n%s %s\n%s %s\n", tty_name, CONFIG_KEY_PPID, pid,
+         CONFIG_KEY_NAME, container_name, CONFIG_KEY_IMAGE, image_name);
   close(cont_fd);
   return 0;
 }
 
-static int pouch_fork(char* container_name) {
+static int pouch_fork(char* container_name, char* image_name) {
   int tty_fd = -1;
   int pid = -1;
   int pid2 = -1;
   char tty_name[10];
   char cg_cname[256];
+  char image_mount_point[256];
+  char image_path[256];
   int daemonize = 1;
   mutex_t parent_mutex, global_mutex;
 
@@ -770,9 +865,17 @@ static int pouch_fork(char* container_name) {
     exit(1);
   }
 
+  // make sure image exists:
+  if (image_exists(image_name) < 0) {
+    printf(stderr, "Pouch: image %s does not exist\n", image_name);
+    mutex_unlock(&global_mutex);
+    exit(1);
+  }
+
   int cont_fd = open(container_name, 0);
   if (cont_fd < 0) {
     printf(1, "Pouch: %s starting\n", container_name);
+    close(cont_fd);
   } else {
     mutex_unlock(&global_mutex);
     printf(stderr, "Pouch: %s container is already started\n", container_name);
@@ -826,10 +929,37 @@ static int pouch_fork(char* container_name) {
         printf(1, "Cannot create mount namespace\n");
         goto child_error;
       }
+
+      // Prepare image mount point for container
+      prepare_image_mount_path(container_name, image_mount_point);
+      if (mkdir(image_mount_point) < 0) {
+        printf(stderr, "Pouch: failed to create image mount point at %s!\n",
+               image_mount_point);
+        mutex_unlock(&global_mutex);
+        exit(1);
+      }
+      image_name_to_path(image_name, image_path);
+      if (mount(image_path, image_mount_point, 0) < 0) {
+        printf(stderr, "Pouch: failed to mount image %s at %s!\n", image_name,
+               image_mount_point);
+        mutex_unlock(&global_mutex);
+        exit(1);
+      }
+
+      // TODO(Future): implement a pivot_root syscall and call it to the image
+      // directory, so / filesystem is actually our image inside the started
+      // container.
+      if (chdir(image_mount_point) < 0) {
+        printf(stderr, "Pouch: failed to change directory to %s!\n",
+               image_mount_point);
+        mutex_unlock(&global_mutex);
+        exit(1);
+      }
+
       // Child was created, now we can release the global lock!
       mutex_unlock(&global_mutex);
       printf(stderr, "Entering container\n");
-      exec("sh", argv);
+      exec("../../sh", argv);
 
     // unlock anyway in case of failure.
     child_error:
@@ -846,7 +976,7 @@ static int pouch_fork(char* container_name) {
       if (write(cgroup_procs_fd, cur_pid_buf, sizeof(cur_pid_buf)) < 0)
         goto parent_error;
       if (close(cgroup_procs_fd) < 0) goto parent_error;
-      if (write_to_cconf(container_name, tty_name, pid) >= 0) {
+      if (write_to_cconf(container_name, tty_name, pid, image_name) >= 0) {
         // let the child process run
         mutex_unlock(&parent_mutex);
         wait(0);
@@ -892,9 +1022,10 @@ void print_pouch_build_help() {
 
 void print_help_outside_cnt() {
   printf(stderr, "\nPouch commands outside containers:\n");
-  printf(stderr, "       pouch start {name}\n");
+  printf(stderr, "       pouch start {name} {image}\n");
   printf(stderr, "          : starts a new container\n");
   printf(stderr, "          - {name} : container name\n");
+  printf(stderr, "          - {image} : image name\n");
   printf(stderr, "       pouch connect {name}\n");
   printf(stderr, "          : connect already started container\n");
   printf(stderr, "          - {name} : container name\n");
@@ -1072,18 +1203,37 @@ int main(int argc, char* argv[]) {
   enum p_cmd cmd = START;
   char container_name[CNTNAMESIZE];
   char image_name[CNTNAMESIZE];
-  char pouch_file[CNTNAMESIZE];
 
   // get parent pid
   int ppid = getppid();
 
-  if (argc >= 3) {
-    if ((strcmp(argv[1], "--help") == 0) || (char)*argv[1] == '-') {
+  // check if any argument is --help and print help message accordingly:
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "--help") == 0) {
       if (ppid == 1)
         print_help_inside_cnt();
       else
         print_help_outside_cnt();
       exit(0);
+    }
+  }
+
+  if (argc >= 4) {
+    int arg_len = strlen(argv[3]);
+    if (arg_len > CNTNAMESIZE || arg_len == 0) {
+      printf(stderr, "Error: Image name invalid, must be 1-%d chars, got %d.\n",
+             CNTNAMESIZE, arg_len);
+      exit(1);
+    }
+    strcpy(image_name, argv[3]);
+  }
+  if (argc >= 3) {
+    int arg_len = strlen(argv[2]);
+    if (arg_len > CNTNAMESIZE || arg_len == 0) {
+      printf(stderr,
+             "Error: Container name invalid, must be 1-%d chars, got %d.\n",
+             CNTNAMESIZE, arg_len);
+      exit(1);
     }
     strcpy(container_name, argv[2]);
   } else if (argc == 2) {
@@ -1104,10 +1254,9 @@ int main(int argc, char* argv[]) {
       print_help_outside_cnt();
     exit(0);
   }
-
   // get command type
   if (argc >= 2) {
-    if ((strcmp(argv[1], "start")) == 0) {
+    if ((strcmp(argv[1], "start")) == 0 && argc == 4) {
       cmd = START;
     } else if ((strcmp(argv[1], "connect")) == 0) {
       cmd = CONNECT;
@@ -1183,7 +1332,7 @@ int main(int argc, char* argv[]) {
         if (pouch_build(pouch_file_name, image_tag) != SUCCESS_CODE) {
           goto error_exit;
         }
-      } else if (pouch_cmd(container_name, image_name, pouch_file, cmd) < 0) {
+      } else if (pouch_cmd(container_name, image_name, cmd) < 0) {
         printf(1, "Pouch: operation failed.\n");
         goto error_exit;
       }
