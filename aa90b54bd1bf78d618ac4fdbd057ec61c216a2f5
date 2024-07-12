@@ -16,6 +16,24 @@
       "message": "Thanks for the change!\nOne small note",
       "revId": "aa90b54bd1bf78d618ac4fdbd057ec61c216a2f5",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "23aa6c19_9f18c24e",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 15
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-07-12T14:25:40Z",
+      "side": 1,
+      "message": "Probably worth updating vectormemcmp calls and having a conditional if e.g. DEBUG\u003d1; make is invoked. Adding a card. \n\ngrep vectormemcmp * -rn \nbio.c:120:    // vectormemcmp(\"devicerw\", read_result_vector, 0, (char *) b-\u003edata, BSIZE);\nconsole.c:268:    // test for vector \\ buffer similarity using silent version of vectormemcmp\ndefs.h:148:uint vectormemcmp(char* lbl, vector v, unsigned int vectorstartoffset, char* m,\nexec.c:41:  // vectormemcmp(\"exec\", elfv, 0, (char*)\u0026elf, sizeof(struct elfhdr));\nfs.c:501:    // vectormemcmp(\"readi\", *dstvector, dstoffset, (char*)(bp-\u003edata + off %\nfs.c:558:    // vectormemcmp(\"isdirempty\", direntryvec,0, (char *) \u0026de, sizeof(de));\nfs.c:580:    // vectormemcmp(\"dirlookup\", direntryvec,0, (char *) \u0026de, sizeof(de));\nkvector.c:250:unsigned int vectormemcmp(char* label, vector v, unsigned int vectorstartoffset,\nobj_fs.c:378:  // vectormemcmp(\"obj_readi\", *dstvector, 0, dst, n);\nobj_fs.c:437:    // vectormemcmp(\"obj_isdirempty\",direntryvec,off,(char*)\u0026de,sizeof(de));\nobj_log.c:154:  // vectormemcmp(\"finish_log_transactions\", logbookvector, 0, (char*)\u0026logbook,",
+      "parentUuid": "4020ff67_7b0d3e1e",
+      "revId": "aa90b54bd1bf78d618ac4fdbd057ec61c216a2f5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
