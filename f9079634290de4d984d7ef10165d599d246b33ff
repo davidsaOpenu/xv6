@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "08f12a32_78bd6ae7",
+        "filename": "docker-ci.sh",
+        "patchSetId": 14
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-07-26T14:59:06Z",
+      "side": 1,
+      "message": "it will never be reached, elif condition is checking for the same argument as the initial if condition",
+      "range": {
+        "startLine": 50,
+        "startChar": 3,
+        "endLine": 52,
+        "endChar": 10
+      },
+      "revId": "f9079634290de4d984d7ef10165d599d246b33ff",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
