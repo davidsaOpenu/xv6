@@ -29,3 +29,6 @@ windows-debugging/
 images/extracted/
 images/metadata/
 images/img_internal_fs_*/
+docs/source/_build/
+docs/virtdocs/
+**/__pycache__/
