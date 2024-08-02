@@ -85,11 +85,16 @@ HOST_TESTS_LOG_FILE="host_tests_log.txt"
 ./kvector_tests | tee $HOST_TESTS_LOG_FILE
 ./objfs_tests | tee --append $HOST_TESTS_LOG_FILE
 
+
 lines=$(cat $HOST_TESTS_LOG_FILE | grep  "FAILED" | wc -l)
 if [ $lines -ne 0 ]; then
     echo "FAILED string was found -- host tests failed"
     exit 1
 fi
+
+########################################################################
+#  Run documentation build
+cd docs; ./build.sh # the scripts fails on errors and/or warnings
 
 echo "SUCCESS"
 exit 0
