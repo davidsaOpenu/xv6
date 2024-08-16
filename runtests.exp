@@ -1013,9 +1013,9 @@ expect "$ "
 #uncomment for expect debugging
 #exp_internal 1
 set running [mounttest $argv]
-set running [prepare_pouch_images $argv]
 set running [ioctl_syscall_test $argv]
-# set running [cgroupstests $argv] # ERR
+set running [cgroupstests $argv]
+set running [prepare_pouch_images $argv]
 set running [cgroup_io_states_test $argv]
 
 #basic tests

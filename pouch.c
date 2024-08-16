@@ -855,8 +855,15 @@ static int pouch_fork(char* container_name, char* image_name) {
   }
 
   // global mutex is held throughout the entire fork process.
-  mutex_lock(&global_mutex);
-  mutex_lock(&parent_mutex);
+  if (mutex_lock(&global_mutex) != MUTEX_SUCCESS) {
+    printf(1, "Pouch: failed to lock global mutex\n");
+    exit(1);
+  }
+  if (mutex_lock(&parent_mutex) != MUTEX_SUCCESS) {
+    printf(1, "Pouch: failed to lock parent mutex\n");
+    mutex_unlock(&global_mutex);
+    exit(1);
+  }
 
   // Find tty name
   if (find_tty(tty_name) < 0) {
@@ -916,7 +923,11 @@ static int pouch_fork(char* container_name, char* image_name) {
     }
     if (pid == 0) {
       // wait till the parent process finishes and releases the lock
-      mutex_lock(&parent_mutex);
+      if (mutex_lock(&parent_mutex) != MUTEX_SUCCESS) {
+        printf(1, "Pouch: failed to lock parent mutex\n");
+        mutex_unlock(&global_mutex);
+        exit(1);
+      }
       // attach stderr stdin stdout
       if (attach_tty(tty_fd) < 0) {
         printf(stderr, "attach failed - error in connecting to tty: %d\n",
