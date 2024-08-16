@@ -1326,8 +1326,8 @@ void iref(const char *fs_type) {
 
   printf(1, "%s empty file name\n", fs_type);
 
-  // the 50 is NINODE
-  depth = 50;
+  // the 60 is NINODE
+  depth = 60;
   for (i = 0; i < depth + 1; i++) {
     if (mkdir("irefd") != 0) {
       printf(1, "mkdir irefd failed\n");

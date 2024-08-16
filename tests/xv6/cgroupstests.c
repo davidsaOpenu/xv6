@@ -8,9 +8,11 @@
 #include "types.h"
 #include "user.h"
 
-#define GIVE_TURN(my_lock, other_lock) \
-  mutex_unlock(&other_lock);           \
-  mutex_lock(&my_lock)
+#define GIVE_TURN(my_lock, other_lock)                   \
+  do {                                                   \
+    ASSERT_EQ(mutex_unlock(&other_lock), MUTEX_SUCCESS); \
+    ASSERT_EQ(mutex_lock(&my_lock), MUTEX_SUCCESS)       \
+  } while (0)
 
 #define ASSERT_OPEN_CLOSE_READ(x)  \
   ASSERT_TRUE(open_close_file(x)); \
@@ -29,9 +31,9 @@ char temp_path_g[MAX_PATH_LENGTH] = {0};
 // Parse memory.stat info and fetch "kernel" value
 int get_kernel_total_memory(char* mem_stat_info) {
   char* kernel_value = 0;
-
-  kernel_value = strstr(mem_stat_info, (char*)"kernel - ");
-
+  const char KERNEL_NUM_PREFIX[] = "kernel - ";
+  kernel_value = strstr(mem_stat_info, (char*)KERNEL_NUM_PREFIX);
+  kernel_value += (sizeof(KERNEL_NUM_PREFIX) - 1);
   return atoi(kernel_value);
 }
 
@@ -1408,8 +1410,8 @@ TEST(test_mem_stat) {
    *
    * Created a macro for this mechanism.
    */
-  mutex_lock(&child_mutex);
-  mutex_lock(&father_mutex);
+  ASSERT_EQ(mutex_lock(&child_mutex), MUTEX_SUCCESS);
+  ASSERT_EQ(mutex_lock(&father_mutex), MUTEX_SUCCESS);
 
   strcpy(befor_all, read_file(TEST_1_MEM_STAT, 0));
   // Fork a process because reading the memory values from inside the cgroup may
@@ -1449,15 +1451,15 @@ TEST(test_mem_stat) {
     }
 
     // Cleanup
-    mutex_unlock(&father_mutex);
-    mutex_unlock(&child_mutex);
+    ASSERT_EQ(mutex_unlock(&father_mutex), MUTEX_SUCCESS);
+    ASSERT_EQ(mutex_unlock(&child_mutex), MUTEX_SUCCESS);
 
     exit(0);
   } else {
     // Father
 
     // Waits for child to unlock.
-    mutex_lock(&father_mutex);
+    ASSERT_EQ(mutex_lock(&father_mutex), MUTEX_SUCCESS);
 
     /**** 2 ****/
     // Read the child pid from temp file.
@@ -1513,10 +1515,6 @@ TEST(test_mem_stat) {
     ASSERT_TRUE(wstatus);
     // Remove the temp file.
     ASSERT_TRUE(temp_delete());
-
-    // Cleanup
-    mutex_unlock(&father_mutex);
-    mutex_unlock(&child_mutex);
   }
 }
 
