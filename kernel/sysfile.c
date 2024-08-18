@@ -92,7 +92,9 @@ int sys_write(void) {
 
   if (f->type == FD_CG)
     return cg_write(f, p, n);
-  else
+  else if (f->type == FD_PROC) {
+    return proc_write(f, p, n);
+  } else
     return vfs_filewrite(f, p, n);
 }
 

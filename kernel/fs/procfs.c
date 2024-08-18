@@ -106,12 +106,15 @@ static proc_file_name_t get_file_name_constant(char* filename) {
 
   if (strcmp(filename, PROCFS_DEVICES) == 0) return PROC_DEVICES;
 
+  if (strcmp(filename, PROCFS_CACHE) == 0) return PROC_CACHE;
+
   return NONE;
 }
 
 int unsafe_proc_open_file(char* filename, int omode) {
   int fd = -1;
   struct vfs_file* f;
+  uint file_writeable = 0;
   struct mount_list* entry;
   proc_file_name_t filename_const = get_file_name_constant(filename);
 
@@ -153,6 +156,10 @@ int unsafe_proc_open_file(char* filename, int omode) {
       }
       release(&dev_holder.lock);
       break;
+
+    case PROC_CACHE:
+      file_writeable = 1;
+
     default:
       break;
   }
@@ -160,7 +167,7 @@ int unsafe_proc_open_file(char* filename, int omode) {
   /* General file. */
   f->off = 0;
   f->readable = !(omode & O_WRONLY);
-  f->writable = NON_WRITABLE;
+  f->writable = file_writeable && ((omode & O_WRONLY) || (omode & O_RDWR));
   f->ref++;  // That way don't need to take care of closing.
 
   /* FD_PROC file. */
@@ -286,6 +293,30 @@ static int read_file_proc_devices(struct vfs_file* f, char* addr, int n) {
   return copy_buffer(addr, f->off, n);
 }
 
+static int read_file_proc_cache(struct vfs_file* f, char* addr, int n) {
+  if (buf_cache_is_cache_enabled()) {
+    strncpy(buf, CACHE_ENABLED, sizeof(CACHE_ENABLED));
+  } else {
+    strncpy(buf, CACHE_DISABLED, sizeof(CACHE_DISABLED));
+  }
+
+  return copy_buffer(addr, f->off, n);
+}
+
+static int write_file_proc_cache(struct vfs_file* f, char* addr, int n) {
+  if ((n == (sizeof(CACHE_ENABLED) - 1)) &&
+      (0 == memcmp(addr, CACHE_ENABLED, n))) {
+    buf_cache_enable_cache();
+    return sizeof(CACHE_ENABLED) - 1;
+  } else if ((n == (sizeof(CACHE_DISABLED) - 1)) &&
+             (0 == memcmp(addr, CACHE_DISABLED, n))) {
+    buf_cache_disable_cache();
+    return sizeof(CACHE_DISABLED) - 1;
+  }
+
+  return RESULT_ERROR;
+}
+
 int unsafe_proc_read(struct vfs_file* f, char* addr, int n) {
   int result = RESULT_ERROR;
   char* bufp = buf;
@@ -307,6 +338,10 @@ int unsafe_proc_read(struct vfs_file* f, char* addr, int n) {
         result = read_file_proc_devices(f, addr, n);
         break;
 
+      case PROC_CACHE:
+        result = read_file_proc_cache(f, addr, n);
+        break;
+
       default:
         return RESULT_ERROR;
     }
@@ -320,6 +355,7 @@ int unsafe_proc_read(struct vfs_file* f, char* addr, int n) {
       copy_and_move_buffer_max_len(&bufp, PROCFS_MEM);
       copy_and_move_buffer_max_len(&bufp, PROCFS_MOUNTS);
       copy_and_move_buffer_max_len(&bufp, PROCFS_DEVICES);
+      copy_and_move_buffer_max_len(&bufp, PROCFS_CACHE);
 
       *bufp++ = '\0';
 
@@ -331,6 +367,29 @@ int unsafe_proc_read(struct vfs_file* f, char* addr, int n) {
 
   // All the read_file functions doesn't return an error.
   f->off += result;
+
+  return result;
+}
+
+int unsafe_proc_write(struct vfs_file* f, char* addr, int n) {
+  int result = RESULT_ERROR;
+
+  if (f->writable == 0) return RESULT_ERROR;
+
+  // Allow writing only to regular proc files, not the /proc dir itself.
+  if (f->filetype == T_PROCFILE) {
+    /* Read proc file. */
+    switch (f->filename_const) {
+      case PROC_CACHE:
+        result = write_file_proc_cache(f, addr, n);
+        break;
+
+      default:
+        return RESULT_ERROR;
+    }
+  } else {
+    return RESULT_ERROR;
+  }
 
   return result;
 }
@@ -369,6 +428,9 @@ static int proc_file_size(struct vfs_file* f) {
       size += 1;  // \n.
       size *= f->count;
       break;
+
+    case PROC_CACHE:
+      size = CACHE_STATUS_LEN;
 
     default:
       break;
