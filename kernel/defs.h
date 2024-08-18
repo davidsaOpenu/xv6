@@ -37,6 +37,9 @@ void buf_cache_init(void);
 void buf_cache_invalidate_blocks(uint dev);
 struct buf* buf_cache_get(uint dev, const union buf_id* id, uint alloc_flags);
 void buf_cache_release(struct buf* b);
+uint buf_cache_is_cache_enabled(void);
+void buf_cache_enable_cache(void);
+void buf_cache_disable_cache(void);
 
 // console.c
 void consoleclear(void);
