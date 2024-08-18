@@ -835,6 +835,16 @@ int proc_read(struct vfs_file *f, char *addr, int n) {
   return res;
 }
 
+int proc_write(struct vfs_file *f, char *addr, int n) {
+  int res = RESULT_ERROR;
+
+  acquire(&ptable.lock);
+  res = unsafe_proc_write(f, addr, n);
+  release(&ptable.lock);
+
+  return res;
+}
+
 int proc_stat(struct vfs_file *f, struct stat *st) {
   int res = RESULT_ERROR;
 

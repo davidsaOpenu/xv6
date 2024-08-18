@@ -1911,6 +1911,68 @@ void objfs_all_tests(void) {
   printf(stdout, "objfs all tests ok\n");
 }
 
+void set_fs_cache_state(int enable) {
+  int fd = -1;
+  char *state;
+  char proc_cache_state[2] = {0};
+
+  if (enable) {
+    state = "1\n";
+  } else {
+    state = "0\n";
+  }
+
+  fd = open("/proc/cache", O_RDWR);
+  if (-1 == fd) {
+    printf(stdout, "failed to open /proc/cache\n");
+    exit(1);
+  }
+
+  write(fd, state, 2);
+  read(fd, proc_cache_state, sizeof(proc_cache_state));
+  if (0 != strncmp(proc_cache_state, state, 2)) {
+    printf(stdout, "Failed to set fs cache to %d\n", enable);
+    exit(1);
+  }
+
+  close(fd);
+}
+
+void fs_tests(void) {
+  // Run all tests with cache enabled.
+  printf(stdout, "--- All fs tests with cache enabled ---\n");
+  unlink("cachce_enabled_tests");
+  if (mkdir("cachce_enabled_tests") < 0) {
+    printf(stdout, "mkdir cachce_enabled_tests failed\n");
+    exit(1);
+  }
+  if (chdir("cachce_enabled_tests") < 0) {
+    printf(stdout, "chdir cachce_enabled_tests failed\n");
+    exit(1);
+  }
+  set_fs_cache_state(1);
+  nativefs_all_tests();
+  objfs_all_tests();
+  chdir("..");
+
+  // Run all tests with cache disabled.
+  unlink("cachce_disabled_tests");
+  if (mkdir("cachce_disabled_tests") < 0) {
+    printf(stdout, "mkdir cachce_disabled_tests failed\n");
+    exit(1);
+  }
+  if (chdir("cachce_disabled_tests") < 0) {
+    printf(stdout, "chdir cachce_disabled_tests failed\n");
+    exit(1);
+  }
+  set_fs_cache_state(0);
+  printf(stdout, "--- All fs tests with cache disabled ---\n");
+  nativefs_all_tests();
+  objfs_all_tests();
+  set_fs_cache_state(1);
+  chdir("..");
+}
+
 int main(int argc, char *argv[]) {
   printf(stdout, "usertests starting\n");
 
@@ -1924,8 +1986,7 @@ int main(int argc, char *argv[]) {
 
   argptest();
 
-  nativefs_all_tests();
-  objfs_all_tests();
+  fs_tests();
 
   bigargtest();
   bigargtest();

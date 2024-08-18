@@ -608,6 +608,28 @@ proc command_exit_status_test {argv} {
     expect -re "\\n1"
 }
 
+proc proc_cache_entry {argv} {
+    log_file -noappend [lindex $argv 0]
+
+    # Verify cache disable
+    send "echo 0 > /proc/cache\n"
+    send "cat /proc/cache\n"
+    expect "0"
+
+    # Verify cache enable
+    send "echo 1 > /proc/cache\n"
+    send "cat /proc/cache\n"
+    expect "1"
+
+    # Verify invalid values don't affect
+    send "echo 0000 > /proc/cache\n"
+    send "cat /proc/cache\n"
+    expect "1"
+
+    send "echo yyyy > /proc/cache\n"
+    send "cat /proc/cache\n"
+    expect "1"
+}
 
 # - Test tries to create 4 containers, in the last one we are expecting:
 # - 'Cannot find tty' because there are only 3 containers available
@@ -1033,6 +1055,7 @@ set running [mount_bind_test $argv]
 set running [umount_bind_mount_test $argv]
 set running [pouch_basic_tests $argv]
 set running [command_exit_status_test $argv]
+set running [proc_cache_entry $argv]
 
 # scenario tests
 set running [cp_simple_objfs_nativefs_copy_test $argv]

@@ -11,6 +11,7 @@
 #define PROCFS_MEM "mem"
 #define PROCFS_MOUNTS "mounts"
 #define PROCFS_DEVICES "devices"
+#define PROCFS_CACHE "cache"
 
 /* /proc/mounts strings. */
 #define MOUNTS_TITLE "Mounts:"
@@ -24,6 +25,11 @@
 #define DEVICES_BACKED_BY_INODE " back by inode "
 #define DEVICES_WITH_REF " with ref "
 
+/* /proc/cache strings. */
+#define CACHE_ENABLED "1\n"
+#define CACHE_DISABLED "0\n"
+#define CACHE_STATUS_LEN (2)
+
 typedef enum proc_file_name_e {
   NONE = -1,
   PROC_FILE_NAME_START = 0,
@@ -31,6 +37,7 @@ typedef enum proc_file_name_e {
   PROC_MEM,
   PROC_MOUNTS,
   PROC_DEVICES,
+  PROC_CACHE,
 
   PROC_FILE_NAME_END,
   NON_WRITABLE,
@@ -57,6 +64,16 @@ int unsafe_proc_open(int filetype, char* filename, int omode);
  * currently supports reading from supported unsafe_proc_open files.
  */
 int unsafe_proc_read(struct vfs_file* f, char* addr, int n);
+
+/**
+ * This function write to proc filesystem file.
+ * Receives file struct pointer parameter "f", buffer parameter "addr", int
+ * parameter "n". "f" is a pointer to the file we write to. "addr" is a pointer
+ * to the buffer we write the contents from. "n" is the amount of characters to
+ * write. Return values: -1 on failure. amount of characters write on success.
+ * currently supports writing to supported unsafe_proc_open files.
+ */
+int unsafe_proc_write(struct vfs_file* f, char* addr, int n);
 
 /**
  * This function gets stats of proc file or directory.
