@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c37c3b00_5254af27",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-18T10:34:16Z",
+      "side": 1,
+      "message": "thanks for working on this. comments inline",
+      "revId": "f474c043b32d6c30ac7ee8efa2f547d495e768db",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "42987cf5_59beeb58",
+        "filename": "mutex.c",
+        "patchSetId": 1
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-18T10:34:16Z",
+      "side": 1,
+      "message": "how about something line create_mutex_folder rather then initalize_mutex",
+      "range": {
+        "startLine": 13,
+        "startChar": 20,
+        "endLine": 13,
+        "endChar": 35
+      },
+      "revId": "f474c043b32d6c30ac7ee8efa2f547d495e768db",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bc0aa495_bf0e4520",
+        "filename": "mutex.c",
+        "patchSetId": 1
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-18T10:34:16Z",
+      "side": 1,
+      "message": "seems irrelevant. The check should be based on the folder existence as created in the line #19",
+      "range": {
+        "startLine": 14,
+        "startChar": 1,
+        "endLine": 15,
+        "endChar": 30
+      },
+      "revId": "f474c043b32d6c30ac7ee8efa2f547d495e768db",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
