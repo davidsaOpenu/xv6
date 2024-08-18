@@ -138,6 +138,12 @@ int proc_read(struct vfs_file *f, char *addr, int n);
 
 /**
  * This function is a lock protected version of the corresponding unsafe
+ * function unsafe_proc_write() defined in procfs.h.
+ */
+int proc_write(struct vfs_file *f, char *addr, int n);
+
+/**
+ * This function is a lock protected version of the corresponding unsafe
  * function unsafe_proc_stat() defined in procfs.h.
  */
 int proc_stat(struct vfs_file *f, struct stat *st);
