@@ -1,12 +1,12 @@
 #include "cgroupstests.h"
 
-#include "../framework/test.h"
 #include "fcntl.h"
-#include "mmu.h"
-#include "mutex.h"
+#include "framework/test.h"
+#include "kernel/mmu.h"
 #include "param.h"
 #include "types.h"
-#include "user.h"
+#include "user/lib/mutex.h"
+#include "user/lib/user.h"
 
 #define GIVE_TURN(my_lock, other_lock)                   \
   do {                                                   \

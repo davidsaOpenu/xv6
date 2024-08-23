@@ -2,7 +2,7 @@
 #include "ns_types.h"
 #include "syscall.h"
 #include "types.h"
-#include "user.h"
+#include "user/lib/user.h"
 
 /* Verify init
   - verify the creation of tty devices
