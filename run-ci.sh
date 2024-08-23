@@ -55,7 +55,8 @@ ERROR_CODE=20
 cppcheck --error-exitcode=${ERROR_CODE} \
     --inline-suppr --suppress=missingIncludeSystem \
     --enable=portability,information,performance,warning --inconclusive \
-    --suppress=checkLevelNormal -DSTORAGE_DEVICE_SIZE=1 "-I$(pwd)" \
+    --suppress=missingInclude \
+    -DSTORAGE_DEVICE_SIZE=1 "-I$(pwd)" \
     --xml --xml-version=2 . 2> cppcheck.xml || \
     { echo "${RED}Failed: please check cppcheck.xml for details.${NC}"; \
     exit 1; }
@@ -68,8 +69,8 @@ cppcheck --error-exitcode=${ERROR_CODE} \
 make clean
 make TEST_POUCHFILES=1
 
-LOG_FILE="mylog.txt"
-./runtests.exp $LOG_FILE
+LOG_FILE="expect_tests.log"
+./tests/runtests.exp $LOG_FILE
 
 lines=$(tail -5 $LOG_FILE | grep  "ALL TESTS PASSED" | wc -l)
 if [ $lines -ne 1 ]; then
@@ -81,9 +82,10 @@ fi
 make clean
 make host-tests
 
-HOST_TESTS_LOG_FILE="host_tests_log.txt"
-./kvector_tests | tee $HOST_TESTS_LOG_FILE
-./objfs_tests | tee --append $HOST_TESTS_LOG_FILE
+HOSTS_TESTS_DIR="tests/host"
+HOST_TESTS_LOG_FILE="host_tests.log"
+./${HOSTS_TESTS_DIR}/kvector_tests | tee $HOST_TESTS_LOG_FILE
+./${HOSTS_TESTS_DIR}/objfs_tests | tee --append $HOST_TESTS_LOG_FILE
 
 
 lines=$(cat $HOST_TESTS_LOG_FILE | grep  "FAILED" | wc -l)
