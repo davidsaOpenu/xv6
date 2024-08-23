@@ -1,13 +1,13 @@
-#include "fcntl.h"
-#include "fs.h"
-#include "memlayout.h"
-#include "param.h"
-#include "stat.h"
-#include "syscall.h"
-#include "traps.h"
-#include "types.h"
-#include "user.h"
-#include "wstatus.h"
+#include "../../common/fcntl.h"
+#include "../../common/fs.h"
+#include "../../common/param.h"
+#include "../../common/stat.h"
+#include "../../common/syscall.h"
+#include "../../common/traps.h"
+#include "../../common/types.h"
+#include "../../common/wstatus.h"
+#include "../../kernel/memlayout.h"
+#include "../../user/lib/user.h"
 
 char buf[8192];
 char name[3];

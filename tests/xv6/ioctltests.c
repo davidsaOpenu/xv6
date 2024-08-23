@@ -1,8 +1,8 @@
-#include "fcntl.h"
-#include "ns_types.h"
-#include "syscall.h"
-#include "types.h"
-#include "user.h"
+#include "../../common/fcntl.h"
+#include "../../common/ns_types.h"
+#include "../../common/syscall.h"
+#include "../../common/types.h"
+#include "../../user/lib/user.h"
 
 /* Verify init
   - verify the creation of tty devices
