@@ -1,14 +1,14 @@
+#include "../../kernel/memlayout.h"
+#include "../../user/lib/user.h"
 #include "../framework/tester.h"
 #include "fcntl.h"
 #include "fs.h"
-#include "memlayout.h"
 #include "ns_types.h"
 #include "param.h"
 #include "stat.h"
 #include "syscall.h"
 #include "traps.h"
 #include "types.h"
-#include "user.h"
 
 static int createfile(char *path, char *contents) {
   int fd;

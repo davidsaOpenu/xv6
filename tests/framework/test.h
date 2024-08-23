@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>  // NOLINT(build/include_what_you_use)
 #else
-#include "user.h"
+#include "../../user/lib/user.h"
 #endif
 
 extern int failed;
