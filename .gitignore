@@ -5,12 +5,12 @@ _*
 *.asm
 *.sym
 *.img
+*.bin
 vectors.S
 bootblock
 entryother
 initcode
 initcode.out
-kernel
 kernelmemfs
 mkfs
 .gdbinit
@@ -22,7 +22,6 @@ internal_fs_*
 cppcheck-report/
 cppcheck.xml
 required_changes.txt
-vectortests
 windows-debugging/
 *.log
 .idea/
