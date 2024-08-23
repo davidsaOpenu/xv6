@@ -56,7 +56,7 @@ fi
 # Check the first argument to determine what to do
 if [ "$1" == "test" ]; then
     #### Generate OCI images locally
-    make build_oci
+    make build-oci
     # Run tests, dind required for building test oci images!
     docker run --mount type=bind,source="$(pwd)",target=/home/$(whoami)/xv6 \
                 --rm --privileged  $IMAGE_NAME \

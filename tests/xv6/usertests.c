@@ -1,12 +1,12 @@
+#include "kernel/memlayout.h"
+#include "user/lib/user.h"
 #include "fcntl.h"
 #include "fs.h"
-#include "memlayout.h"
 #include "param.h"
 #include "stat.h"
 #include "syscall.h"
 #include "traps.h"
 #include "types.h"
-#include "user.h"
 #include "wstatus.h"
 
 char buf[8192];
