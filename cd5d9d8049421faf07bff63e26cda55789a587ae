@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "17908287_b93ef5c5",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-08-25T06:23:59Z",
+      "side": 1,
+      "message": "Please re-check, applied patchset#3",
+      "revId": "cd5d9d8049421faf07bff63e26cda55789a587ae",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
