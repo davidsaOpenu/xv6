@@ -1,0 +1,227 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6250a983_b3bb0b59",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 16
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-28T16:53:34Z",
+      "side": 1,
+      "message": "Thanks for working on this change! \n\ncomments inline",
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2067b08c_c7483a70",
+        "filename": "cgroup.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-28T16:53:34Z",
+      "side": 1,
+      "message": "let\u0027s define CGROUP parameter values either here or in param.h.\nThere are several CGROUP parameter values already defined in params.h and having some of them defined here and others there creates inconsistency.",
+      "range": {
+        "startLine": 20,
+        "startChar": 0,
+        "endLine": 22,
+        "endChar": 37
+      },
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3e9a35d2_814c29d0",
+        "filename": "cpu_account.c",
+        "patchSetId": 16
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-28T16:53:34Z",
+      "side": 1,
+      "message": "Is it only me that lacks the correlation between the  lock name (curr_frame_total_process_cpu_time) and the update of the variable (real_cpu_percent ) that the lock protects?",
+      "range": {
+        "startLine": 120,
+        "startChar": 0,
+        "endLine": 123,
+        "endChar": 55
+      },
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b1d6d373_dc3c8165",
+        "filename": "cpu_account.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-28T16:53:34Z",
+      "side": 1,
+      "message": "let\u0027s add an explanations to those fields. \n\nplus I\u0027m not confident with \n\ncpu_account.c:15:  cpu-\u003ecurr_frame_total_process_cpu_time \u003d 1;\ncpu_account.c:147:    cpu-\u003ecurr_frame_total_process_cpu_time \u003d 1;\ncpu_account.c:156:  cpu-\u003ecurr_frame_total_process_cpu_time +\u003d cpu-\u003eprocess_cpu_time;\ncpu_account.c:197:    cpu-\u003ecurr_frame_total_process_cpu_time \u003d 1;\ncpu_account.h:11:  unsigned int curr_frame_total_process_cpu_time;",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 12,
+        "endChar": 22
+      },
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "49e8170e_42052ac4",
+        "filename": "runtests.exp",
+        "patchSetId": 16
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-28T16:53:34Z",
+      "side": 1,
+      "message": "let\u0027s remove",
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f7b30105_bc49ca76",
+        "filename": "runtests.exp",
+        "patchSetId": 16
+      },
+      "lineNbr": 163,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-28T16:53:34Z",
+      "side": 1,
+      "message": "let\u0027s revert to 0.5",
+      "range": {
+        "startLine": 161,
+        "startChar": 0,
+        "endLine": 163,
+        "endChar": 15
+      },
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b0fb014e_df22354f",
+        "filename": "runtests.exp",
+        "patchSetId": 16
+      },
+      "lineNbr": 208,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-28T16:53:34Z",
+      "side": 1,
+      "message": "let\u0027s remove those timeouts",
+      "range": {
+        "startLine": 184,
+        "startChar": 0,
+        "endLine": 208,
+        "endChar": 13
+      },
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bb46cff6_c408618e",
+        "filename": "runtests.exp",
+        "patchSetId": 16
+      },
+      "lineNbr": 291,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-28T16:53:34Z",
+      "side": 1,
+      "message": "let\u0027s remove",
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c3c5d7e6_cab9220e",
+        "filename": "runtests.exp",
+        "patchSetId": 16
+      },
+      "lineNbr": 428,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-28T16:53:34Z",
+      "side": 1,
+      "message": "lets revert to 2 sec. Even 2 is too much",
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9f1d1dc7_9036d6e5",
+        "filename": "runtests.exp",
+        "patchSetId": 16
+      },
+      "lineNbr": 494,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-28T16:53:34Z",
+      "side": 1,
+      "message": "let\u0027s remove this",
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "62a6e056_d375c419",
+        "filename": "sysproc.c",
+        "patchSetId": 16
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-28T16:53:34Z",
+      "side": 1,
+      "message": "seems like it\u0027s a good time to split this method to handle different requests. \ne.g. sys_ioctl will call inline ioctl_process_cpu and ioctl_tty methods.",
+      "range": {
+        "startLine": 113,
+        "startChar": 1,
+        "endLine": 126,
+        "endChar": 0
+      },
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
