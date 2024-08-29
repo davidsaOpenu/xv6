@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ae125360_5599738a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-29T19:30:12Z",
+      "side": 1,
+      "message": "great work. Almost there. Several comments:\n- ./common/syscall.h and ./user/lib/syscall.h create duplication \n- toc.ftr, toc.hdr seem to be under scripts/runoff as well\n- Makefiles structure looks a bit messy. Can you please streamline it?\n\ne.g. istead of \n$find . -name \"*Makefile*\"\n./tests/host/Makefile\n./tests/xv6/Makefile\n./tests/Makefile\n./docs/source/Makefile\n./Makefile\n./common/common.Makefile\n./kernel/Makefile\n./scripts/runoff/Makefile\n./user/Makefile\n./user/common.user.Makefile\n\n\nhow about having inherited the common rules, variables, and configurations from the root Makefile?\n\n\n./Makefile               # Root Makefile\n./common.mk              # Common rules and variables\n./tests/Makefile         # Tests common Makefile\n./tests/xv6/Makefile     # Tests running in a guest vm Makefile\n./tests/host/Makefile    # Tests running on the host Makefile\n./docs/Makefile          # Docs common Makefile\n./kernel/Makefile        # Kernel-specific Makefile\n./scripts/runoff/Makefile       # Scripts Makefile\n./user/Makefile          # User level utils and programming lib Makefile \n\n-------------------------------------------------------------------\n$cat ./Makefile\n\ninclude common.mk\n\n.PHONY: all tests docs kernel user scripts\n\nall: tests docs kernel user scripts\n\ntests:\n\t$(MAKE) -C tests\n\ndocs:\n\t$(MAKE) -C docs\n\nkernel:\n\t$(MAKE) -C kernel\n\nuser:\n\t$(MAKE) -C user\n\nscripts:\n\t$(MAKE) -C scripts/runoff\n\n-------------------------------------------------------\n\n$cat ./tests/Makefile\n\n.PHONY: all host xv6\n\nall: host xv6\n\nhost:\n\t$(MAKE) -C host\n\nxv6:\n\t$(MAKE) -C xv6",
+      "revId": "aa25fa70cada87fb88508e9bc99c2024249a656f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
