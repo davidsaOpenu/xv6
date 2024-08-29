@@ -1,0 +1,165 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0d6fa913_8511ab52",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 32
+      },
+      "lineNbr": 490,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-29T12:22:13Z",
+      "side": 1,
+      "message": "magic number",
+      "range": {
+        "startLine": 490,
+        "startChar": 65,
+        "endLine": 490,
+        "endChar": 68
+      },
+      "revId": "24e3d3f3c6b3725ac779a8bc0280235434b66846",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "683971d1_24c3401f",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 32
+      },
+      "lineNbr": 496,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-29T12:22:13Z",
+      "side": 1,
+      "message": "magic numbers",
+      "range": {
+        "startLine": 496,
+        "startChar": 65,
+        "endLine": 496,
+        "endChar": 69
+      },
+      "revId": "24e3d3f3c6b3725ac779a8bc0280235434b66846",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c12f1b81_b09d86a5",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 32
+      },
+      "lineNbr": 502,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-29T12:22:13Z",
+      "side": 1,
+      "message": "magic numbers",
+      "range": {
+        "startLine": 502,
+        "startChar": 65,
+        "endLine": 502,
+        "endChar": 69
+      },
+      "revId": "24e3d3f3c6b3725ac779a8bc0280235434b66846",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "00bfdbf4_bf448ac7",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 32
+      },
+      "lineNbr": 583,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-29T12:22:13Z",
+      "side": 1,
+      "message": "magic numbers",
+      "range": {
+        "startLine": 578,
+        "startChar": 0,
+        "endLine": 583,
+        "endChar": 64
+      },
+      "revId": "24e3d3f3c6b3725ac779a8bc0280235434b66846",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4ee708dc_2400696c",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 32
+      },
+      "lineNbr": 632,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-29T12:22:13Z",
+      "side": 1,
+      "message": "let\u0027s define constants and give meaningful names rather then using magic numbers",
+      "range": {
+        "startLine": 623,
+        "startChar": 0,
+        "endLine": 632,
+        "endChar": 52
+      },
+      "revId": "24e3d3f3c6b3725ac779a8bc0280235434b66846",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "88c47300_0a43624e",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 32
+      },
+      "lineNbr": 632,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-29T12:22:13Z",
+      "side": 1,
+      "message": "let\u0027s define",
+      "range": {
+        "startLine": 623,
+        "startChar": 0,
+        "endLine": 632,
+        "endChar": 52
+      },
+      "revId": "24e3d3f3c6b3725ac779a8bc0280235434b66846",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "03732bbd_a956f59f",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 32
+      },
+      "lineNbr": 637,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-29T12:22:13Z",
+      "side": 1,
+      "message": "Even beforehand the interval was too loose. Having grater interval means introducing regression. In fact I\u0027d suggest to shrink the interval to make ensure computations correctness.",
+      "range": {
+        "startLine": 637,
+        "startChar": 0,
+        "endLine": 637,
+        "endChar": 70
+      },
+      "revId": "24e3d3f3c6b3725ac779a8bc0280235434b66846",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}

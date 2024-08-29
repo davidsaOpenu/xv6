@@ -58,6 +58,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "d39d8b37_4e410bad",
+        "filename": "cgroup.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-29T12:22:13Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2067b08c_c7483a70",
+      "range": {
+        "startLine": 20,
+        "startChar": 0,
+        "endLine": 22,
+        "endChar": 37
+      },
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "3e9a35d2_814c29d0",
@@ -94,6 +118,30 @@
       "writtenOn": "2024-08-28T16:53:34Z",
       "side": 1,
       "message": "let\u0027s add an explanations to those fields. \n\nplus I\u0027m not confident with \n\ncpu_account.c:15:  cpu-\u003ecurr_frame_total_process_cpu_time \u003d 1;\ncpu_account.c:147:    cpu-\u003ecurr_frame_total_process_cpu_time \u003d 1;\ncpu_account.c:156:  cpu-\u003ecurr_frame_total_process_cpu_time +\u003d cpu-\u003eprocess_cpu_time;\ncpu_account.c:197:    cpu-\u003ecurr_frame_total_process_cpu_time \u003d 1;\ncpu_account.h:11:  unsigned int curr_frame_total_process_cpu_time;",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 12,
+        "endChar": 22
+      },
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "fba82c97_498e6320",
+        "filename": "cpu_account.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-29T12:22:13Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b1d6d373_dc3c8165",
       "range": {
         "startLine": 7,
         "startChar": 0,
@@ -201,6 +249,24 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "ca1fef0c_063c5c51",
+        "filename": "runtests.exp",
+        "patchSetId": 16
+      },
+      "lineNbr": 428,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-29T12:22:13Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c3c5d7e6_cab9220e",
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "9f1d1dc7_9036d6e5",
@@ -231,6 +297,30 @@
       "writtenOn": "2024-08-28T16:53:34Z",
       "side": 1,
       "message": "seems like it\u0027s a good time to split this method to handle different requests. \ne.g. sys_ioctl will call inline ioctl_process_cpu and ioctl_tty methods.",
+      "range": {
+        "startLine": 113,
+        "startChar": 1,
+        "endLine": 126,
+        "endChar": 0
+      },
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ff88293a_7f38b20f",
+        "filename": "sysproc.c",
+        "patchSetId": 16
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-29T12:22:13Z",
+      "side": 1,
+      "message": "TBH, now it looks even worse then in changeset#16. The method requires complete cleanup not just in case of IOCTL_GET_PROCESS_CPU_PERCENT, IOCTL_GET_PROCESS_CPU_TIME and TTYSETS requests. If you don\u0027t have a time for refactoring the sys_ioctl as a part of this change request, let\u0027s simply add IOCTL_GET_PROCESS_CPU_PERCENT and IOCTL_GET_PROCESS_CPU_TIME cases to the switch.",
+      "parentUuid": "62a6e056_d375c419",
       "range": {
         "startLine": 113,
         "startChar": 1,
