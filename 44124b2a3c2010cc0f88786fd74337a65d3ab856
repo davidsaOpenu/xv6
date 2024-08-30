@@ -20,6 +20,24 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "418c4550_0ebcb066",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 16
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-08-30T12:53:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ad1d2fb9_eea92361",
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "6250a983_b3bb0b59",
         "filename": "/PATCHSET_LEVEL",
         "patchSetId": 16
@@ -82,6 +100,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "7b395036_c1a51e8b",
+        "filename": "cgroup.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-08-30T12:53:41Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "2067b08c_c7483a70",
+      "range": {
+        "startLine": 20,
+        "startChar": 0,
+        "endLine": 22,
+        "endChar": 37
+      },
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "3e9a35d2_814c29d0",
@@ -95,6 +137,30 @@
       "writtenOn": "2024-08-28T16:53:34Z",
       "side": 1,
       "message": "Is it only me that lacks the correlation between the  lock name (curr_frame_total_process_cpu_time) and the update of the variable (real_cpu_percent ) that the lock protects?",
+      "range": {
+        "startLine": 120,
+        "startChar": 0,
+        "endLine": 123,
+        "endChar": 55
+      },
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5163cc0b_0dcb8822",
+        "filename": "cpu_account.c",
+        "patchSetId": 16
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-08-30T12:53:41Z",
+      "side": 1,
+      "message": "it protects the usage of curr_frame_total_process_and_cpu_time in calculating the final real_cpu_percent",
+      "parentUuid": "3e9a35d2_814c29d0",
       "range": {
         "startLine": 120,
         "startChar": 0,
@@ -169,6 +235,24 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "fa49488c_99e7a5e5",
+        "filename": "runtests.exp",
+        "patchSetId": 16
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-08-30T12:53:41Z",
+      "side": 1,
+      "message": "I had to leave the sleep. couldn\u0027t get no error in the test not locally or remotely. Looks like with the addition of cpu weight I believe it impacts the execution a bit a slows it a little bit down. \nI was able to decrease it to 0.5 seconds which is ok, like the other sleeps in the tests and it works fine.",
+      "parentUuid": "49e8170e_42052ac4",
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "f7b30105_bc49ca76",
@@ -182,6 +266,30 @@
       "writtenOn": "2024-08-28T16:53:34Z",
       "side": 1,
       "message": "let\u0027s revert to 0.5",
+      "range": {
+        "startLine": 161,
+        "startChar": 0,
+        "endLine": 163,
+        "endChar": 15
+      },
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "159fbef8_587e922a",
+        "filename": "runtests.exp",
+        "patchSetId": 16
+      },
+      "lineNbr": 163,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-08-30T12:53:41Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "f7b30105_bc49ca76",
       "range": {
         "startLine": 161,
         "startChar": 0,
@@ -215,6 +323,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "70cb727b_c638feeb",
+        "filename": "runtests.exp",
+        "patchSetId": 16
+      },
+      "lineNbr": 208,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-08-30T12:53:41Z",
+      "side": 1,
+      "message": "I had to leave the one near rm -r. couldn\u0027t get no error in the test in 22.04 not locally or remotely. Seems like it was always a bit buggy in this section, and now with the addition of the cpu weight I believe it impacts the execution a bit a slows it a little bit down.\nThe other sleeps in this section were removed.",
+      "parentUuid": "b0fb014e_df22354f",
+      "range": {
+        "startLine": 184,
+        "startChar": 0,
+        "endLine": 208,
+        "endChar": 13
+      },
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "bb46cff6_c408618e",
@@ -228,6 +360,24 @@
       "writtenOn": "2024-08-28T16:53:34Z",
       "side": 1,
       "message": "let\u0027s remove",
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2588df53_66d80536",
+        "filename": "runtests.exp",
+        "patchSetId": 16
+      },
+      "lineNbr": 291,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-08-30T12:53:41Z",
+      "side": 1,
+      "message": "I had to leave the one near rm -r. couldn\u0027t get no error in the test in 22.04 not locally or remotely. Seems like it was always a bit buggy in this section, and now with the addition of the cpu weight I believe it impacts the execution a bit a slows it a little bit down. \nI was able to decrease it to 2 seconds.",
+      "parentUuid": "bb46cff6_c408618e",
       "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
@@ -267,6 +417,24 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "0677ccc7_4eb6887d",
+        "filename": "runtests.exp",
+        "patchSetId": 16
+      },
+      "lineNbr": 428,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-08-30T12:53:41Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "c3c5d7e6_cab9220e",
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "9f1d1dc7_9036d6e5",
@@ -280,6 +448,24 @@
       "writtenOn": "2024-08-28T16:53:34Z",
       "side": 1,
       "message": "let\u0027s remove this",
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "14779d2f_0241de62",
+        "filename": "runtests.exp",
+        "patchSetId": 16
+      },
+      "lineNbr": 494,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-08-30T12:53:41Z",
+      "side": 1,
+      "message": "I had to leave the one near rm -r. couldn\u0027t get no error in the test in 22.04 not locally or remotely. Seems like it was always a bit buggy in this section, and now with the addition of the cpu weight I believe it impacts the execution a bit a slows it a little bit down. \nI was able to decrease it to 0.5 seconds which is ok, like the other sleeps in this test.",
+      "parentUuid": "9f1d1dc7_9036d6e5",
       "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
