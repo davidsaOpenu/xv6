@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ed228a2b_c6f5afa8",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 46
+      },
+      "lineNbr": 2202,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-08-30T21:49:08Z",
+      "side": 1,
+      "message": "that was the only place in which the cppcheck failed when using the checkLevelNormal suppression, so better this way.",
+      "range": {
+        "startLine": 2202,
+        "startChar": 0,
+        "endLine": 2202,
+        "endChar": 37
+      },
+      "revId": "1ab5a239c7736de78fee91b47b1843ed7947c792",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}

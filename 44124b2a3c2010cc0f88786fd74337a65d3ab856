@@ -515,6 +515,30 @@
       },
       "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "29fb055f_faf5221a",
+        "filename": "sysproc.c",
+        "patchSetId": 16
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-08-30T21:49:08Z",
+      "side": 1,
+      "message": "I tried to add them to the switch, but then the check in line 140 started to fail. the comment on this line also suggests this would happen (and suggests to refactor the driver itself). I suggest refactoring this function would be a separate ticket.",
+      "parentUuid": "ff88293a_7f38b20f",
+      "range": {
+        "startLine": 113,
+        "startChar": 1,
+        "endLine": 126,
+        "endChar": 0
+      },
+      "revId": "44124b2a3c2010cc0f88786fd74337a65d3ab856",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }

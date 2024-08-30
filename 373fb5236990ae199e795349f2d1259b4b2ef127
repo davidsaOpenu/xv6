@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "bb7494c6_2b04f581",
+        "filename": "runtests.exp",
+        "patchSetId": 56
+      },
+      "lineNbr": 160,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-08-30T21:49:08Z",
+      "side": 1,
+      "message": "couldn\u0027t make the tests work consistently without changing this setting. either it was always this way, or like I stated in the other comments it\u0027s because the cpu weight calculation added some time to each process schedule and thus it takes more time to finish the test.",
+      "range": {
+        "startLine": 158,
+        "startChar": 0,
+        "endLine": 160,
+        "endChar": 15
+      },
+      "revId": "373fb5236990ae199e795349f2d1259b4b2ef127",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "231fb728_0ce5e030",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 56
+      },
+      "lineNbr": 1575,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-08-30T21:49:08Z",
+      "side": 1,
+      "message": "refactored this test because it was flaky and sometimes it failed the tests with no reason. beforehand, the test assumed only the parent can change the child cgroup and thus had to use sleeps to \"communicate\" between the parent and the child.",
+      "range": {
+        "startLine": 1549,
+        "startChar": 0,
+        "endLine": 1575,
+        "endChar": 29
+      },
+      "revId": "373fb5236990ae199e795349f2d1259b4b2ef127",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6a7dd899_46046e04",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 56
+      },
+      "lineNbr": 1623,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-08-30T21:49:08Z",
+      "side": 1,
+      "message": "This test was buggy and flaky. the reason was an out of bounds read triggered here.",
+      "range": {
+        "startLine": 1621,
+        "startChar": 0,
+        "endLine": 1623,
+        "endChar": 32
+      },
+      "revId": "373fb5236990ae199e795349f2d1259b4b2ef127",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}

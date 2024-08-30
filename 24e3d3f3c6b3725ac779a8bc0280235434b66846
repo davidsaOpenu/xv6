@@ -24,6 +24,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "a088d961_94122e4c",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 32
+      },
+      "lineNbr": 490,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-08-30T21:49:08Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "0d6fa913_8511ab52",
+      "range": {
+        "startLine": 490,
+        "startChar": 65,
+        "endLine": 490,
+        "endChar": 68
+      },
+      "revId": "24e3d3f3c6b3725ac779a8bc0280235434b66846",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "683971d1_24c3401f",
@@ -37,6 +61,30 @@
       "writtenOn": "2024-08-29T12:22:13Z",
       "side": 1,
       "message": "magic numbers",
+      "range": {
+        "startLine": 496,
+        "startChar": 65,
+        "endLine": 496,
+        "endChar": 69
+      },
+      "revId": "24e3d3f3c6b3725ac779a8bc0280235434b66846",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c362d600_059c0170",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 32
+      },
+      "lineNbr": 496,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-08-30T21:49:08Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "683971d1_24c3401f",
       "range": {
         "startLine": 496,
         "startChar": 65,
@@ -70,6 +118,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "4935ec54_8fd74c18",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 32
+      },
+      "lineNbr": 502,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-08-30T21:49:08Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "c12f1b81_b09d86a5",
+      "range": {
+        "startLine": 502,
+        "startChar": 65,
+        "endLine": 502,
+        "endChar": 69
+      },
+      "revId": "24e3d3f3c6b3725ac779a8bc0280235434b66846",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "00bfdbf4_bf448ac7",
@@ -83,6 +155,30 @@
       "writtenOn": "2024-08-29T12:22:13Z",
       "side": 1,
       "message": "magic numbers",
+      "range": {
+        "startLine": 578,
+        "startChar": 0,
+        "endLine": 583,
+        "endChar": 64
+      },
+      "revId": "24e3d3f3c6b3725ac779a8bc0280235434b66846",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6d55e569_e1e69c95",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 32
+      },
+      "lineNbr": 583,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-08-30T21:49:08Z",
+      "side": 1,
+      "message": "I add comments explaining the computation (which is not so simple so better leave an explanation for somebody in the future. I also simplified the second equation.",
+      "parentUuid": "00bfdbf4_bf448ac7",
       "range": {
         "startLine": 578,
         "startChar": 0,
@@ -139,6 +235,54 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "41709c34_c28d14b6",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 32
+      },
+      "lineNbr": 632,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-08-30T21:49:08Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "88c47300_0a43624e",
+      "range": {
+        "startLine": 623,
+        "startChar": 0,
+        "endLine": 632,
+        "endChar": 52
+      },
+      "revId": "24e3d3f3c6b3725ac779a8bc0280235434b66846",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "af85e4fb_ebc5777c",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 32
+      },
+      "lineNbr": 632,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-08-30T21:49:08Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "4ee708dc_2400696c",
+      "range": {
+        "startLine": 623,
+        "startChar": 0,
+        "endLine": 632,
+        "endChar": 52
+      },
+      "revId": "24e3d3f3c6b3725ac779a8bc0280235434b66846",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "03732bbd_a956f59f",
@@ -152,6 +296,30 @@
       "writtenOn": "2024-08-29T12:22:13Z",
       "side": 1,
       "message": "Even beforehand the interval was too loose. Having grater interval means introducing regression. In fact I\u0027d suggest to shrink the interval to make ensure computations correctness.",
+      "range": {
+        "startLine": 637,
+        "startChar": 0,
+        "endLine": 637,
+        "endChar": 70
+      },
+      "revId": "24e3d3f3c6b3725ac779a8bc0280235434b66846",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9e342d9c_c549e177",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 32
+      },
+      "lineNbr": 637,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-08-30T21:49:08Z",
+      "side": 1,
+      "message": "Acknowledged\nI reduced the interval.",
+      "parentUuid": "03732bbd_a956f59f",
       "range": {
         "startLine": 637,
         "startChar": 0,
