@@ -26,6 +26,168 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "220c7f26_58c08742",
+        "filename": "runtests.exp",
+        "patchSetId": 56
+      },
+      "lineNbr": 160,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-31T20:57:05Z",
+      "side": 1,
+      "message": "For the kernel adding 0.5 seconds is essentially like adding half an eternity, indicating that the current calculation method is inefficient and needs to be revised. Could you please check how much time is being spent in the spinlocks you\u0027ve added to cpu_account.c? If the increased time is due to these spinlocks, consider using atomic operations. If not, let\u0027s identify where the delay is coming from.",
+      "parentUuid": "bb7494c6_2b04f581",
+      "range": {
+        "startLine": 158,
+        "startChar": 0,
+        "endLine": 160,
+        "endChar": 15
+      },
+      "revId": "373fb5236990ae199e795349f2d1259b4b2ef127",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "48a063eb_eaccec67",
+        "filename": "runtests.exp",
+        "patchSetId": 56
+      },
+      "lineNbr": 234,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-31T20:57:05Z",
+      "side": 1,
+      "message": "rm was also influenced from the cpu weight calculation?",
+      "range": {
+        "startLine": 234,
+        "startChar": 0,
+        "endLine": 234,
+        "endChar": 11
+      },
+      "revId": "373fb5236990ae199e795349f2d1259b4b2ef127",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "73a65280_9bb5df27",
+        "filename": "runtests.exp",
+        "patchSetId": 56
+      },
+      "lineNbr": 239,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-31T20:57:05Z",
+      "side": 1,
+      "message": "if copy was also influenced by the cpu weight calculation then it about significant regression",
+      "range": {
+        "startLine": 239,
+        "startChar": 16,
+        "endLine": 239,
+        "endChar": 17
+      },
+      "revId": "373fb5236990ae199e795349f2d1259b4b2ef127",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "76d4afd5_22c10e26",
+        "filename": "runtests.exp",
+        "patchSetId": 56
+      },
+      "lineNbr": 283,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-31T20:57:05Z",
+      "side": 1,
+      "message": "same here.",
+      "range": {
+        "startLine": 283,
+        "startChar": 0,
+        "endLine": 283,
+        "endChar": 11
+      },
+      "revId": "373fb5236990ae199e795349f2d1259b4b2ef127",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f11fff96_860ea927",
+        "filename": "runtests.exp",
+        "patchSetId": 56
+      },
+      "lineNbr": 466,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-31T20:57:05Z",
+      "side": 1,
+      "message": ".",
+      "range": {
+        "startLine": 466,
+        "startChar": 0,
+        "endLine": 466,
+        "endChar": 13
+      },
+      "revId": "373fb5236990ae199e795349f2d1259b4b2ef127",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6183f8bc_4b8ce52e",
+        "filename": "runtests.exp",
+        "patchSetId": 56
+      },
+      "lineNbr": 524,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-31T20:57:05Z",
+      "side": 1,
+      "message": ".",
+      "range": {
+        "startLine": 524,
+        "startChar": 0,
+        "endLine": 524,
+        "endChar": 4
+      },
+      "revId": "373fb5236990ae199e795349f2d1259b4b2ef127",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fbae07d3_47ddb435",
+        "filename": "runtests.exp",
+        "patchSetId": 56
+      },
+      "lineNbr": 823,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-31T20:57:05Z",
+      "side": 1,
+      "message": ".",
+      "range": {
+        "startLine": 823,
+        "startChar": 4,
+        "endLine": 823,
+        "endChar": 9
+      },
+      "revId": "373fb5236990ae199e795349f2d1259b4b2ef127",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "231fb728_0ce5e030",
         "filename": "tests/xv6/cgroupstests.c",
         "patchSetId": 56
