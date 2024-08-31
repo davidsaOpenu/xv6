@@ -50,6 +50,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "abad215a_36be9afa",
+        "filename": "runtests.exp",
+        "patchSetId": 56
+      },
+      "lineNbr": 160,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-08-31T21:17:24Z",
+      "side": 1,
+      "message": "\u003e For the kernel adding 0.5 seconds is essentially like adding half an eternity, indicating that the current calculation method is inefficient and needs to be revised. Could you please check how much time is being spent in the spinlocks you\u0027ve added to cpu_account.c? If the increased time is due to these spinlocks, consider using atomic operations. If not, let\u0027s identify where the delay is coming from.",
+      "parentUuid": "220c7f26_58c08742",
+      "range": {
+        "startLine": 158,
+        "startChar": 0,
+        "endLine": 160,
+        "endChar": 15
+      },
+      "revId": "373fb5236990ae199e795349f2d1259b4b2ef127",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "48a063eb_eaccec67",
         "filename": "runtests.exp",
         "patchSetId": 56
