@@ -22,9 +22,9 @@ int main(int argc, char *argv[]) {
   }
 
   if (pid == 0)
-    printf(1, "New namespace. PID=%d\n", getpid());
+    printf(stdout, "New namespace. PID=%d\n", getpid());
   else
-    printf(1, "Parent's perspective on the child. PID=%d\n", pid);
+    printf(stdout, "Parent's perspective on the child. PID=%d\n", pid);
 
   exit(0);
 }

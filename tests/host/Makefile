@@ -4,9 +4,6 @@ HOST_TESTS_EXECUTABLES = kvector_tests obj_fs_tests
 
 all: $(HOST_TESTS_EXECUTABLES)
 
-# NOTE! gcc-multilib is required to build 32-bit binaries on 64-bit systems.
-CFLAGS = -static -m32 -MD -std=gnu99 -Wall -Werror -Wno-builtin-declaration-mismatch -DHOST_TESTS
-CFLAGS += $(INCLUDE_COMMON) -I$(realpath $(MAKEFILE_DIRECTORY)/../) -I$(realpath $(MAKEFILE_DIRECTORY)/../../)
 
 # Object file system related files
 # TODO integrate with the rest of xv6 sources - would be done in later part.

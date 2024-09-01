@@ -106,7 +106,7 @@ void runcmd(struct cmd *cmd) {
         exit(1);
       }
 
-      exec(ecmd->argv[0], ecmd->argv);
+      exec(ecmd->argv[0], (const char **)ecmd->argv);
 
       fd = open(ecmd->argv[0], O_RDONLY);
       if (-1 != fd) {
@@ -116,11 +116,11 @@ void runcmd(struct cmd *cmd) {
         char *root_cmd = malloc(strlen(ecmd->argv[0]) + 1);
         root_cmd[0] = '/';
         strcpy(root_cmd + 1, ecmd->argv[0]);
-        exec(root_cmd, ecmd->argv);
+        exec(root_cmd, (const char **)ecmd->argv);
         free(root_cmd);
       }
 
-      printf(2, "exec %s failed\n", ecmd->argv[0]);
+      printf(stderr, "exec %s failed\n", ecmd->argv[0]);
       exit(1);
       break;
 
@@ -128,7 +128,7 @@ void runcmd(struct cmd *cmd) {
       rcmd = (struct redircmd *)cmd;
       close(rcmd->fd);
       if (open(rcmd->file, rcmd->mode) < 0) {
-        printf(2, "open %s failed\n", rcmd->file);
+        printf(stderr, "open %s failed\n", rcmd->file);
         exit(1);
       }
       runcmd(rcmd->cmd);
@@ -174,7 +174,7 @@ void runcmd(struct cmd *cmd) {
 }
 
 int getcmd(char *buf, int nbuf) {
-  printf(2, "$ ");
+  printf(stderr, "$ ");
   memset(buf, 0, nbuf);
   gets(buf, nbuf);
   if (buf[0] == 0)  // EOF
@@ -220,14 +220,14 @@ int runinternal(struct cmd **pcmd) {
   int tty_fd;
   switch (cmd_type) {
     case INTERNAL_CMD_DOLLAR_QUESTION:
-      printf(1, "%d\n", last_cmd_retval);
+      printf(stdout, "%d\n", last_cmd_retval);
       return RUN_INTERNAL_CMD_OK;
       break;
 
     case INTERNAL_CMD_CD:
       // Chdir must be called by the parent, not the child.
       if (chdir(cmd->argv[1]) < 0) {
-        printf(2, "cannot cd %s\n", cmd->argv[1]);
+        printf(stderr, "cannot cd %s\n", cmd->argv[1]);
         last_cmd_retval_set_error(RUN_INTERNAL_CMD_ERR);
         return RUN_INTERNAL_CMD_ERR;
       }
@@ -244,7 +244,7 @@ int runinternal(struct cmd **pcmd) {
 
       tty_fd = open(cmd->argv[2], O_RDWR);
       if (tty_fd < 0) {
-        printf(2, "exec connect tty failed\n");
+        printf(stderr, "exec connect tty failed\n");
         last_cmd_retval_set_error(RUN_INTERNAL_CMD_ERR);
         return RUN_INTERNAL_CMD_ERR;
       }
@@ -261,7 +261,7 @@ int runinternal(struct cmd **pcmd) {
 
     case INTERNAL_CMD_DISCONNECT_TTY:
 
-      if (disconnect_tty(0) != 0) printf(2, "disconnect tty failed\n");
+      if (disconnect_tty(0) != 0) printf(stderr, "disconnect tty failed\n");
       sleep(100);
       return RUN_INTERNAL_CMD_OK;
       break;
@@ -270,25 +270,25 @@ int runinternal(struct cmd **pcmd) {
 
       tty_fd = open(cmd->argv[2], O_RDWR);
       if (tty_fd < 0) {
-        printf(2, "exec attach tty failed\n");
+        printf(stderr, "exec attach tty failed\n");
         last_cmd_retval_set_error(RUN_INTERNAL_CMD_ERR);
         return RUN_INTERNAL_CMD_ERR;
       }
 
       if (attach_tty(tty_fd) < 0) {
-        printf(2, "exec attach tty failed 2\n");
+        printf(stderr, "exec attach tty failed 2\n");
         close(tty_fd);
         return RUN_INTERNAL_CMD_OK;
       }
 
       ioctl(tty_fd, TTYSETS, DEV_CONNECT);
       close(tty_fd);
-      printf(2, "%s attached\n", cmd->argv[2]);
+      printf(stderr, "%s attached\n", cmd->argv[2]);
       return RUN_INTERNAL_CMD_OK;
       break;
 
     case INTERNAL_CMD_PID:
-      printf(2, "PID: %d\n", getpid());
+      printf(stderr, "PID: %d\n", getpid());
       return RUN_INTERNAL_CMD_OK;
       break;
 
@@ -330,7 +330,7 @@ int main(void) {
 }
 
 void panic(char *s) {
-  printf(2, "%s\n", s);
+  printf(stderr, "%s\n", s);
   exit(1);
 }
 
@@ -466,7 +466,7 @@ struct cmd *parsecmd(char *s) {
   cmd = parseline(&s, es);
   peek(&s, es, "");
   if (s != es) {
-    printf(2, "leftovers: %s\n", s);
+    printf(stderr, "leftovers: %s\n", s);
     panic("syntax");
   }
   nulterminate(cmd);

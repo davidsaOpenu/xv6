@@ -92,6 +92,12 @@ ULIB_OBJ_NAMES = ulib.o usys.o printf.o umalloc.o tty.o mutex.o
 ULIB = $(addprefix $(USER_LIB_BASE)/, $(ULIB_OBJ_NAMES))
 
 USER_LD_FLAGS = $(LDFLAGS) -T $(realpath $(dir $(COMMON_MAKEFILE_DIR))/user/userspace.ld) -N -e main -Ttext 0
+USER_CFLAGS = $(CFLAGS) -fno-builtin -I$(realpath $(COMMON_MAKEFILE_DIR)/user)
+
+# Host (mostly tests)
+# NOTE! gcc-multilib is required to build 32-bit binaries on 64-bit systems.
+HOST_CFLAGS = -static -m32 -MD -std=gnu99 -Wall -Werror -Wno-builtin-declaration-mismatch -DHOST_TESTS
+HOST_CFLAGS += $(INCLUDE_COMMON) -I$(realpath $(MAKEFILE_DIRECTORY)/../) -I$(realpath $(MAKEFILE_DIRECTORY)/../../)
 
 -include *.d
 

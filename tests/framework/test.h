@@ -41,7 +41,7 @@ extern void (*_test_init_func)(void);
 #ifdef HOST_TESTS
 #define PRINT(...) printf(__VA_ARGS__)
 #else
-#define PRINT(...) printf(1, __VA_ARGS__)
+#define PRINT(...) printf(stdout, __VA_ARGS__)
 #endif
 
 void inline print_error(const char* name, unsigned long int x,

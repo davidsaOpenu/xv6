@@ -5,7 +5,7 @@
 #include "stat.h"
 #include "types.h"
 
-char *argv[] = {"sh", 0};
+const char *argv[] = {"sh", 0};
 
 // a function to check if a directory exists based on stat.h definitions
 int dir_exists(const char *path) {
@@ -21,13 +21,13 @@ static int init_procfs() {
   // Make sure the procfs mount point exists
   if (!dir_exists("/proc")) {
     if (mkdir("/proc") != 0) {
-      printf(1, "init: failed to create procfs mount point\n");
+      printf(stdout, "init: failed to create procfs mount point\n");
       return -1;
     }
   }
 
   if (mount(0, "/proc", "proc") != 0) {
-    printf(1, "init: failed to mount proc fs\n");
+    printf(stdout, "init: failed to mount proc fs\n");
     return -1;
   }
 
@@ -38,7 +38,7 @@ static int init_image_dir() {
   // Make sure the images dir exists
   if (!dir_exists(IMAGE_DIR)) {
     if (mkdir(IMAGE_DIR) != 0) {
-      printf(1, "init: failed to create images directory\n");
+      printf(stdout, "init: failed to create images directory\n");
       return -1;
     }
   }
@@ -61,25 +61,25 @@ int main(void) {
   mknod("tty2", 1, 3);
 
   if (init_image_dir() != 0) {
-    printf(1, "init: init image_dir failed\n");
+    printf(stdout, "init: init image_dir failed\n");
     exit(1);
   }
 
   if (init_procfs() != 0) {
-    printf(1, "init: init procfs failed\n");
+    printf(stdout, "init: init procfs failed\n");
     exit(1);
   }
 
   for (;;) {
-    printf(1, "init: starting sh\n");
+    printf(stdout, "init: starting sh\n");
     pid = fork();
     if (pid < 0) {
-      printf(1, "init: fork failed\n");
+      printf(stdout, "init: fork failed\n");
       exit(1);
     }
     if (pid == 0) {
       exec("sh", argv);
-      printf(1, "init: exec sh failed\n");
+      printf(stdout, "init: exec sh failed\n");
       exit(1);
     }
     while ((wpid = wait(0)) >= 0 && wpid != pid) {

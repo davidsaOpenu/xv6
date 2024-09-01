@@ -12,6 +12,11 @@ _%: %.o $(ULIB)
 	$(LD) $(USER_LD_FLAGS) $^ -o $@
 	$(call dump_objs,$@)
 
+_pouch:
+	make -C pouch
+	cp pouch/_pouch .
+
 clean:
 	rm -f $(ULIB) _*
 	rm -rf *.o *.d *.asm *.sym
+	$(MAKE) -C pouch clean
