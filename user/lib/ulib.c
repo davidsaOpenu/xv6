@@ -168,3 +168,31 @@ char *strtok_r(char *str, char *const delim, char **saveptr) {
   }
   return to_return;
 }
+
+bool isspace(char c) {
+  return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f' ||
+         c == '\v';
+}
+
+bool fmtname(const char *const path, char *const out_name, const int out_size) {
+  const char *pstart, *pend;
+
+  // Find first character after last slash.
+  for (pstart = path + strlen(path); pstart >= path && *pstart != '/';
+       --pstart) {
+  };
+  pstart++;
+  // stop on first null/space after pstart
+  for (pend = pstart; *pend && !isspace(*pend); ++pend) {
+  };
+
+  if (pend - pstart > out_size - 1) {
+    return false;
+  }
+
+  memmove(out_name, pstart, pend - pstart);
+  memset(out_name + (pend - pstart), ' ', out_size - (pend - pstart));
+  out_name[out_size - 1] = '\0';
+
+  return true;
+}

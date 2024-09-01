@@ -21,7 +21,7 @@ int main(int argc, const char* const argv[]) {
     if (!strcmp(argv[index], "-t")) {
       ++index;
       if (index >= argc || fstype) {
-        printf(2, usage);
+        printf(stderr, usage);
         exit(1);
       }
       fstype = argv[index];
@@ -30,7 +30,7 @@ int main(int argc, const char* const argv[]) {
     }
 
     if (path && bind) {
-      printf(2, usage);
+      printf(stderr, usage);
       exit(1);
     }
 
@@ -44,12 +44,12 @@ int main(int argc, const char* const argv[]) {
   }
 
   if (bind && (!fstype || strcmp(fstype, "bind"))) {
-    printf(2, usage);
+    printf(stderr, usage);
     exit(1);
   }
 
   if (!path) {
-    printf(2, usage);
+    printf(stderr, usage);
     exit(1);
   }
 

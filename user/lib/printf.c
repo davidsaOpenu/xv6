@@ -48,6 +48,8 @@ static int printunknown(int fd, char c) {
   return write(fd, str, 2);
 }
 
+void perror(const char *s) { printf(stderr, "%s: ", s); }
+
 // Print to the given fd. Only understands %d, %x, %p, %s.
 int printf(int fd, const char *fmt, ...) {
   char *s;

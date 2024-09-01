@@ -13,14 +13,14 @@ static int is_dir(const char *path) {
   struct stat st;
 
   if ((fd = open(path, O_RDONLY)) < 0) {
-    printf(2, "can't locate %s\n", path);
+    printf(stderr, "can't locate %s\n", path);
     return 0;
   }
 
   status = fstat(fd, &st);
   close(fd);
   if (status < 0) {
-    printf(2, "cannot stat %s\n", path);
+    printf(stderr, "cannot stat %s\n", path);
     return 0;
   }
 
@@ -29,7 +29,7 @@ static int is_dir(const char *path) {
 
 static int rm_file(const char *path) {
   int status;
-  if (0 > (status = unlink(path))) printf(2, "cannot unlink %s\n", path);
+  if (0 > (status = unlink(path))) printf(stderr, "cannot unlink %s\n", path);
 
   return status;
 }
@@ -56,7 +56,7 @@ static int rm_dir_recursively(const char *dir_path) {
 
   strcpy(paths_stack[stack_index], dir_path);
   if (0 > (fd = open(dir_path, O_RDONLY))) {
-    printf(2, "can't locate %s\n", dir_path);
+    printf(stderr, "can't locate %s\n", dir_path);
     return -1;
   }
 
@@ -67,13 +67,13 @@ static int rm_dir_recursively(const char *dir_path) {
         continue;
 
       if (stack_index == (RM_MAX_DEPTH - 1)) {
-        printf(2, "reached max depth -- cannot rm %s/%s\n",
+        printf(stderr, "reached max depth -- cannot rm %s/%s\n",
                paths_stack[RM_MAX_DEPTH - 1], de.name);
         return -1;
       }
       if (0 > (build_child_path(paths_stack[stack_index + 1],
                                 paths_stack[stack_index], &de))) {
-        printf(2, "cannot remove %s/%s -- path too long\n",
+        printf(stderr, "cannot remove %s/%s -- path too long\n",
                paths_stack[stack_index], de.name);
         return -1;
       }
@@ -82,7 +82,7 @@ static int rm_dir_recursively(const char *dir_path) {
       } else {
         // First remove the children entries
         if (0 > (next_fd = open(paths_stack[stack_index + 1], O_RDONLY))) {
-          printf(2, "can't locate %s\n", paths_stack[stack_index + 1]);
+          printf(stderr, "can't locate %s\n", paths_stack[stack_index + 1]);
           return -1;
         } else {
           close(fd);
@@ -99,7 +99,7 @@ static int rm_dir_recursively(const char *dir_path) {
     }
 
     if (0 > (fd = open(paths_stack[--stack_index], O_RDONLY))) {
-      printf(2, "can't locate %s\n", paths_stack[stack_index]);
+      printf(stderr, "can't locate %s\n", paths_stack[stack_index]);
       return -1;
     }
   }
@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
   int first_path_index = 1;
 
   if (argc < 2) {
-    printf(2, "Usage: rm [-r] files...\n");
+    printf(stderr, "Usage: rm [-r] files...\n");
     exit(1);
   }
 

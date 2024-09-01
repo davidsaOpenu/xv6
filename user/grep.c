@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
   char *pattern;
 
   if (argc <= 1) {
-    printf(2, "usage: grep pattern [file ...]\n");
+    printf(stderr, "usage: grep pattern [file ...]\n");
     exit(1);
   }
   pattern = argv[1];
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
 
   for (i = 2; i < argc; i++) {
     if ((fd = open(argv[i], 0)) < 0) {
-      printf(1, "grep: cannot open %s\n", argv[i]);
+      printf(stdout, "grep: cannot open %s\n", argv[i]);
       exit(1);
     }
     grep(pattern, fd);

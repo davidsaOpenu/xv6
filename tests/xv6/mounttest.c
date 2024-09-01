@@ -13,12 +13,12 @@
 static int createfile(char *path, char *contents) {
   int fd;
   if ((fd = open(path, O_WRONLY | O_CREATE)) < 0) {
-    printf(1, "createfile: cannot open %s\n", path);
+    printf(stdout, "createfile: cannot open %s\n", path);
     return -1;
   }
 
   if (write(fd, contents, strlen(contents)) < 0) {
-    printf(1, "createfile: failed writing\n", path);
+    printf(stdout, "createfile: failed writing\n", path);
     close(fd);
     return -1;
   }
@@ -32,12 +32,12 @@ static int verifyfilecontents(char *path, char *contents) {
   int fd;
   struct stat st;
   if ((fd = open(path, 0)) < 0) {
-    printf(1, "verifyfilecontents: cannot open %s\n", path);
+    printf(stdout, "verifyfilecontents: cannot open %s\n", path);
     return -1;
   }
 
   if (fstat(fd, &st) < 0) {
-    printf(1, "verifyfilecontents: cannot stat %s\n", path);
+    printf(stdout, "verifyfilecontents: cannot stat %s\n", path);
     close(fd);
     return -1;
   }
@@ -45,7 +45,7 @@ static int verifyfilecontents(char *path, char *contents) {
   int contentlen = strlen(contents);
 
   if (st.size != contentlen) {
-    printf(1, "verifyfilecontents: incorrect length (%d) for file %s\n",
+    printf(stdout, "verifyfilecontents: incorrect length (%d) for file %s\n",
            st.size, path);
     close(fd);
     return -1;
@@ -54,8 +54,9 @@ static int verifyfilecontents(char *path, char *contents) {
   char buf[100];
   int res;
   if ((res = read(fd, buf, contentlen)) != contentlen) {
-    printf(1, "verifyfilecontents: incorrect length read (%d) for file %s\n",
-           res, path);
+    printf(stdout,
+           "verifyfilecontents: incorrect length read (%d) for file %s\n", res,
+           path);
     close(fd);
     return -1;
   }
@@ -63,8 +64,9 @@ static int verifyfilecontents(char *path, char *contents) {
   close(fd);
 
   if ((res = strcmp(contents, buf)) != 0) {
-    printf(1, "verifyfilecontents: incorrect content read (%s) for file %s\n",
-           buf, path);
+    printf(stdout,
+           "verifyfilecontents: incorrect content read (%s) for file %s\n", buf,
+           path);
     return -1;
   }
 
@@ -79,7 +81,7 @@ static int countlines(char *path, int *lines) {
   int count = 0;
 
   if ((fd = open(path, 0)) < 0) {
-    printf(1, "countlines: cannot open %s\n", path);
+    printf(stdout, "countlines: cannot open %s\n", path);
     return -1;
   }
 
@@ -101,12 +103,12 @@ static int countlines(char *path, int *lines) {
 static int verifylines(char *path, int expected) {
   int lines = 0;
   if (countlines(path, &lines) != 0) {
-    printf(1, "verifylines: failed to count lines of %s\n", path);
+    printf(stdout, "verifylines: failed to count lines of %s\n", path);
     return -1;
   }
 
   if (lines != expected) {
-    printf(1,
+    printf(stdout,
            "verifylines: %s - expected %d lines, "
            "read %d lines\n",
            path, expected, lines);
@@ -132,7 +134,7 @@ static int mounta(void) {
   mkdir("a");
   int res = mount("internal_fs_a", "a", 0);
   if (res != 0) {
-    printf(1, "mounta: mount returned %d\n", res);
+    printf(stdout, "mounta: mount returned %d\n", res);
     return -1;
   }
 
@@ -142,7 +144,7 @@ static int mounta(void) {
 static int umounta(void) {
   int res = umount("a");
   if (res != 0) {
-    printf(1, "umounta: umount returned %d\n", res);
+    printf(stdout, "umounta: umount returned %d\n", res);
     return -1;
   }
 
@@ -212,7 +214,7 @@ static int writefiletest(void) {
 static int invalidpathtest(void) {
   int res = mount("internal_fs_a", "AAA", 0);
   if (res != -1) {
-    printf(1, "invalidpathtest: mount did not fail as expected %d\n", res);
+    printf(stdout, "invalidpathtest: mount did not fail as expected %d\n", res);
     return 1;
   }
 
@@ -222,14 +224,16 @@ static int invalidpathtest(void) {
 
   res = umount("b");
   if (res != -1) {
-    printf(1, "invalidpathtest: umount did not fail as expected %d\n", res);
+    printf(stdout, "invalidpathtest: umount did not fail as expected %d\n",
+           res);
     return 1;
   }
 
   mkdir("b");
   res = umount("b");
   if (res != -1) {
-    printf(1, "invalidpathtest: umount did not fail as expected %d\n", res);
+    printf(stdout, "invalidpathtest: umount did not fail as expected %d\n",
+           res);
     return 1;
   }
 
@@ -248,7 +252,7 @@ static int doublemounttest(void) {
   mkdir("b");
   int res = mount("internal_fs_a", "b", 0);
   if (res != 0) {
-    printf(1, "doublemounttest: mount returned %d\n", res);
+    printf(stdout, "doublemounttest: mount returned %d\n", res);
     return 1;
   }
 
@@ -258,7 +262,7 @@ static int doublemounttest(void) {
 
   res = umount("b");
   if (res != 0) {
-    printf(1, "doublemounttest: umount returned %d\n", res);
+    printf(stdout, "doublemounttest: umount returned %d\n", res);
     return 1;
   }
 
@@ -272,7 +276,8 @@ static int samedirectorytest(void) {
 
   int res = mount("internal_fs_b", "a", 0);
   if (res != -1) {
-    printf(1, "samedirectorytest: mount did not fail as expected %d\n", res);
+    printf(stdout, "samedirectorytest: mount did not fail as expected %d\n",
+           res);
     return 1;
   }
 
@@ -308,7 +313,7 @@ static int nestedmounttest(void) {
   mkdir("a/b");
   int res = mount("internal_fs_b", "a/b", 0);
   if (res != 0) {
-    printf(1, "nestedmounttest: mount returned %d\n", res);
+    printf(stdout, "nestedmounttest: mount returned %d\n", res);
     return 1;
   }
 
@@ -318,13 +323,14 @@ static int nestedmounttest(void) {
 
   res = umount("a");
   if (res != -1) {
-    printf(1, "nestedmounttest: umount did not fail as expected %d\n", res);
+    printf(stdout, "nestedmounttest: umount did not fail as expected %d\n",
+           res);
     return 1;
   }
 
   res = umount("a/b");
   if (res != 0) {
-    printf(1, "nestedmounttest: umount returned %d\n", res);
+    printf(stdout, "nestedmounttest: umount returned %d\n", res);
     return 1;
   }
 
@@ -351,7 +357,7 @@ static int devicefilestoretest(void) {
   mkdir("ccc");
   int res = mount("internal_fs_a", "ccc", 0);
   if (res != 0) {
-    printf(1, "devicefilestoretest: mount returned %d\n", res);
+    printf(stdout, "devicefilestoretest: mount returned %d\n", res);
     return 1;
   }
 
@@ -361,7 +367,8 @@ static int devicefilestoretest(void) {
 
   res = umount("ccc");
   if (res != 0) {
-    printf(1, "devicefilestoretest: umount did not fail as expected %d\n", res);
+    printf(stdout, "devicefilestoretest: umount did not fail as expected %d\n",
+           res);
     return 1;
   }
 
@@ -377,14 +384,14 @@ static int umountwithopenfiletest(void) {
 
   int fd;
   if ((fd = open("a/umountwithop", O_WRONLY | O_CREATE)) < 0) {
-    printf(1, "umountwithopenfiletest: cannot open file\n");
+    printf(stdout, "umountwithopenfiletest: cannot open file\n");
     return 1;
   }
 
   int res = umount("a");
   if (res != -1) {
-    printf(1, "umountwithopenfiletest: umount did not fail as expected %d\n",
-           res);
+    printf(stdout,
+           "umountwithopenfiletest: umount did not fail as expected %d\n", res);
     return 1;
   }
 
@@ -404,7 +411,8 @@ static int errorondeletedevicetest(void) {
 
   int res = unlink("internal_fs_a");
   if (res != -1) {
-    printf(1, "errorondeletedevicetest: unlink did not fail as expected %d\n",
+    printf(stdout,
+           "errorondeletedevicetest: unlink did not fail as expected %d\n",
            res);
     return 1;
   }
@@ -420,29 +428,29 @@ static int umountnonrootmount(void) {
   mkdir("a");
 
   if (verifylines("/proc/mounts", 1) != 0) {
-    printf(1, "umountnonrootmount: expected a single mount\n");
+    printf(stdout, "umountnonrootmount: expected a single mount\n");
     return 1;
   }
 
   int res = mount(0, "a", "objfs");
   if (res != 0) {
-    printf(1, "umountnonrootmount: mount returned %d\n", res);
+    printf(stdout, "umountnonrootmount: mount returned %d\n", res);
     return -1;
   }
 
   if (verifylines("/proc/mounts", 2) != 0) {
-    printf(1, "umountnonrootmount: expected two mounts\n");
+    printf(stdout, "umountnonrootmount: expected two mounts\n");
     return 1;
   }
 
   res = umount("a");
   if (res != 0) {
-    printf(1, "umountnonrootmount: umount returned %d\n", res);
+    printf(stdout, "umountnonrootmount: umount returned %d\n", res);
     return -1;
   }
 
   if (verifylines("/proc/mounts", 1) != 0) {
-    printf(1, "umountnonrootmount: expected a single mount\n");
+    printf(stdout, "umountnonrootmount: expected a single mount\n");
     return 1;
   }
 
@@ -482,7 +490,7 @@ static int namespacefiletest(void) {
     mkdir("b");
     int res = mount("internal_fs_b", "b", 0);
     if (res != 0) {
-      printf(1, "namespacefiletest: mount returned %d\n", res);
+      printf(stdout, "namespacefiletest: mount returned %d\n", res);
       return 1;
     }
 
@@ -495,19 +503,20 @@ static int namespacefiletest(void) {
       return 1;
     }
     if (open("b/nsfiletest", 0) >= 0) {
-      printf(1, "namespacefiletest: should not have been able to open file\n");
+      printf(stdout,
+             "namespacefiletest: should not have been able to open file\n");
       return 1;
     }
 
     int res = mount("internal_fs_b", "b", 0);
     if (res != 0) {
-      printf(1, "namespacefiletest: mount returned %d\n", res);
+      printf(stdout, "namespacefiletest: mount returned %d\n", res);
       return 1;
     }
 
     int fd;
     if ((fd = open("b/nsfiletest", 0)) < 0) {
-      printf(1, "namespacefiletest: failed to open file after mount\n");
+      printf(stdout, "namespacefiletest: failed to open file after mount\n");
       return 1;
     }
 
@@ -515,7 +524,7 @@ static int namespacefiletest(void) {
 
     res = umount("b");
     if (res != 0) {
-      printf(1, "namespacefiletest: umount returned %d\n", res);
+      printf(stdout, "namespacefiletest: umount returned %d\n", res);
       return 1;
     }
 
@@ -534,13 +543,13 @@ static int cdinthenouttest(void) {
   // tmp replacment of pwd - checking if the wd contains the "a" dir
   struct stat st;
   if (stat("a", &st) < 0) {
-    printf(1, "cdinthenouttest: not in root or couldnt find a dir\n");
+    printf(stdout, "cdinthenouttest: not in root or couldnt find a dir\n");
     return 1;
   }
 
   int res = umount("a");
   if (res != 0) {
-    printf(1, "cdinthenouttest: unmount returned %d\n", res);
+    printf(stdout, "cdinthenouttest: unmount returned %d\n", res);
     return 1;
   }
   return 0;
@@ -548,7 +557,7 @@ static int cdinthenouttest(void) {
 
 static int procfiletest(char *func_name, char *path, int initial_lines_count) {
   if (verifylines(path, initial_lines_count) != 0) {
-    printf(1, "%s: failed to verify lines for %s\n", func_name, path);
+    printf(stdout, "%s: failed to verify lines for %s\n", func_name, path);
     return 1;
   }
 
@@ -557,7 +566,7 @@ static int procfiletest(char *func_name, char *path, int initial_lines_count) {
   }
 
   if (verifylines(path, initial_lines_count + 1) != 0) {
-    printf(1, "%s: failed to verify lines for %s\n", path, func_name);
+    printf(stdout, "%s: failed to verify lines for %s\n", path, func_name);
     return 1;
   }
 
@@ -566,7 +575,7 @@ static int procfiletest(char *func_name, char *path, int initial_lines_count) {
   }
 
   if (verifylines(path, initial_lines_count) != 0) {
-    printf(1, "%s: failed to verify lines for %s\n", path, func_name);
+    printf(stdout, "%s: failed to verify lines for %s\n", path, func_name);
     return 1;
   }
 

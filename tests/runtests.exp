@@ -631,7 +631,7 @@ proc pouch_to_many_cnts_test_remove {argv} {
 proc pouch_list_test {argv} {
 
     #this test assumes there are 3 started containers
-    send "pouch list all\n"
+    send "pouch list\n"
     set timeout 3
     log_file -noappend [lindex $argv 0]
     expect "Pouch containers:"
@@ -642,9 +642,9 @@ proc pouch_list_test {argv} {
     set running [connect_container $argv "1"]
     send "\n"
 
-    send "pouch list all\n"
+    send "pouch list\n"
     log_file -noappend [lindex $argv 0]
-    assert_on_exit_status
+    assert_on_exit_status 1
     log_file -noappend [lindex $argv 0]
 
     set running [disconnect_container $argv]
@@ -656,7 +656,6 @@ proc pouch_list_test {argv} {
 proc pouch_cgroup_limit_test {argv} {
     set timeout 10
 
-    send "pouch start c1\n"
     sleep 1
     send "pouch cgroup c1 cpu.max 10000,20000\n"
 
@@ -707,7 +706,7 @@ proc pouch_disconnect_outside_container_test {argv} {
     set timeout 3
     log_file -noappend [lindex $argv 0]
     expect {
-       "Pouch: no container is connected"
+       "Error: Invalid command for outside container."
     }
     assert_on_exit_status 1
     sleep 1
@@ -715,7 +714,10 @@ proc pouch_disconnect_outside_container_test {argv} {
     sleep 1
     set timeout 3
     log_file -noappend [lindex $argv 0]
-    assert_on_exit_status
+    expect {
+       "Error: Invalid command for outside container."
+    }
+    assert_on_exit_status 1
 }
 
 
@@ -726,12 +728,16 @@ proc pouch_disconnect_outside_container_test {argv} {
 # @argv - file name for logging
 proc pouch_info_container_test {argv} {
 
-    #check we are outside
+    #check we are outside - epxects argument
     set running [pid_check $argv "PID: 2"]
     send "pouch info\n"
     set timeout 3
     log_file -noappend [lindex $argv 0]
-    assert_on_exit_status
+    expect {
+        "Error: Invalid number of arguments."
+    }
+    assert_on_exit_status 1
+    # now no container exists
     sleep 2
     send "pouch info c6\n"
     set timeout 3

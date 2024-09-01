@@ -65,7 +65,7 @@ int open_file(const char* file) {
   int fd;
 
   if ((fd = open(file, O_RDWR)) < 1) {
-    if (suppress == 0) printf(1, "\nFailed to open file: %s\n", file);
+    if (suppress == 0) printf(stdout, "\nFailed to open file: %s\n", file);
     return 0;
   }
 
@@ -75,7 +75,7 @@ int open_file(const char* file) {
 // Close given file.
 int close_file(int fd) {
   if (close(fd) != 0) {
-    if (suppress == 0) printf(1, "\nFailed to close file\n");
+    if (suppress == 0) printf(stdout, "\nFailed to close file\n");
     return 0;
   }
 
@@ -102,13 +102,13 @@ char* read_file(const char* file, int print) {
     return 0;
   }
   if (read(fd, buf, 256) < 0) {
-    if (suppress == 0) printf(1, "\nFailed to read file: %s\n", file);
+    if (suppress == 0) printf(stdout, "\nFailed to read file: %s\n", file);
     close_file(fd);
     return 0;
   }
 
   if (print) {
-    printf(1, "Contents of %s: \n%s\n", file, buf);
+    printf(stdout, "Contents of %s: \n%s\n", file, buf);
   }
 
   if (!close_file(fd)) {
@@ -127,7 +127,7 @@ int write_file(const char* file, char* text) {
   empty_string(buf, 256);
   strcpy(buf, text);
   if (write(fd, buf, sizeof(buf)) < 0) {
-    if (suppress == 0) printf(1, "\nFailed to write into file %s\n", file);
+    if (suppress == 0) printf(stdout, "\nFailed to write into file %s\n", file);
     close_file(fd);
     return 0;
   }
@@ -139,7 +139,7 @@ int write_file(const char* file, char* text) {
 int create_file(const char* file) {
   int fd;
   if ((fd = open(file, O_CREATE | O_RDWR)) < 1) {
-    if (suppress == 0) printf(1, "\nFailed to create a new file \n");
+    if (suppress == 0) printf(stdout, "\nFailed to create a new file \n");
     return 0;
   }
   return fd;
@@ -219,7 +219,7 @@ int verify_controller_disabled(int type) {
   for (i = 0; contents[i + 2] != 0; i++) {
     if (contents[i] == buf[0] && contents[i + 1] == buf[1] &&
         contents[i + 2] == buf[2]) {
-      printf(1, "\nController %s is still enabled\n", buf);
+      printf(stdout, "\nController %s is still enabled\n", buf);
       return 0;
     }
   }
@@ -271,7 +271,7 @@ int is_pid_in_group(const char* file, int pid) {
   }
 
   if (suppress == 0) {
-    printf(1, "Failed to find pid %d in group %s\n", atoi(pid_buf), file);
+    printf(stdout, "Failed to find pid %d in group %s\n", atoi(pid_buf), file);
   }
 
   return 0;
@@ -282,7 +282,7 @@ int is_pid_in_group(const char* file, int pid) {
 int temp_write(int num) {
   int fd;
   if ((fd = open(TEMP_FILE, O_CREATE | O_RDWR)) < 1) {
-    if (suppress == 0) printf(1, "\nFailed to open a temporary file\n");
+    if (suppress == 0) printf(stdout, "\nFailed to open a temporary file\n");
     return 0;
   }
 
@@ -302,7 +302,7 @@ int temp_read(int print) { return atoi(read_file(TEMP_FILE, print)); }
 // Delete the temporary file.
 int temp_delete() {
   if (unlink(TEMP_FILE)) {
-    printf(1, "Failed to delete temporary file\n");
+    printf(stdout, "Failed to delete temporary file\n");
     return 0;
   }
 
@@ -1531,7 +1531,7 @@ TEST(test_nested_cgroups) {
   mem_str_buf = read_file(TEST_1_MEM_STAT, 0);
   kernel_total_mem = get_kernel_total_memory(mem_str_buf);
 
-  printf(1, "\nkernel total memory: %x \n", kernel_total_mem);
+  printf(stdout, "\nkernel total memory: %x \n", kernel_total_mem);
 
   // initialize the nested cgroup path
   strcpy(current_nested_cgroup, ROOT_CGROUP);
@@ -1556,7 +1556,7 @@ TEST(test_nested_cgroups) {
     memset(temp_path_g, 0, MAX_PATH_LENGTH);
     strcpy(temp_path_g, current_nested_cgroup);
     strcat(temp_path_g, TEST_NESTED_MEM_MIN);
-    printf(1, "temp_path_g nested cgroup min path: %s\n", temp_path_g);
+    printf(stdout, "temp_path_g nested cgroup min path: %s\n", temp_path_g);
     ASSERT_TRUE(write_file(temp_path_g, min_val));
     read_file(temp_path_g, 1);
 
@@ -1730,7 +1730,7 @@ void nested_cgroup_mem_recalc_scenario1(int kernel_total_mem, char* min_value) {
     memset(temp_path_g, 0, MAX_PATH_LENGTH);
     strcpy(temp_path_g, current_nested_cgroup);
     strcat(temp_path_g, TEST_NESTED_MEM_MIN);
-    printf(1, "temp_path_g nested cgroup min path: %s\n", temp_path_g);
+    printf(stdout, "temp_path_g nested cgroup min path: %s\n", temp_path_g);
 
     /* first, try to allocate the free memory in the kernel + 1 PAGE. This
      * should fail */
@@ -1781,7 +1781,7 @@ void nested_cgroup_mem_recalc_scenario2(int kernel_total_mem, char* min_value) {
     ASSERT_FALSE(mkdir(current_nested_cgroup));
     strcpy(temp_path_g, current_nested_cgroup);
 
-    printf(1, "temp_path_g nested cgroup path: %s\n", temp_path_g);
+    printf(stdout, "temp_path_g nested cgroup path: %s\n", temp_path_g);
 
     strcat(temp_path_g, TEST_NESTED_SUBTREE_CONTROL);
     ASSERT_TRUE(write_file(temp_path_g, "+mem"));
@@ -1797,7 +1797,7 @@ void nested_cgroup_mem_recalc_scenario2(int kernel_total_mem, char* min_value) {
     memset(temp_path_g, 0, MAX_PATH_LENGTH);
     strcpy(temp_path_g, descending_nested_cgroup_path);
     strcat(temp_path_g, TEST_NESTED_MEM_MIN);
-    printf(1, "temp_path_g nested cgroup min path: %s\n", temp_path_g);
+    printf(stdout, "temp_path_g nested cgroup min path: %s\n", temp_path_g);
 
     /* first, try to allocate the free memory in the kernel + 1 PAGE. This
      * should fail */
@@ -1969,7 +1969,7 @@ TEST(test_nested_cgroup_memory_recalculation) {
     will fit in the total kernel's memory
   */
   itoa(min_value, kernel_total_mem / (NESTED_CGROUPS_LEVEL + 1));
-  printf(1, "\nThe min_value for allocation is: %s\n", min_value);
+  printf(stdout, "\nThe min_value for allocation is: %s\n", min_value);
 
   nested_cgroup_mem_recalc_scenario1(kernel_total_mem, min_value);
   sleep(1);

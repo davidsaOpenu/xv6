@@ -4,22 +4,6 @@
 #include "stat.h"
 #include "types.h"
 
-char *fmtname(char *path) {
-  static char buf[DIRSIZ + 1];
-  char *p;
-
-  // Find first character after last slash.
-  for (p = path + strlen(path); p >= path && *p != '/'; p--) {
-  }
-  p++;
-
-  // Return blank-padded name.
-  if (strlen(p) >= DIRSIZ) return p;
-  memmove(buf, p, strlen(p));
-  memset(buf + strlen(p), ' ', DIRSIZ - strlen(p));
-  return buf;
-}
-
 void ls(char *path) {
   char buf[512], *p;
   int fd;
@@ -27,26 +11,32 @@ void ls(char *path) {
   struct stat st;
   char cg_file_name[MAX_CGROUP_FILE_NAME_LENGTH];
   char proc_file_name[MAX_PROC_FILE_NAME_LENGTH];
+  char temp_name_buffer[DIRSIZ + 1];
 
   if ((fd = open(path, 0)) < 0) {
-    printf(2, "ls: cannot open %s\n", path);
+    printf(stderr, "ls: cannot open %s\n", path);
     return;
   }
 
   if (fstat(fd, &st) < 0) {
-    printf(2, "ls: cannot stat %s\n", path);
+    printf(stderr, "ls: cannot stat %s\n", path);
     close(fd);
     return;
   }
 
   switch (st.type) {
     case T_FILE:
-      printf(1, "%s %d %d %d\n", fmtname(path), st.type, st.ino, st.size);
+      if (!fmtname(path, temp_name_buffer, sizeof(temp_name_buffer))) {
+        printf(stdout, "ls: path too long\n");
+        break;
+      }
+      printf(stdout, "%s %d %d %d\n", temp_name_buffer, st.type, st.ino,
+             st.size);
       break;
 
     case T_DIR:
       if (strlen(path) + 1 + DIRSIZ + 1 > sizeof buf) {
-        printf(1, "ls: path too long\n");
+        printf(stdout, "ls: path too long\n");
         break;
       }
       strcpy(buf, path);
@@ -57,20 +47,29 @@ void ls(char *path) {
         memmove(p, de.name, DIRSIZ);
         p[DIRSIZ] = 0;
         if (stat(buf, &st) < 0) {
-          printf(1, "ls: cannot stat %s\n", buf);
+          printf(stdout, "ls: cannot stat %s\n", buf);
           continue;
         }
-        printf(1, "%s %d %d %d\n", fmtname(buf), st.type, st.ino, st.size);
+        if (!fmtname(buf, temp_name_buffer, sizeof(temp_name_buffer))) {
+          printf(stdout, "ls: path too long\n");
+          continue;
+        }
+        printf(stdout, "%s %d %d %d\n", temp_name_buffer, st.type, st.ino,
+               st.size);
       }
       break;
 
     case T_CGFILE:
-      printf(1, "%s %d %d\n", fmtname(path), st.type, st.size);
+      if (!fmtname(path, temp_name_buffer, sizeof(temp_name_buffer))) {
+        printf(stdout, "ls: path too long\n");
+        break;
+      }
+      printf(stdout, "%s %d %d\n", temp_name_buffer, st.type, st.size);
       break;
 
     case T_CGDIR:
       if (strlen(path) + 1 + DIRSIZ + 1 > sizeof buf) {
-        printf(1, "ls: path too long\n");
+        printf(stdout, "ls: path too long\n");
         break;
       }
       strcpy(buf, path);
@@ -85,21 +84,29 @@ void ls(char *path) {
         while (p[i] == ' ') i--;
         p[i + 1] = 0;
         if (stat(buf, &st) < 0) {
-          printf(1, "ls: cannot stat %s\n", buf);
+          printf(stdout, "ls: cannot stat %s\n", buf);
           continue;
         }
         p[i + 1] = ' ';
-        printf(1, "%s %d %d\n", fmtname(buf), st.type, st.size);
+        if (!fmtname(buf, temp_name_buffer, sizeof(temp_name_buffer))) {
+          printf(stdout, "ls: path too long\n");
+          continue;
+        }
+        printf(stdout, "%s %d %d\n", temp_name_buffer, st.type, st.size);
       }
       break;
 
     case T_PROCFILE:
-      printf(1, "%s %d %d\n", fmtname(path), st.type, st.size);
+      if (!fmtname(path, temp_name_buffer, sizeof(temp_name_buffer))) {
+        printf(stdout, "ls: path too long\n");
+        break;
+      }
+      printf(stdout, "%s %d %d\n", temp_name_buffer, st.type, st.size);
       break;
 
     case T_PROCDIR:
       if (strlen(path) + 1 + DIRSIZ + 1 > sizeof buf) {
-        printf(1, "ls: path too long\n");
+        printf(stdout, "ls: path too long\n");
         break;
       }
       strcpy(buf, path);
@@ -114,11 +121,15 @@ void ls(char *path) {
         while (p[i] == ' ') i--;
         p[i + 1] = 0;
         if (stat(buf, &st) < 0) {
-          printf(1, "ls: cannot stat %s\n", buf);
+          printf(stdout, "ls: cannot stat %s\n", buf);
           continue;
         }
         p[i + 1] = ' ';
-        printf(1, "%s %d %d\n", fmtname(buf), st.type, st.size);
+        if (!fmtname(buf, temp_name_buffer, sizeof(temp_name_buffer))) {
+          printf(stdout, "ls: path %s too long\n", buf);
+          continue;
+        }
+        printf(stdout, "%s %d %d\n", temp_name_buffer, st.type, st.size);
       }
       break;
   }
