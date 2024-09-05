@@ -2,7 +2,7 @@
 #define XV6_DEVICE_H
 
 #include "fs.h"
-#include "obj_fs.h"
+#include "obj_disk.h"
 #include "spinlock.h"
 
 #define LOOP_DEVICE_DEV (7)
@@ -22,12 +22,6 @@ struct device {
   struct superblock sb;
   int ref;
   struct vfs_inode *ip;
-};
-
-struct obj_device {
-  struct objsuperblock sb;
-  int ref;
-  struct vfs_inode *root_ip;
 };
 
 struct dev_holder_s {

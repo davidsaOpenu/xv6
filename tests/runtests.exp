@@ -763,7 +763,8 @@ proc usertests {argv} {
     assert_on_exit_status
 
     send "cd ..\n"
-    # TODO(SM): insert these lines only after objfs multiple devices bug fix
+    # TODO(SM): insert these lines only after ".." dir entry of mount is
+    #           fixed to point to the right parent dir
     #send "rm -r usertests_dir\n"
 }
 

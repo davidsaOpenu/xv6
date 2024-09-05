@@ -73,19 +73,21 @@
 void init_objects_cache();
 
 void _check(char* val);
-uint cache_add_object(const void* object, uint size, const char* name);
-uint cache_rewrite_entire_object(vector object, uint size, const char* name);
-uint cache_rewrite_object(vector data, uint objectsize, uint offset,
+uint cache_add_object(uint dev, const void* object, uint size,
+                      const char* name);
+uint cache_rewrite_entire_object(uint dev, vector object, uint size,
+                                 const char* name);
+uint cache_rewrite_object(uint dev, vector data, uint objectsize, uint offset,
                           const char* name);
-uint cache_delete_object(const char* name);
-uint cache_object_size(const char* name, uint* output);
-uint cache_get_object(const char* name, vector* outputvector);
+uint cache_delete_object(uint dev, const char* name);
+uint cache_object_size(uint dev, const char* name, uint* output);
+uint cache_get_object(uint dev, const char* name, vector* outputvector);
 
 /**
  * Remove the object from the objects cache but not form the disk.
  * This function locks the cache lock and release it in the end.
  */
-uint cache_free_from_cache_safe(const char* name);
+uint cache_free_from_cache_safe(uint dev, const char* name);
 
 /**
  * The following methods provides statistics about the cache layer. They can
