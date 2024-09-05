@@ -9,8 +9,6 @@
 #include "vfs_file.h"
 #include "x86.h"
 
-static void objfsinit(void);
-
 static void startothers(void);
 
 static void mpmain(void) __attribute__((noreturn));
@@ -44,7 +42,7 @@ int main(void) {
   tvinit();                                    // trap vectors
   buf_cache_init();                            // buffer cache
   vfs_fileinit();                              // file table
-  objfsinit();                                 // objfs disk
+  obj_fs_init();                               // objfs
   ideinit();                                   // disk
   startothers();                               // start other processors
   kinit2(P2V(4 * 1024 * 1024), P2V(PHYSTOP));  // must come after startothers()
@@ -54,8 +52,6 @@ int main(void) {
   namespaceinit();  // initialize namespaces
   mpmain();         // finish this processor's setup
 }
-
-static void objfsinit(void) { obj_mkfs(); }
 
 // Other CPUs jump here from entryother.S.
 static void mpenter(void) {

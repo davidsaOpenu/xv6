@@ -16,7 +16,6 @@
 #include "obj_cache.h"
 #include "obj_disk.h"  // for error codes and `new_inode_number`
 #include "obj_file.h"
-#include "obj_log.h"
 #include "param.h"
 #include "proc.h"
 #include "sleeplock.h"
@@ -43,10 +42,12 @@ struct {
   struct obj_inode inode[NINODE];
 } obj_icache;
 
-void obj_iinit(uint dev) {
+void obj_iinit(void) {
   initlock(&obj_icache.lock, "obj_icache");
   for (uint i = 0; i < NINODE; i++) {
     initsleeplock(&obj_icache.inode[i].vfs_inode.lock, "obj_inode");
+    obj_icache.inode[i].vfs_inode.ref = 0;
+    obj_icache.inode[i].vfs_inode.valid = 0;
   }
 }
 
@@ -68,20 +69,39 @@ void file_name(char *output, uint inum) {
   output[sizeof(uint) + 1] = 0;  // null terminator
 }
 
-void obj_mkfs() {
-  init_obj_fs();
+void obj_fs_init(void) {
   init_objects_cache();
+  obj_iinit();
 }
 
-struct vfs_inode *obj_fsinit(uint dev) {
+void obj_fs_init_dev(uint dev) {
   struct vfs_inode *root_inode;
   struct dirent de;
   uint off = 0;
 
-  obj_iinit(dev);
+  init_obj_device(dev);
+
+  acquire(&obj_icache.lock);
+  for (uint i = 0; i < NINODE; i++) {
+    if (obj_icache.inode[i].vfs_inode.dev == dev) {
+      initsleeplock(&obj_icache.inode[i].vfs_inode.lock, "obj_inode");
+      obj_icache.inode[i].vfs_inode.ref = 0;
+      obj_icache.inode[i].vfs_inode.valid = 0;
+    }
+  }
+  release(&obj_icache.lock);
 
   /* Initiate root dir */
   root_inode = obj_ialloc(dev, T_DIR);
+  obj_ilock(root_inode);
+
+  if (root_inode->inum != OBJ_ROOTINO) {
+    panic("Obj device is not in initial state");
+  }
+
+  // Prevent the root dir from being freed.
+  root_inode->nlink++;
+  root_inode->i_op.iupdate(root_inode);
 
   /* Initiate inode for root dir */
   strncpy(de.name, ".", DIRSIZ);
@@ -99,7 +119,7 @@ struct vfs_inode *obj_fsinit(uint dev) {
     panic("Couldn't create root dir in obj fs");
   }
 
-  return root_inode;
+  obj_iunlockput(root_inode);
 
   /* For tries, TODO: need to move this logic to obj mkfs (and create one) */
   //    ip = obj_ialloc(dev, T_FILE);
@@ -125,7 +145,7 @@ struct vfs_inode *obj_fsinit(uint dev) {
 //  Allocate an object and its corresponding inode object to the device object
 //  table. Returns an unlocked but allocated and referenced inode.
 struct vfs_inode *obj_ialloc(uint dev, short type) {
-  int inum = new_inode_number();
+  int inum = new_inode_number(dev);
   char iname[INODE_NAME_LENGTH];
   struct obj_dinode di = {0};
   char oname[MAX_OBJECT_NAME_LENGTH];
@@ -135,12 +155,12 @@ struct vfs_inode *obj_ialloc(uint dev, short type) {
   di.vfs_dinode.nlink = 0;
   di.data_object_name[0] = 0;  // not initialized
   inode_name(iname, inum);
-  if (log_add_object(&di, sizeof(di), iname) != NO_ERR) {
+  if (cache_add_object(dev, &di, sizeof(di), iname) != NO_ERR) {
     panic("obj_ialloc: failed adding inode to disk");
   }
 
   file_name(oname, inum);
-  if (log_add_object(0, 0, oname) != NO_ERR) {
+  if (cache_add_object(dev, 0, 0, oname) != NO_ERR) {
     panic("obj_ialloc: failed adding object to disk");
   }
 
@@ -167,8 +187,8 @@ void obj_iupdate(struct vfs_inode *vfs_ip) {
   unsigned disize = sizeof(di);
   vector disk_inode_vector = newvector(disize, 1);
   memmove_into_vector_bytes(disk_inode_vector, 0, (char *)(&di), disize);
-  if (cache_rewrite_entire_object(disk_inode_vector, sizeof(di), iname) !=
-      NO_ERR) {
+  if (cache_rewrite_entire_object(vfs_ip->dev, disk_inode_vector, sizeof(di),
+                                  iname) != NO_ERR) {
     panic("obj_iupdate: failed writing dinode to the disk");
   }
   freevector(&disk_inode_vector);
@@ -250,7 +270,7 @@ void obj_ilock(struct vfs_inode *vfs_ip) {
   if (ip->vfs_inode.valid == 0) {
     inode_name(iname, ip->vfs_inode.inum);
     vector div = newvector(sizeof(di), 1);
-    if (log_get_object(iname, &div) != NO_ERR) {
+    if (cache_get_object(vfs_ip->dev, iname, &div) != NO_ERR) {
       panic("inode doesn't exists in the disk");
     }
     memmove_from_vector((char *)&di, div, 0, div.vectorsize);
@@ -267,12 +287,12 @@ void obj_ilock(struct vfs_inode *vfs_ip) {
 static void idelete(struct obj_inode *ip) {
   // log_delete_object panics on failure - no return value check needed.
   if (ip->data_object_name[0] != 0) {
-    log_delete_object(ip->data_object_name);
+    cache_delete_object(ip->vfs_inode.dev, ip->data_object_name);
     ip->data_object_name[0] = 0;
   }
   char iname[INODE_NAME_LENGTH];
   inode_name(iname, ip->vfs_inode.inum);
-  log_delete_object(iname);
+  cache_delete_object(ip->vfs_inode.dev, iname);
 }
 
 // Unlock the given inode.
@@ -335,7 +355,8 @@ void obj_stati(struct vfs_inode *vfs_ip, struct stat *st) {
   if (ip->data_object_name[0] == 0) {
     st->size = 0;
   } else {
-    if (log_object_size(ip->data_object_name, &st->size) != NO_ERR) {
+    if (cache_object_size(vfs_ip->dev, ip->data_object_name, &st->size) !=
+        NO_ERR) {
       panic("obj stati failed getting object size");
     }
   }
@@ -360,14 +381,14 @@ int obj_readi(struct vfs_inode *vfs_ip, uint off, uint n, vector *dstvector) {
   if (ip->data_object_name[0] == 0) {
     panic("obj_readi reading from inode without data object");
   }
-  if (log_object_size(ip->data_object_name, &size) != NO_ERR) {
+  if (cache_object_size(vfs_ip->dev, ip->data_object_name, &size) != NO_ERR) {
     size = 0;
   }
   if (off > size || off + n < off) return -1;
   if (off + n > size) n = size - off;
 
   vector datavector = newvector(size, 1);
-  if (log_get_object(ip->data_object_name, &datavector) !=
+  if (cache_get_object(vfs_ip->dev, ip->data_object_name, &datavector) !=
       NO_ERR) {  // TODO(unknown): add support for vector
     panic("obj_readi failed reading object content");
   }
@@ -395,7 +416,7 @@ int obj_writei(struct vfs_inode *vfs_ip, char *src, uint off, uint n) {
     panic("obj writei writing to inode without data object");
   }
 
-  if (log_object_size(ip->data_object_name, &size) != NO_ERR) {
+  if (cache_object_size(vfs_ip->dev, ip->data_object_name, &size) != NO_ERR) {
     size = 0;
   }
 
@@ -408,7 +429,7 @@ int obj_writei(struct vfs_inode *vfs_ip, char *src, uint off, uint n) {
 
   vector srcvector = newvector(n, 1);
   memmove_into_vector_bytes(srcvector, 0, src, n);
-  cache_rewrite_object(srcvector, size, off, ip->data_object_name);
+  cache_rewrite_object(vfs_ip->dev, srcvector, size, off, ip->data_object_name);
   freevector(&srcvector);
   return n;
 }
@@ -425,7 +446,7 @@ int obj_isdirempty(struct vfs_inode *vfs_dp) {
   struct obj_inode *dp = container_of(vfs_dp, struct obj_inode, vfs_inode);
   direntryvec = newvector(sizeof(de), 1);
 
-  if (log_object_size(dp->data_object_name, &size) != NO_ERR) {
+  if (cache_object_size(vfs_dp->dev, dp->data_object_name, &size) != NO_ERR) {
     panic("obj_isdirempty failed getting inode data object size");
   }
   for (off = 2 * sizeof(de); off < size; off += sizeof(de)) {
@@ -459,7 +480,7 @@ struct vfs_inode *obj_dirlookup(struct vfs_inode *vfs_dp, char *name,
     panic("ob_dirlookup received inode without data");
   }
   uint size;
-  if (log_object_size(dp->data_object_name, &size) != NO_ERR) {
+  if (cache_object_size(vfs_dp->dev, dp->data_object_name, &size) != NO_ERR) {
     panic("obj_dirlookup failed getting inode data object size");
   }
 
@@ -499,7 +520,7 @@ int obj_dirlink(struct vfs_inode *vfs_dp, char *name, uint inum) {
     panic("obj_dirlink received inode without data");
   }
   uint size;
-  if (log_object_size(dp->data_object_name, &size) != NO_ERR) {
+  if (cache_object_size(vfs_dp->dev, dp->data_object_name, &size) != NO_ERR) {
     panic("obj_dirlink failed getting inode data object size");
   }
 
@@ -518,7 +539,7 @@ int obj_dirlink(struct vfs_inode *vfs_dp, char *name, uint inum) {
   inode_name(iname, inum);
   memset(&di, 0, sizeof(di));
   vector div = newvector(sizeof(di), 1);
-  if (log_get_object(iname, &div) != NO_ERR) {
+  if (cache_get_object(vfs_dp->dev, iname, &div) != NO_ERR) {
     panic("inode doesn't exists in the disk");
   }
   memmove_from_vector((char *)&di, div, 0, div.vectorsize);

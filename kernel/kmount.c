@@ -97,7 +97,7 @@ int mount(struct vfs_inode *mountpoint, struct vfs_inode *device,
       return -1;
     }
   } else if (bind_dir == 0) {
-    dev = getorcreateobjdevice();
+    dev = createobjdevice();
     if (dev < 0) {
       newmount->ref = 0;
       cprintf("failed to create ObjFS device.\n");

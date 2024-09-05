@@ -1899,7 +1899,8 @@ void objfs_all_tests(void) {
     exit(1);
   }
 
-  // TODO(SM): insert these lines only after objfs multiple devices bug fix
+  // TODO(SM): insert these lines only after ".." dir entry of mount is
+  //           fixed to point to the right parent dir
 #if 0
   if (umount("objfs_dir") < 0) {
     printf(stdout, "umount objfs failed\n");

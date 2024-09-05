@@ -252,7 +252,10 @@ static struct vfs_inode *createmount(char *path, short type, short major,
   if ((ip = dp->i_op.dirlookup(dp, name, &off)) != 0) {
     dp->i_op.iunlockput(dp);
     // The path has already been created
-    if (omode & O_EXCL) return (void *)EEXIST;
+    if (omode & O_EXCL) {
+      mntput(*mnt);
+      return (void *)EEXIST;
+    }
     ip->i_op.ilock(ip);
     if (type == T_FILE && ip->type == T_FILE) return ip;
     ip->i_op.iunlockput(ip);
@@ -428,6 +431,7 @@ int sys_chdir(void) {
   ip->i_op.ilock(ip);
   if (ip->type != T_DIR) {
     ip->i_op.iunlockput(ip);
+    mntput(mnt);
     end_op();
     return -1;
   }
