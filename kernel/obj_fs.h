@@ -12,19 +12,6 @@
 #define ROOT_ID "\x03"
 #define OBJ_ROOTINO 3
 
-struct objsuperblock {
-  uint storage_device_size;
-  uint objects_table_offset;
-  // the last inode added
-  uint last_inode;
-  // variables to trace the file-system state
-  uint bytes_occupied;
-  uint occupied_objects;
-  struct vfs_superblock vfs_sb;
-  // determines the limit between object table space and the store itself
-  uint store_offset;
-};
-
 /**
  * On-disk inode structure
  * Currently, all the inode data is located inside a single object. We can

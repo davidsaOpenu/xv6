@@ -5,7 +5,6 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "namespace.h"
-#include "obj_log.h"
 #include "param.h"
 #include "pid_ns.h"
 #include "procfs.h"
@@ -637,7 +636,6 @@ void forkret(void) {
     first = 0;
     iinit(ROOTDEV);
     initlog(ROOTDEV);
-    init_objfs_log();
     mntinit();  // initialize mounts
   }
 
