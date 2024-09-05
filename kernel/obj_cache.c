@@ -21,6 +21,7 @@ uint misses;
 struct obj_cache_entry {
   uchar data[CACHE_MAX_OBJECT_SIZE];
   uint size;
+  uint dev;
   char object_id[OBJECT_ID_LENGTH];
 
   struct obj_cache_entry* prev;
@@ -78,9 +79,10 @@ static void move_to_back(struct obj_cache_entry* e) {
   obj_cache.head.prev = e;
 }
 
-uint cache_add_object(const void* object, uint size, const char* name) {
+uint cache_add_object(uint dev, const void* object, uint size,
+                      const char* name) {
   acquiresleep(&cachelock);
-  uint rv = add_object(object, size, name);
+  uint rv = add_object(dev, object, size, name);
   if (rv != NO_ERR) {
     releasesleep(&cachelock);
     return rv;
@@ -101,11 +103,11 @@ uint cache_add_object(const void* object, uint size, const char* name) {
   return NO_ERR;
 }
 
-uint cache_rewrite_object(vector data, uint objectsize, uint offset,
+uint cache_rewrite_object(uint dev, vector data, uint objectsize, uint offset,
                           const char* name) {
   acquiresleep(&cachelock);
   // 1. check for name constraints validity
-  uint rv = rewrite_object(data, objectsize, offset, name);
+  uint rv = rewrite_object(dev, data, objectsize, offset, name);
   if (rv != NO_ERR) {
     releasesleep(&cachelock);
     return rv;
@@ -116,7 +118,7 @@ uint cache_rewrite_object(vector data, uint objectsize, uint offset,
   misses++;
   for (struct obj_cache_entry* current = obj_cache.head.prev;
        current != &obj_cache.head; current = current->prev) {
-    if (obj_id_cmp(name, current->object_id) == 0) {
+    if ((obj_id_cmp(name, current->object_id) == 0) && (dev == current->dev)) {
       e = current;
       misses--;
       hits++;
@@ -139,22 +141,24 @@ uint cache_rewrite_object(vector data, uint objectsize, uint offset,
     move_to_front(e);
     e->size = objectsize;
     memmove_from_vector((char*)(e->data + offset), data, 0, data.vectorsize);
+    e->dev = dev;
     memmove(e->object_id, name, obj_id_bytes(name));
   }
   releasesleep(&cachelock);
   return NO_ERR;
 }
 
-uint cache_rewrite_entire_object(vector object, uint size, const char* name) {
-  return cache_rewrite_object(object, size, 0, name);
+uint cache_rewrite_entire_object(uint dev, vector object, uint size,
+                                 const char* name) {
+  return cache_rewrite_object(dev, object, size, 0, name);
 }
 
 /// the caller holds the cache lock
-static uint cache_free_from_cache(const char* name) {
+static uint cache_free_from_cache(uint dev, const char* name) {
   // the object might be inside the cache and might not
   for (struct obj_cache_entry* e = obj_cache.head.prev; e != &obj_cache.head;
        e = e->prev) {
-    if (obj_id_cmp(name, e->object_id) == 0) {
+    if ((obj_id_cmp(name, e->object_id) == 0) && (e->dev == dev)) {
       move_to_back(e);
       e->object_id[0] = 0;
       // TODO(unknown): remove?
@@ -165,16 +169,16 @@ static uint cache_free_from_cache(const char* name) {
   return OBJECT_NOT_EXISTS;
 }
 
-uint cache_delete_object(const char* name) {
+uint cache_delete_object(uint dev, const char* name) {
   acquiresleep(&cachelock);
-  uint rv = delete_object(name);
+  uint rv = delete_object(dev, name);
   if (rv != NO_ERR) {
     releasesleep(&cachelock);
     return rv;
   }
   // "remove" the object from the cache - otherwise the assumption
   // in `cache_add_objet` won't be valid.
-  rv = cache_free_from_cache(name);
+  rv = cache_free_from_cache(dev, name);
   if (rv == OBJECT_NOT_EXISTS) {
     misses++;
   } else if (rv == NO_ERR) {
@@ -187,11 +191,11 @@ uint cache_delete_object(const char* name) {
   return NO_ERR;
 }
 
-uint cache_object_size(const char* name, uint* output) {
+uint cache_object_size(uint dev, const char* name, uint* output) {
   acquiresleep(&cachelock);
   for (struct obj_cache_entry* e = obj_cache.head.prev; e != &obj_cache.head;
        e = e->prev) {
-    if (obj_id_cmp(name, e->object_id) == 0) {
+    if ((obj_id_cmp(name, e->object_id) == 0) && (dev == e->dev)) {
       *output = e->size;
       move_to_front(e);
       hits++;
@@ -200,17 +204,17 @@ uint cache_object_size(const char* name, uint* output) {
     }
   }
   misses++;
-  uint err = object_size(name, output);
+  uint err = object_size(dev, name, output);
   releasesleep(&cachelock);
   return err;
 }
 
-uint cache_get_object(const char* name, vector* outputvector) {
+uint cache_get_object(uint dev, const char* name, vector* outputvector) {
   acquiresleep(&cachelock);
   // 1. check if the desired object is already in the cache
   for (struct obj_cache_entry* e = obj_cache.head.prev; e != &obj_cache.head;
        e = e->prev) {
-    if (obj_id_cmp(name, e->object_id) == 0) {
+    if (obj_id_cmp(name, e->object_id) == 0 && (dev == e->dev)) {
       memmove_into_vector_bytes(*outputvector, 0, (char*)e->data, e->size);
       move_to_front(e);
       hits++;
@@ -222,11 +226,11 @@ uint cache_get_object(const char* name, vector* outputvector) {
   misses++;
   // 3. try to fetch object from disk
   uint size;
-  if (object_size(name, &size) != NO_ERR) {
+  if (object_size(dev, name, &size) != NO_ERR) {
     releasesleep(&cachelock);
     panic("cache get object failed to get object size");
   }
-  uint rv = get_object(name, NULL, outputvector);
+  uint rv = get_object(dev, name, NULL, outputvector);
   if (rv != NO_ERR) {
     releasesleep(&cachelock);
     return rv;
@@ -246,9 +250,9 @@ uint cache_get_object(const char* name, vector* outputvector) {
   return NO_ERR;
 }
 
-uint cache_free_from_cache_safe(const char* name) {
+uint cache_free_from_cache_safe(uint dev, const char* name) {
   acquiresleep(&cachelock);
-  uint err = cache_free_from_cache(name);
+  uint err = cache_free_from_cache(dev, name);
   releasesleep(&cachelock);
   return err;
 }

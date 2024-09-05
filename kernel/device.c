@@ -21,8 +21,7 @@ void devinit(void) {
 
 void objdevinit(uint dev) {
   if (dev < NOBJDEVS) {
-    memcpy(&dev_holder.objdev[dev].sb, memory_storage,
-           sizeof(dev_holder.objdev[dev].sb));
+    init_obj_device(dev);
   }
 }
 
@@ -51,7 +50,7 @@ int getorcreatedevice(struct vfs_inode *ip) {
   return LOOP_DEVICE_TO_DEV(emptydevice);
 }
 
-int getorcreateobjdevice() {
+int createobjdevice() {
   acquire(&dev_holder.lock);
   int emptydevice = -1;
   for (int i = 0; i < NOBJDEVS; i++) {
@@ -68,10 +67,22 @@ int getorcreateobjdevice() {
 
   dev_holder.objdev[emptydevice].ref = 1;
   release(&dev_holder.lock);
-  objdevinit(emptydevice);
-  /* Save a reference to the root in order to release it in umount. */
-  dev_holder.objdev[emptydevice].root_ip = obj_fsinit(OBJ_TO_DEV(emptydevice));
+
+  obj_fs_init_dev(OBJ_TO_DEV(emptydevice));
   return OBJ_TO_DEV(emptydevice);
+}
+
+struct obj_device *objdeviceget(uint dev) {
+  if (!IS_OBJ_DEVICE(dev)) {
+    panic("not obj device");
+  }
+
+  dev = DEV_TO_OBJ_DEVICE(dev);
+  acquire(&dev_holder.lock);
+  dev_holder.objdev[dev].ref++;
+  release(&dev_holder.lock);
+
+  return &dev_holder.objdev[dev];
 }
 
 void deviceget(uint dev) {
@@ -107,14 +118,10 @@ void deviceput(uint dev) {
     dev = DEV_TO_OBJ_DEVICE(dev);
     acquire(&dev_holder.lock);
     dev_holder.objdev[dev].ref--;
-    if (dev_holder.objdev[dev].ref == 1) {
+    if (dev_holder.objdev[dev].ref == 0) {
       release(&dev_holder.lock);
-
-      struct vfs_inode *root_ip = dev_holder.objdev[dev].root_ip;
-      root_ip->i_op.iput(root_ip);
-
+      buf_cache_invalidate_blocks(dev);
       acquire(&dev_holder.lock);
-      dev_holder.objdev[dev].root_ip = 0;
     }
     release(&dev_holder.lock);
   }

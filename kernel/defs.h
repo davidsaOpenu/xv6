@@ -53,7 +53,8 @@ int tty_gets(struct vfs_inode* ip, int command);
 
 // device.c
 int getorcreatedevice(struct vfs_inode*);
-int getorcreateobjdevice();
+int createobjdevice();
+struct obj_device* objdeviceget(uint dev);
 void deviceput(uint);
 void deviceget(uint);
 struct vfs_inode* getinodefordevice(uint);
@@ -75,11 +76,11 @@ int vfs_filestat(struct vfs_file*, struct stat*);
 int vfs_filewrite(struct vfs_file*, char*, int n);
 
 // obj_fs.c
+void obj_fs_init(void);
+void obj_fs_init_dev(uint dev);
 struct vfs_inode* obj_ialloc(uint, short);
-void obj_iinit(uint dev);
+void obj_iinit(void);
 struct vfs_inode* obj_iget(uint dev, uint inum);
-struct vfs_inode* obj_fsinit(uint dev);
-void obj_mkfs();
 struct vfs_inode* obj_initprocessroot(struct mount**);
 
 // fs.c

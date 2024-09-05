@@ -51,7 +51,6 @@ OBJS = \
 	cpu_account.o\
 	obj_disk.o\
 	obj_cache.o\
-	obj_log.o\
 	obj_fs.o
 
 
