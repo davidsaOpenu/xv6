@@ -207,13 +207,20 @@ struct mount *mntlookup(struct vfs_inode *mountpoint, struct mount *parent) {
 }
 
 void umountall(struct mount_list *mounts) {
+  int umount_ret = -1;
+
   while (mounts != 0) {
     struct mount_list *next = mounts->next;
     if (mounts->mnt.parent == 0) {
       // No need to unmount root -
       mounts->mnt.ref = 0;
-    } else if (umount(&mounts->mnt) != 0) {
-      panic("failed to umount upon namespace close");
+    } else {
+      begin_op();
+      umount_ret = umount(&mounts->mnt);
+      end_op();
+      if (0 != umount_ret) {
+        panic("failed to umount upon namespace close");
+      }
     }
     mounts = next;
   }
