@@ -19,12 +19,6 @@ void devinit(void) {
   }
 }
 
-void objdevinit(uint dev) {
-  if (dev < NOBJDEVS) {
-    init_obj_device(dev);
-  }
-}
-
 int getorcreatedevice(struct vfs_inode *ip) {
   acquire(&dev_holder.lock);
   int emptydevice = -1;

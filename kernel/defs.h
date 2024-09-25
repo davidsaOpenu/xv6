@@ -61,7 +61,6 @@ struct obj_device* objdeviceget(uint dev);
 void deviceput(uint);
 void deviceget(uint);
 struct vfs_inode* getinodefordevice(uint);
-void objdevinit(uint dev);
 struct vfs_superblock* getsuperblock(uint);
 void devinit(void);
 int doesbackdevice(struct vfs_inode*);
@@ -209,7 +208,9 @@ int cpuid(void);
 void exit(int);
 int fork(void);
 int growproc(int);
+#ifndef HOST_TESTS
 int kill(int);
+#endif
 struct cpu* mycpu(void);
 struct proc* myproc();
 void pinit(void);

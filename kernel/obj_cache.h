@@ -34,6 +34,8 @@
 #define OFFSET_TO_BLOCKNO(offset) ((offset) / BUF_DATA_SIZE)
 #define SIZE_TO_NUM_OF_BUFS(size) (OFFSET_ROUND_UP(size) / BUF_DATA_SIZE)
 
+void obj_cache_init();
+
 /* NOTE: The following functions of this module assume the inode of the object
  *       param is locked when called. */
 uint obj_cache_add(uint dev, const char* name, const void* data, uint size);
