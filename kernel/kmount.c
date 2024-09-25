@@ -51,7 +51,7 @@ static int addmountinternal(struct mount_list *mnt_list, struct device *dev,
         native_fs_init(mnt_list->mnt.sb, dev);
         break;
       case DEVICE_TYPE_OBJ:
-        obj_fs_init(mnt_list->mnt.sb, dev);
+        obj_fs_init_dev(mnt_list->mnt.sb, dev);
         break;
       default:
         return -1;

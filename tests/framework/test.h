@@ -13,6 +13,12 @@ extern void (*_test_init_func)(void);
 
 #define REMOVE_2_ADDITIONAL_CHARS 2
 
+enum exit_status {
+  EXIT_STATUS_SUCCESS = 0,
+  EXIT_STATUS_FAILURE = 1,
+  EXIT_STATUS_EXPECTED_PANIC = 2
+};
+
 // NOTE: the "failed" variable cannot be 'static' as it might be used
 //       by several source files.
 #define INIT_TESTS_PLATFORM()                        \
@@ -37,10 +43,10 @@ extern void (*_test_init_func)(void);
   do {                                              \
     if (failed) {                                   \
       PRINT("[    %s FAILED    ]\n", (suite_name)); \
-      exit(1);                                      \
+      exit(EXIT_STATUS_FAILURE);                    \
     } else {                                        \
       PRINT("[    %s PASSED    ]\n", (suite_name)); \
-      exit(0);                                      \
+      exit(EXIT_STATUS_SUCCESS);                    \
     }                                               \
   } while (0)
 
@@ -50,14 +56,15 @@ extern void (*_test_init_func)(void);
 #define PRINT(...) printf(stdout, __VA_ARGS__)
 #endif
 
-void inline print_error(const char* name, unsigned long int x,
-                        unsigned long int y, const char* file, int line) {
-  for (int i = 0;
-       i < strlen(name) + strlen("[RUNNING] ") + REMOVE_2_ADDITIONAL_CHARS; i++)
-    PRINT("\b");
-  PRINT("[FAILED] %s - expected %lu but got %lu (%s:%d)\n", name, x, y, file,
-        line);
-}
+#define print_error(name, x, y, file, line)                                   \
+  do {                                                                        \
+    for (int i = 0;                                                           \
+         i < strlen(name) + strlen("[RUNNING] ") + REMOVE_2_ADDITIONAL_CHARS; \
+         i++)                                                                 \
+      PRINT("\b");                                                            \
+    PRINT("[FAILED] %s - expected %lu but got %lu (%s:%d)\n", (name),         \
+          (ulong)(x), (ulong)(y), (file), (line));                            \
+  } while (0);
 
 #define run_test(test_name)                                         \
   if (failed == 0) {                                                \
@@ -149,6 +156,7 @@ void inline print_error(const char* name, unsigned long int x,
 #define ASSERT_EQ(x, y) ASSERT_TRUE(x == y)
 #define ASSERT_NE(x, y) ASSERT_FALSE(x == y)
 #define ASSERT_GE(x, y) ASSERT_TRUE(x >= y)
+#define ASSERT_GT(x, y) ASSERT_TRUE(x > y)
 
 #define EXPECT_FALSE(x)                                                       \
   if (x) {                                                                    \
@@ -168,7 +176,7 @@ void inline print_error(const char* name, unsigned long int x,
     PRINT("\n[FAILED] - failed test because %s (%s:%d)\n", (msg), __FILE__, \
           __LINE__);                                                        \
     failed = 1;                                                             \
-    exit(1);                                                                \
+    exit(EXIT_STATUS_FAILURE);                                              \
   } while (0)
 
 /**

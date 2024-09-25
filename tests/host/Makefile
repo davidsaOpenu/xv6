@@ -2,7 +2,7 @@ MAKEFILE_DIRECTORY := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 include ../../common.mk
 
-HOST_TESTS_EXECUTABLES = kvector_tests obj_fs_tests
+HOST_TESTS_EXECUTABLES = kvector_tests obj_fs_tests buf_cache_tests
 KERNEL_BASE_DIR=$(realpath $(MAKEFILE_DIRECTORY)/../../kernel)
 
 all: $(HOST_TESTS_EXECUTABLES)
@@ -19,6 +19,9 @@ obj_fs_tests: obj_fs_tests.o device_obj_disk_ktbin.o device_obj_cache_ktbin.o de
 	$(CC) $(HOST_CFLAGS) $(OFLAGS) $^ -std=gnu99 -o $@
 
 kvector_tests:  kvector_ktbin.o kvector_tests.o common_mocks.o
+	$(CC) $(HOST_CFLAGS) $(OFLAGS) $^ -std=gnu99 -o $@
+
+buf_cache_tests: buf_cache_tests.o buf_cache_ktbin.o common_mocks.o
 	$(CC) $(HOST_CFLAGS) $(OFLAGS) $^ -std=gnu99 -o $@
 
 common_mocks.o: common_mocks.c common_mocks.h

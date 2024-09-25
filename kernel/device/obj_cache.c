@@ -3,15 +3,33 @@
 #include "buf_cache.h"
 #include "obj_disk.h"
 #include "proc.h"
+#include "spinlock.h"
 
-uint hits;
-uint misses;
+struct obj_cache {
+  struct spinlock lock;
+  uint hits;
+  uint misses;
+};
 
 struct bufs_alloc_hint {
   uint start_index;
   uint count;
   uint flags;
 };
+
+static struct obj_cache obj_cache;
+
+static void obj_cahce_hits_inc(void) {
+  acquire(&obj_cache.lock);
+  obj_cache.hits++;
+  release(&obj_cache.lock);
+}
+
+static void obj_cahce_misses_inc(void) {
+  acquire(&obj_cache.lock);
+  obj_cache.misses++;
+  release(&obj_cache.lock);
+}
 
 static uint obj_cache_are_bufs_valid(vector bufs) {
   struct buf *curr_buf;
@@ -133,11 +151,15 @@ static uint validate_bufs(struct device *dev, const char *name, uint obj_size,
   }
 
   if (found_invalid) {
+    obj_cahce_hits_inc();
+
     // Read the object from disk
     err = get_object(dev, name, obj_bufs);
     if (NO_ERR != err) {
       return err;
     }
+  } else {
+    obj_cahce_misses_inc();
   }
 
   return NO_ERR;
@@ -186,6 +208,12 @@ static void obj_cache_set_contiguous_area_hints(
   alloc_hints[hints_index++] = (struct bufs_alloc_hint){.count = 0};
 }
 
+void obj_cache_init(void) {
+  initlock(&obj_cache.lock, "obj_cache");
+  obj_cache.hits = 0;
+  obj_cache.misses = 0;
+}
+
 uint obj_cache_add(struct device *dev, const char *name, const void *data,
                    uint size) {
   uint err = NO_ERR;
@@ -207,12 +235,14 @@ uint obj_cache_add(struct device *dev, const char *name, const void *data,
     goto clean;
   }
 
+  err = NO_ERR;
+
 clean:
   if (size > 0) {
     obj_cache_release_bufs(obj_bufs);
   }
 
-  return NO_ERR;
+  return err;
 }
 
 uint obj_cache_write(struct device *dev, const char *name, const void *data,
@@ -277,12 +307,14 @@ uint obj_cache_read(struct device *dev, const char *name, vector *dst,
   obj_bufs = obj_cache_get_bufs(dev, name, start_block,
                                 end_block - start_block + 1, 0);
   if (obj_cache_are_bufs_valid(obj_bufs)) {
+    obj_cahce_hits_inc();
     obj_cache_copy_from_bufs(obj_bufs, size, offset - OFFSET_ROUND_DOWN(offset),
                              *dst);
   } else {
     // The data we want to read is not entirely on cache, we need to read the
     // whole object directly from disk
     obj_cache_release_bufs(obj_bufs);
+    obj_cahce_misses_inc();
 
     // Don't cache the whole object, but just the requested data and padding
     obj_cache_set_contiguous_area_hints(alloc_hints, size, offset, obj_size);
@@ -326,6 +358,22 @@ uint obj_cache_delete(struct device *dev, const char *name, uint obj_size) {
   return NO_ERR;
 }
 
-uint objects_cache_hits() { return hits; }
+uint objects_cache_hits() {
+  uint hits;
 
-uint objects_cache_misses() { return misses; }
+  acquire(&obj_cache.lock);
+  hits = obj_cache.hits;
+  release(&obj_cache.lock);
+
+  return hits;
+}
+
+uint objects_cache_misses() {
+  uint misses;
+
+  acquire(&obj_cache.lock);
+  misses = obj_cache.misses;
+  release(&obj_cache.lock);
+
+  return misses;
+}

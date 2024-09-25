@@ -27,6 +27,8 @@ void buf_cache_init(void) {
   bufs_cache.head.prev = &bufs_cache.head;
   bufs_cache.head.next = &bufs_cache.head;
   for (b = bufs_cache.buf; b < bufs_cache.buf + NBUF; b++) {
+    b->flags = 0;
+    b->refcnt = 0;
     b->next = bufs_cache.head.next;
     b->prev = &bufs_cache.head;
     initsleeplock(&b->lock, "buffer");

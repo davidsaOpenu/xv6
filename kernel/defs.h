@@ -173,7 +173,9 @@ int cpuid(void);
 void exit(int);
 int fork(void);
 int growproc(int);
+#ifndef HOST_TESTS
 int kill(int);
+#endif
 struct cpu* mycpu(void);
 struct proc* myproc();
 void pinit(void);

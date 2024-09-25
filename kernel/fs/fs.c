@@ -7,5 +7,5 @@
 void fsinit() {
   vfs_fileinit();  // file table
   native_iinit();
-  obj_iinit();
+  obj_fs_init();
 }

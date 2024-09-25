@@ -57,6 +57,11 @@ void file_name(char *output, uint inum) {
   output[sizeof(uint) + 1] = 0;  // null terminator
 }
 
+void obj_fs_init(void) {
+  obj_cache_init();
+  obj_iinit();
+}
+
 // PAGEBREAK!
 //  Allocate an object and its corresponding inode object to the device object
 //  table. Returns an unlocked but allocated and referenced inode.
@@ -459,7 +464,7 @@ int obj_dirlink(struct vfs_inode *vfs_dp, char *name, uint inum) {
   return 0;
 }
 
-void obj_fs_init(struct vfs_superblock *vfs_sb, struct device *dev) {
+void obj_fs_init_dev(struct vfs_superblock *vfs_sb, struct device *dev) {
   struct vfs_inode *root_inode;
   struct dirent de;
   uint off = 0;

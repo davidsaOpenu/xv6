@@ -10,6 +10,7 @@
 #include "kernel/device/device.h"
 #include "kernel/device/obj_cache.h"
 #include "kernel/device/obj_disk.h"
+#include "param.h"
 
 struct device mock_device = {
     .id = 1,
@@ -428,27 +429,51 @@ TEST(add_when_there_is_no_more_disk_left) {
                             STORAGE_DEVICE_SIZE + 1));
 }
 
-// TODO(SM): Re-implement the objfs cache tests, according to the new caching
-//           system
-#if 0
 /**
  * The following tests validate the correctness of the cache layer.
  * The tests use the `objects_cache_hits` and `objects_cache_misses` methods
  * to check the cache behavior vs the expected flow.
  */
 
+/* Add objects in different sizes to cache. */
+TEST(add_objects_to_cache) {
+  char obj1_name[] = "obj1";
+  char obj2_name[] = "obj2";
+  char obj3_name[] = "obj3";
+  char obj1_data[] = "I'm just a regular-sized object";
+  char* obj3_data;
+  uint obj3_size = BUF_DATA_SIZE * 100;
+
+  // Add a regular sized object
+  ASSERT_NO_ERR(
+      obj_cache_add(TESTED_DEVICE, obj1_name, obj1_data, sizeof(obj1_data)));
+
+  // Add an empty object
+  ASSERT_NO_ERR(obj_cache_add(TESTED_DEVICE, obj2_name, 0, 0));
+
+  // Add a huge object
+  obj3_data = malloc(obj3_size);
+  ASSERT_NE(0, obj3_data);
+  ASSERT_NO_ERR(obj_cache_add(TESTED_DEVICE, obj3_name, obj3_data, obj3_size));
+  free(obj3_data);
+}
+
+/* Add an object to disk via the cache and then read it.
+ * Validate the object was retrieved from the cache. */
 TEST(get_object_in_cache) {
   char my_string[] = "my super amazing string";
   const char* obj_name = "get_object_in_cache";
   // inserting the object through the cache keeps it inside it
-  cache_add_object(TESTED_DEVICE, my_string, strlen(my_string) + 1, obj_name);
+  ASSERT_NO_ERR(
+      obj_cache_add(TESTED_DEVICE, obj_name, my_string, sizeof(my_string)));
 
   uint misses_at_start = objects_cache_misses();
   uint hits_at_start = objects_cache_hits();
 
   // validate correctness
   vector actual = newvector(1, sizeof(my_string));
-  ASSERT_NO_ERR(cache_get_object(TESTED_DEVICE, name, &actual));
+  ASSERT_NO_ERR(obj_cache_read(TESTED_DEVICE, obj_name, &actual,
+                               sizeof(my_string), 0, sizeof(my_string)));
   ASSERT_UINT_EQ(0, vectormemcmp(actual, my_string, sizeof(my_string)));
 
   // validate hits and misses
@@ -458,104 +483,150 @@ TEST(get_object_in_cache) {
   freevector(&actual);
 }
 
-TEST(get_object_not_in_cache) {
-  char my_string[] = "my super amazing string";
-  const char* obj_name = "object_no_cache_00";
-  // inserting the object WITHOUT going through the cache
+/* Validate the coherency of cache writes.
+ * Try all variations of offset and partial writes. */
+TEST(write_cache_coherency) {
+  const char* obj_name = "write_cache";
+  char obj_data[] = "1111111111111111111";
+  char new_obj_data[] = "2222222222222222222222";
+  char partial_write_data[] = "333333";
+  vector read_data;
+  char read_data_buffer[sizeof(obj_data)];
+
+  // Rewrite the entire object and verify we read the new data.
   ASSERT_NO_ERR(
-      add_object(TESTED_DEVICE, my_string, sizeof(my_string), obj_name));
+      obj_cache_add(TESTED_DEVICE, obj_name, obj_data, sizeof(obj_data)));
+  ASSERT_NO_ERR(obj_cache_write(TESTED_DEVICE, obj_name, new_obj_data,
+                                sizeof(obj_data), 0, sizeof(obj_data)));
 
-  uint misses_at_start = objects_cache_misses();
-  uint hits_at_start = objects_cache_hits();
+  read_data = newvector(sizeof(new_obj_data), 1);
+  ASSERT_NO_ERR(obj_cache_read(TESTED_DEVICE, obj_name, &read_data,
+                               sizeof(new_obj_data), 0, sizeof(new_obj_data)));
+  ASSERT_UINT_EQ(0,
+                 vectormemcmp(read_data, new_obj_data, sizeof(new_obj_data)));
 
-  // validate correctness
-  vector actual = newvector(1, sizeof(my_string));
-  ASSERT_NO_ERR(cache_get_object(TESTED_DEVICE, obj_name, &actual));
-  ASSERT_UINT_EQ(0, vectormemcmp(actual, my_string, sizeof(my_string)));
+  ASSERT_NO_ERR(
+      obj_cache_delete(TESTED_DEVICE, obj_name, sizeof(new_obj_data)));
+  freevector(&read_data);
 
-  // validate hits and misses
-  EXPECT_UINT_EQ(1, objects_cache_misses() - misses_at_start);
-  ASSERT_UINT_EQ(0, objects_cache_hits() - hits_at_start);
+  // Rewrite only part of the object
+  ASSERT_NO_ERR(
+      obj_cache_add(TESTED_DEVICE, obj_name, obj_data, sizeof(obj_data)));
+  ASSERT_NO_ERR(obj_cache_write(TESTED_DEVICE, obj_name, partial_write_data,
+                                sizeof(partial_write_data), 0,
+                                sizeof(obj_data)));
 
-  // re-accessing the object now set "hit" because it's in the cache from
-  // previous attempt.
-  ASSERT_NO_ERR(cache_get_object(TESTED_DEVICE, obj_name, &actual));
-  EXPECT_UINT_EQ(1, objects_cache_misses() - misses_at_start);
-  ASSERT_UINT_EQ(1, objects_cache_hits() - hits_at_start);
+  read_data = newvector(sizeof(obj_data), 1);
+  ASSERT_NO_ERR(obj_cache_read(TESTED_DEVICE, obj_name, &read_data,
+                               sizeof(obj_data), 0, sizeof(obj_data)));
+  memmove_from_vector(read_data_buffer, read_data, 0, sizeof(obj_data));
+  ASSERT_UINT_EQ(0, memcmp(read_data_buffer, partial_write_data,
+                           sizeof(partial_write_data)));
+  ASSERT_UINT_EQ(0, memcmp(read_data_buffer + sizeof(partial_write_data),
+                           obj_data + sizeof(partial_write_data),
+                           sizeof(obj_data) - sizeof(partial_write_data)));
 
-  freevector(&actual);
+  ASSERT_NO_ERR(obj_cache_delete(TESTED_DEVICE, obj_name, sizeof(obj_data)));
+  freevector(&read_data);
+
+  // Rewrite only part of the object in certain offset
+  uint offset = 5;
+  ASSERT_NO_ERR(
+      obj_cache_add(TESTED_DEVICE, obj_name, obj_data, sizeof(obj_data)));
+  ASSERT_NO_ERR(obj_cache_write(TESTED_DEVICE, obj_name, partial_write_data,
+                                sizeof(partial_write_data), offset,
+                                sizeof(obj_data)));
+
+  read_data = newvector(sizeof(obj_data), 1);
+  ASSERT_NO_ERR(obj_cache_read(TESTED_DEVICE, obj_name, &read_data,
+                               sizeof(obj_data), 0, sizeof(obj_data)));
+  memmove_from_vector(read_data_buffer, read_data, 0, sizeof(obj_data));
+  ASSERT_UINT_EQ(0, memcmp(read_data_buffer, obj_data, offset));
+  ASSERT_UINT_EQ(0, memcmp(read_data_buffer + offset, partial_write_data,
+                           sizeof(partial_write_data)));
+  ASSERT_UINT_EQ(
+      0, memcmp(read_data_buffer + offset + sizeof(partial_write_data),
+                obj_data + offset + sizeof(partial_write_data),
+                sizeof(obj_data) - offset - sizeof(partial_write_data)));
+  ASSERT_NO_ERR(obj_cache_delete(TESTED_DEVICE, obj_name, sizeof(obj_data)));
+  freevector(&read_data);
 }
 
-TEST(get_object_size_in_cache) {
-  char my_string[] = "my super amazing string";
-  const char* obj_name = "object_in_cache_01";
-  // inserting the object WITH going through the cache
-  cache_add_object(TESTED_DEVICE, my_string, strlen(my_string) + 1, obj_name);
+TEST(cache_write_big_object) {
+  const char* obj_name = "big_object";
+  char* obj_data;
+  uint obj_size = NBUF * BUF_DATA_SIZE;
+  char tmp_obj_name[] = "tmp_obj_000";
+  char tmp_obj_data[BUF_DATA_SIZE] = {0};
 
-  uint misses_at_start = objects_cache_misses();
-  uint hits_at_start = objects_cache_hits();
+  obj_data = malloc(obj_size);
+  memset(obj_data, 'c', obj_size);
+  ASSERT_NE(0, obj_data);
+  ASSERT_NO_ERR(obj_cache_add(TESTED_DEVICE, obj_name, obj_data, obj_size));
 
-  vector actual = newvector(1, sizeof(my_string));
-  ASSERT_NO_ERR(cache_get_object(TESTED_DEVICE, obj_name, &actual));
-
-  // validate hits and misses
-  EXPECT_UINT_EQ(0, objects_cache_misses() - misses_at_start);
-  ASSERT_UINT_EQ(1, objects_cache_hits() - hits_at_start);
-
-  freevector(&actual);
-}
-
-TEST(get_object_size_not_in_cache_and_doesnt_add_to_cache) {
-  char my_string[] = "my super amazing string";
-  const char* obj_name = "object_no_cache_02";
-  // inserting the object WITHOUT going through the cache
-  add_object(TESTED_DEVICE, my_string, strlen(my_string) + 1, obj_name);
-
-  uint misses_at_start = objects_cache_misses();
-  uint hits_at_start = objects_cache_hits();
-
-  // validate correctness
-  uint size;
-  ASSERT_NO_ERR(cache_object_size(TESTED_DEVICE, obj_name, &size));
-  ASSERT_UINT_EQ(strlen(my_string) + 1, size);
-
-  // validate hits and misses
-  EXPECT_UINT_EQ(1, objects_cache_misses() - misses_at_start);
-  ASSERT_UINT_EQ(0, objects_cache_hits() - hits_at_start);
-
-  ASSERT_NO_ERR(cache_object_size(TESTED_DEVICE, obj_name, &size));
-  EXPECT_UINT_EQ(2, objects_cache_misses() - misses_at_start);
-  ASSERT_UINT_EQ(0, objects_cache_hits() - hits_at_start);
-}
-
-TEST(object_too_large_not_inserted_to_cache) {
-  uint large_data_size = cache_max_object_size() * 2;
-  char* large_data = malloc(large_data_size);
-  ASSERT_NE(large_data, 0);
-  const char* obj_name = "object_no_cache_03";
-
-  for (uint i = 0; i < sizeof(large_data); ++i) {
-    large_data[i] = i % 256;
+  /* Remove the object from cache by inserting other objects */
+  for (uint i = 0; i < NBUF; i++) {
+    sprintf(tmp_obj_name, "tmp_obj_%d", i);
+    ASSERT_NO_ERR(obj_cache_add(TESTED_DEVICE, tmp_obj_name, tmp_obj_data,
+                                sizeof(tmp_obj_data)));
+    ASSERT_NO_ERR(
+        obj_cache_delete(TESTED_DEVICE, tmp_obj_name, sizeof(tmp_obj_data)));
   }
 
+  /* Read some data of the big object */
   uint misses_at_start = objects_cache_misses();
+
+  uint read_offset = obj_size / 2;
+  uint read_blocks = 5;
+  uint read_size = read_blocks * BUF_DATA_SIZE;
+  vector read_data = newvector(read_size, 1);
+  ASSERT_NO_ERR(obj_cache_read(TESTED_DEVICE, obj_name, &read_data, read_size,
+                               read_offset, obj_size));
+  ASSERT_UINT_EQ(0, vectormemcmp(read_data, obj_data + read_offset, read_size));
+
+  ASSERT_GT((objects_cache_misses() - misses_at_start), 0);
+
+  /* Remove some of the big object from cache by inserting other objects */
+  for (uint i = 0; i < (NBUF - read_blocks - (2 * OBJ_CACHE_BLOCKS_PADDING));
+       i++) {
+    sprintf(tmp_obj_name, "tmp_obj_%d", i);
+    ASSERT_NO_ERR(obj_cache_add(TESTED_DEVICE, tmp_obj_name, tmp_obj_data,
+                                sizeof(tmp_obj_data)));
+    ASSERT_NO_ERR(
+        obj_cache_delete(TESTED_DEVICE, tmp_obj_name, sizeof(tmp_obj_data)));
+  }
+
+  /* Try to read again the same region of the big object, and verify it's still
+   * cached (because this region should get higher priority and shouldn't be
+   * removed from cache). */
   uint hits_at_start = objects_cache_hits();
 
-  cache_add_object(TESTED_DEVICE, large_data, large_data_size, obj_name);
+  read_data = newvector(read_size, 1);
+  ASSERT_NO_ERR(obj_cache_read(TESTED_DEVICE, obj_name, &read_data, read_size,
+                               read_offset, obj_size));
+  ASSERT_UINT_EQ(0, vectormemcmp(read_data, obj_data + read_offset, read_size));
 
-  // validate correctness
-  vector actual = newvector(large_data_size, 1);
-  ASSERT_NO_ERR(cache_get_object(TESTED_DEVICE, obj_name, &actual));
+  ASSERT_GT((objects_cache_hits() - hits_at_start), 0);
 
-  ASSERT_UINT_EQ(0, vectormemcmp(actual, large_data, large_data_size));
-
-  // validate hits and misses
-  EXPECT_UINT_EQ(1, objects_cache_misses() - misses_at_start);
-  ASSERT_UINT_EQ(0, objects_cache_hits() - hits_at_start);
-
-  freevector(&actual);
+  freevector(&read_data);
+  free(obj_data);
 }
-#endif
+
+/* Verify that when we delete an object it is deleted from cache as well. */
+TEST(cache_delete_coherency) {
+  char obj_name[] = "deleted_object";
+  char obj_data[] = "I'm about to get deleted :(";
+
+  ASSERT_NO_ERR(
+      obj_cache_add(TESTED_DEVICE, obj_name, obj_data, sizeof(obj_data)));
+  ASSERT_NO_ERR(obj_cache_delete(TESTED_DEVICE, obj_name, sizeof(obj_data)));
+
+  vector read_data = newvector(sizeof(obj_data), 1);
+  ASSERT_EQ(OBJECT_NOT_EXISTS,
+            obj_cache_read(TESTED_DEVICE, obj_name, &read_data,
+                           sizeof(obj_data), 0, sizeof(obj_data)));
+  freevector(&read_data);
+}
 
 INIT_TESTS_PLATFORM();
 
@@ -589,16 +660,12 @@ int main() {
   run_test(reusing_freed_space);
   run_test(add_when_there_is_no_more_disk_left);
 
-  // TODO(SM): Re-implement the objfs cache tests, according to the new caching
-  //           system
-#if 0
   // Cache layer
+  run_test(add_objects_to_cache);
   run_test(get_object_in_cache);
-  run_test(get_object_not_in_cache);
-  run_test(get_object_size_in_cache);
-  run_test(get_object_size_not_in_cache_and_doesnt_add_to_cache);
-  run_test(object_too_large_not_inserted_to_cache);
-#endif
+  run_test(write_cache_coherency);
+  run_test(cache_write_big_object);
+  run_test(cache_delete_coherency);
 
   PRINT_TESTS_RESULT("OBJ_FS_TESTS");
   return CURRENT_TESTS_RESULT();
