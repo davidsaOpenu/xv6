@@ -86,7 +86,7 @@ HOSTS_TESTS_DIR="tests/host"
 HOST_TESTS_LOG_FILE="host_tests.log"
 ./${HOSTS_TESTS_DIR}/kvector_tests | tee $HOST_TESTS_LOG_FILE
 ./${HOSTS_TESTS_DIR}/obj_fs_tests | tee --append $HOST_TESTS_LOG_FILE
-
+./${HOSTS_TESTS_DIR}/buf_cache_tests | tee --append $HOST_TESTS_LOG_FILE
 
 lines=$(cat $HOST_TESTS_LOG_FILE | grep  "FAILED" | wc -l)
 if [ $lines -ne 0 ]; then

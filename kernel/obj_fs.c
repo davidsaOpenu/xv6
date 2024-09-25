@@ -69,7 +69,10 @@ void file_name(char *output, uint inum) {
   output[sizeof(uint) + 1] = 0;  // null terminator
 }
 
-void obj_fs_init(void) { obj_iinit(); }
+void obj_fs_init(void) {
+  obj_cache_init();
+  obj_iinit();
+}
 
 void obj_fs_init_dev(uint dev) {
   struct vfs_inode *root_inode;
