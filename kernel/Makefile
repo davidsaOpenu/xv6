@@ -1,24 +1,27 @@
 ################################################
 # Xv6 kernel Makefile
 ################################################
+CURRENT_MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+INCLUDE_COMMON += -I$(realpath $(CURRENT_MAKEFILE_DIR)) 
 
+include ../common.mk
 
 OBJS = \
 	kvector.o\
-	bio.o\
-	buf_cache.o\
+	device/buf_cache.o\
+	device/bio.o\
 	console.o\
-	device.o\
+	device/device.o\
 	exec.o\
-	vfs_file.o\
-	fs.o\
-	vfs_fs.o\
-	ide.o\
+	fs/vfs_file.o\
+	fs/native_fs.o\
+	fs/vfs_fs.o\
+	device/ide.o\
 	ioapic.o\
 	kalloc.o\
 	kbd.o\
 	lapic.o\
-	log.o\
+	fs/native_log.o\
 	main.o\
 	kmount.o\
 	mount_ns.o\
@@ -27,7 +30,7 @@ OBJS = \
 	namespace.o\
 	picirq.o\
 	pipe.o\
-	procfs.o\
+	fs/procfs.o\
 	proc.o\
 	sleeplock.o\
 	spinlock.o\
@@ -46,12 +49,16 @@ OBJS = \
 	udiv.o\
 	steady_clock.o\
 	klib.o\
-	cgfs.o\
+	fs/cgfs.o\
 	cgroup.o\
 	cpu_account.o\
-	obj_disk.o\
-	obj_cache.o\
-	obj_fs.o
+	device/obj_disk.o\
+	device/obj_cache.o\
+	fs/obj_fs.o\
+	device/obj_device.o\
+	device/ide_device.o\
+	device/loop_device.o\
+	fs/fs.o
 
 
 ALL= bootblock entryother initcode kernel.bin vectors.S
@@ -90,6 +97,12 @@ tags: $(OBJS) entryother.S _init
 vectors.S: vectors.pl
 	perl vectors.pl > vectors.S
 
+fs/%.o: fs/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+device/%.o: device/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
 clean:
-	rm -f $(OBJS) $(ALL) 
+	rm -f $(OBJS) $(ALL) initcode.out
 	rm -rf *.o *.d *.asm *.sym

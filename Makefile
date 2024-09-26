@@ -33,7 +33,7 @@ UPROGS=\
 	_umount\
 	_timer\
 	_cpu\
-    _pouch\
+    pouch/_pouch\
     _ctrl_grp\
     _demo_pid_ns\
     _demo_mount_ns
@@ -64,8 +64,8 @@ INTERNAL_DEV=\
 	internal_fs_b \
 	internal_fs_c
 
-mkfs: mkfs.c include/fs.h
-	gcc -ggdb -Werror -Wall -o mkfs mkfs.c
+mkfs: mkfs.c
+	$(CC) -ggdb -Werror -Wall -o mkfs mkfs.c
 
 kernel/%:
 	$(MAKE) -C kernel
@@ -115,7 +115,7 @@ clean_oci:
 	docker rmi -f $(shell docker images -q -f "reference=xv6_internal_fs_*") > /dev/null 2>&1 || true
 
 runoff:
-	make -C scripts runoff
+	$(MAKE) -C scripts runoff
 
 # run in emulators
 
@@ -223,4 +223,4 @@ host-tests-debug: OFLAGS = -Og -ggdb
 host-tests-debug: host-tests
 
 docs:
-	make -C docs
+	$(MAKE) -C docs

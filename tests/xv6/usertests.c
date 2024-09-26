@@ -1,5 +1,5 @@
 #include "fcntl.h"
-#include "fs.h"
+#include "fsdefs.h"
 #include "kernel/memlayout.h"
 #include "param.h"
 #include "stat.h"

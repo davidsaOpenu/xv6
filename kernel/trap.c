@@ -1,5 +1,6 @@
 #include "cgroup.h"
 #include "defs.h"
+#include "device/ide.h"
 #include "memlayout.h"
 #include "mmu.h"
 #include "param.h"

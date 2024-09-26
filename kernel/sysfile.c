@@ -6,10 +6,9 @@
 
 #include "cgroup.h"
 #include "defs.h"
-#include "device.h"
+#include "device/device.h"
 #include "fcntl.h"
-#include "file.h"
-#include "fs.h"
+#include "fs/vfs_fs.h"
 #include "kvector.h"
 #include "mmu.h"
 #include "mount.h"
@@ -18,7 +17,6 @@
 #include "sleeplock.h"
 #include "spinlock.h"
 #include "types.h"
-#include "vfs_fs.h"
 
 // Fetch the nth word-sized system call argument as a file descriptor
 // and return both the descriptor and the corresponding struct file.
@@ -138,35 +136,35 @@ int sys_link(void) {
     return -1;
   }
 
-  ip->i_op.ilock(ip);
+  ip->i_op->ilock(ip);
   if (ip->type == T_DIR) {
-    ip->i_op.iunlockput(ip);
+    ip->i_op->iunlockput(ip);
     end_op();
     return -1;
   }
 
   ip->nlink++;
-  ip->i_op.iupdate(ip);
-  ip->i_op.iunlock(ip);
+  ip->i_op->iupdate(ip);
+  ip->i_op->iunlock(ip);
 
   if ((dp = vfs_nameiparent(new, name)) == 0) goto bad;
-  dp->i_op.ilock(dp);
-  if (dp->dev != ip->dev || dp->i_op.dirlink(dp, name, ip->inum) < 0) {
-    dp->i_op.iunlockput(dp);
+  dp->i_op->ilock(dp);
+  if (dp->sb != ip->sb || dp->i_op->dirlink(dp, name, ip->inum) < 0) {
+    dp->i_op->iunlockput(dp);
     goto bad;
   }
-  dp->i_op.iunlockput(dp);
-  ip->i_op.iput(ip);
+  dp->i_op->iunlockput(dp);
+  ip->i_op->iput(ip);
 
   end_op();
 
   return 0;
 
 bad:
-  ip->i_op.ilock(ip);
+  ip->i_op->ilock(ip);
   ip->nlink--;
-  ip->i_op.iupdate(ip);
-  ip->i_op.iunlockput(ip);
+  ip->i_op->iupdate(ip);
+  ip->i_op->iunlockput(ip);
   end_op();
   return -1;
 }
@@ -190,40 +188,46 @@ int sys_unlink(void) {
       return -1;
     }
 
-    dp->i_op.ilock(dp);
+    dp->i_op->ilock(dp);
 
     // 2. Make sure were not trying to unlink "." or "..".
     if (vfs_namecmp(name, ".") == 0 || vfs_namecmp(name, "..") == 0) goto bad;
 
     // 3. find the inode of the unlinked file, denote it ip
-    if ((ip = dp->i_op.dirlookup(dp, name, &off)) == 0) goto bad;
+    if ((ip = dp->i_op->dirlookup(dp, name, &off)) == 0) goto bad;
 
-    ip->i_op.ilock(ip);
+    ip->i_op->ilock(ip);
 
     if (ip->nlink < 1) panic("unlink: nlink < 1");
-    if (ip->type == T_DIR && !ip->i_op.isdirempty(ip)) {
-      ip->i_op.iunlockput(ip);
+    if (ip->type == T_DIR && !ip->i_op->isdirempty(ip)) {
+      ip->i_op->iunlockput(ip);
       goto bad;
     }
 
-    if (doesbackdevice(ip) == 1) {
-      ip->i_op.iunlockput(ip);
+    if (doesbackdevice(ip)) {
+      ip->i_op->iunlockput(ip);
       goto bad;
     }
 
-    // 4. erase content of the unlinked directory entry
+    // 4. erase content of the unlinked directory entry in the parent
     memset(&de, 0, sizeof(de));
-    if (dp->i_op.writei(dp, (char *)&de, off, sizeof(de)) != sizeof(de))
+    if (dp->i_op->writei(dp, (char *)&de, off, sizeof(de)) != sizeof(de))
       panic("unlink: writei");
     if (ip->type == T_DIR) {
       dp->nlink--;
-      dp->i_op.iupdate(dp);
+      dp->i_op->iupdate(dp);
     }
-    dp->i_op.iunlockput(dp);
+    dp->i_op->iunlockput(dp);
 
     ip->nlink--;
-    ip->i_op.iupdate(ip);
-    ip->i_op.iunlockput(ip);
+    ip->i_op->iupdate(ip);
+    ip->i_op->iunlockput(ip);
+
+    // umount on the unlinked file
+    if (ip->mnt != NULL) {
+      XV6_ASSERT(ip->type == T_DIR);
+      umount(ip->mnt);
+    }
   }
   if (delete_cgroup_res == RESULT_ERROR_OPERATION) {
     end_op();
@@ -234,7 +238,7 @@ int sys_unlink(void) {
   return 0;
 
 bad:
-  dp->i_op.iunlockput(dp);
+  dp->i_op->iunlockput(dp);
   end_op();
   return -1;
 }
@@ -247,47 +251,42 @@ static struct vfs_inode *createmount(char *path, short type, short major,
   char name[DIRSIZ];
 
   if ((dp = vfs_nameiparentmount(path, name, mnt)) == 0) return 0;
-  dp->i_op.ilock(dp);
+  dp->i_op->ilock(dp);
 
-  if ((ip = dp->i_op.dirlookup(dp, name, &off)) != 0) {
-    dp->i_op.iunlockput(dp);
+  if ((ip = dp->i_op->dirlookup(dp, name, &off)) != 0) {
+    dp->i_op->iunlockput(dp);
     // The path has already been created
     if (omode & O_EXCL) {
       mntput(*mnt);
       return (void *)EEXIST;
     }
-    ip->i_op.ilock(ip);
+    ip->i_op->ilock(ip);
     if (type == T_FILE && ip->type == T_FILE) return ip;
-    ip->i_op.iunlockput(ip);
+    ip->i_op->iunlockput(ip);
     mntput(*mnt);
     return 0;
   }
 
-  if (IS_OBJ_DEVICE(dp->dev)) {
-    if ((ip = obj_ialloc(dp->dev, type)) == 0) panic("create: obj_ialloc");
+  if ((ip = dp->sb->ops->ialloc(dp->sb, type)) == 0) panic("create: ialloc");
 
-  } else {
-    if ((ip = ialloc(dp->dev, type)) == 0) panic("create: ialloc");
-  }
-
-  ip->i_op.ilock(ip);
+  ip->i_op->ilock(ip);
   ip->major = major;
   ip->minor = minor;
   ip->nlink = 1;
-  ip->i_op.iupdate(ip);
+  ip->i_op->iupdate(ip);
 
   if (type == T_DIR) {  // Create . and .. entries.
     dp->nlink++;        // for ".."
-    dp->i_op.iupdate(dp);
+    dp->i_op->iupdate(dp);
     // No ip->nlink++ for ".": avoid cyclic ref count.
-    if (ip->i_op.dirlink(ip, ".", ip->inum) < 0 ||
-        ip->i_op.dirlink(ip, "..", dp->inum) < 0)
+    if (ip->i_op->dirlink(ip, ".", ip->inum) < 0 ||
+        ip->i_op->dirlink(ip, "..", dp->inum) < 0)
       panic("create dots");
   }
 
-  if (dp->i_op.dirlink(dp, name, ip->inum) < 0) panic("create: dirlink");
+  if (dp->i_op->dirlink(dp, name, ip->inum) < 0) panic("create: dirlink");
 
-  dp->i_op.iunlockput(dp);
+  dp->i_op->iunlockput(dp);
 
   return ip;
 }
@@ -333,9 +332,9 @@ int sys_open(void) {
       end_op();
       return -1;
     }
-    ip->i_op.ilock(ip);
+    ip->i_op->ilock(ip);
     if (ip->type == T_DIR && omode != O_RDONLY) {
-      ip->i_op.iunlockput(ip);
+      ip->i_op->iunlockput(ip);
       mntput(mnt);
       end_op();
       return -1;
@@ -344,12 +343,12 @@ int sys_open(void) {
 
   if ((f = vfs_filealloc()) == 0 || (fd = fdalloc(f)) < 0) {
     if (f) vfs_fileclose(f);
-    ip->i_op.iunlockput(ip);
+    ip->i_op->iunlockput(ip);
     mntput(mnt);
     end_op();
     return -1;
   }
-  ip->i_op.iunlock(ip);
+  ip->i_op->iunlock(ip);
   end_op();
 
   f->type = FD_INODE;
@@ -384,7 +383,7 @@ int sys_mkdir(void) {
       end_op();
       return -1;
     }
-    ip->i_op.iunlockput(ip);
+    ip->i_op->iunlockput(ip);
   }
   end_op();
   return 0;
@@ -401,7 +400,7 @@ int sys_mknod(void) {
     end_op();
     return -1;
   }
-  ip->i_op.iunlockput(ip);
+  ip->i_op->iunlockput(ip);
   end_op();
   return 0;
 }
@@ -428,15 +427,15 @@ int sys_chdir(void) {
     end_op();
     return -1;
   }
-  ip->i_op.ilock(ip);
+  ip->i_op->ilock(ip);
   if (ip->type != T_DIR) {
-    ip->i_op.iunlockput(ip);
+    ip->i_op->iunlockput(ip);
     mntput(mnt);
     end_op();
     return -1;
   }
-  ip->i_op.iunlock(ip);
-  if (curproc->cwd) curproc->cwd->i_op.iput(curproc->cwd);
+  ip->i_op->iunlock(ip);
+  if (curproc->cwd) curproc->cwd->i_op->iput(curproc->cwd);
   if (curproc->cwdmount) mntput(curproc->cwdmount);
   end_op();
   curproc->cwdmount = mnt;

@@ -2,8 +2,6 @@
 
 #include "defs.h"
 #include "fcntl.h"
-#include "file.h"
-#include "fs.h"
 #include "mmu.h"
 #include "param.h"
 #include "spinlock.h"
