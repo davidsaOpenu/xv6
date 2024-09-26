@@ -84,6 +84,11 @@ pouch_status pouch_container_limit(const char* const container_name,
            container_name);
     goto error;
   }
+  if (close(cont_fd) < 0) {
+    printf(stderr, "Cannot close %s\n", container_name);
+    goto error;
+  }
+
   int cname_fd = open(cg_limit_cname, O_RDWR);
   if (cname_fd < 0) {
     printf(stderr, "Incorrect cgroup object-state provided. Not applied.\n",
@@ -91,8 +96,15 @@ pouch_status pouch_container_limit(const char* const container_name,
     goto error;
   }
 
-  if (write(cname_fd, limitation, sizeof(limitation)) < 0) return -1;
-  if (close(cname_fd) < 0) return -1;
+  if (write(cname_fd, limitation, sizeof(limitation)) < 0) {
+    printf(stderr, "Cannot write to %s\n", cg_limit_cname);
+    close(cname_fd);
+    goto error;
+  }
+  if (close(cname_fd) < 0) {
+    printf(stderr, "Cannot close %s\n", cg_limit_cname);
+    goto error;
+  }
   printf(stdout, "Pouch: %s cgroup applied \n", container_name);
   return SUCCESS_CODE;
 
@@ -185,7 +197,7 @@ done:
 
 pouch_status pouch_containers_print_all() {
   int i;
-  int tty_fd;
+  int tty_fd = 0;
   char tty[] = "/ttyX";
   char buf[CNTNAMESIZE] = {0};
   int is_empty_flag = 0;
@@ -218,11 +230,19 @@ pouch_status pouch_containers_print_all() {
       printf(stderr, "started \n");
     }
     close(tty_fd);
+    tty_fd = 0;
   }
   if (!is_empty_flag) {
     printf(stderr, "None.\n");
   }
+
 error:
+  if (tty_fd > 0) {
+    if (close(tty_fd) < 0 && status == SUCCESS_CODE) {
+      printf(stderr, "cannot close %s fd\n", tty);
+      status = TTY_CLOSE_ERROR_CODE;
+    }
+  }
   return status;
 }
 
@@ -485,8 +505,10 @@ pouch_status pouch_container_start(const char* container_name,
       int cgroup_procs_fd = open(cg_cname, O_RDWR);
       char cur_pid_buf[10];
       itoa(cur_pid_buf, pid);
-      if (write(cgroup_procs_fd, cur_pid_buf, sizeof(cur_pid_buf)) < 0)
+      if (write(cgroup_procs_fd, cur_pid_buf, sizeof(cur_pid_buf)) < 0) {
+        close(cgroup_procs_fd);
         goto parent_error;
+      }
       if (close(cgroup_procs_fd) < 0) goto parent_error;
       container_config conf;
       strcpy(conf.tty_name, tty_name);
@@ -532,7 +554,10 @@ pouch_status pouch_container_stop(const char* const container_name) {
   char cur_pid_buf[10];
   int cgroup_procs_fd = open("/cgroup/cgroup.procs", O_RDWR);
   itoa(cur_pid_buf, conf.pid);
-  if (write(cgroup_procs_fd, cur_pid_buf, sizeof(cur_pid_buf)) < 0) return -1;
+  if (write(cgroup_procs_fd, cur_pid_buf, sizeof(cur_pid_buf)) < 0) {
+    close(cgroup_procs_fd);
+    return -1;
+  }
   if (close(cgroup_procs_fd) < 0) return -1;
 
   if (kill(conf.pid) < 0) {
@@ -608,6 +633,7 @@ pouch_status pouch_container_connect(const char* const container_name) {
   } else {
     printf(stdout, "Pouch: %s is already connected\n", container_name);
   }
+  close(tty_fd);
   return SUCCESS_CODE;
 }
 

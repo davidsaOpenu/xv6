@@ -15,13 +15,19 @@ extern void (*_test_init_func)(void);
 
 // NOTE: the "failed" variable cannot be 'static' as it might be used
 //       by several source files.
-#define INIT_TESTS_PLATFORM() \
-  int failed = 0;             \
-  void (*_test_init_func)(void) = (void (*)(void))0
+#define INIT_TESTS_PLATFORM()                        \
+  int failed = 0;                                    \
+  void (*_test_init_func)(void) = (void (*)(void))0; \
+  void (*_test_end_func)(void) = (void (*)(void))0
 
 #define SET_TEST_INITIALIZER(init_func)            \
   do {                                             \
     _test_init_func = (void (*)(void))(init_func); \
+  } while (0)
+
+#define SET_TEST_END_FUNC(end_func)              \
+  do {                                           \
+    _test_end_func = (void (*)(void))(end_func); \
   } while (0)
 
 #define TEST(test_name) void test_name(const char* name)
@@ -58,6 +64,7 @@ void inline print_error(const char* name, unsigned long int x,
     if (_test_init_func != (void (*)(void))0) _test_init_func();    \
     PRINT("[RUNNING] %s", #test_name);                              \
     test_name(#test_name);                                          \
+    if (_test_end_func != (void (*)(void))0) _test_end_func();      \
   }                                                                 \
   if (failed == 0) {                                                \
     for (int i = 0; i < strlen(#test_name) + strlen("[RUNNING] ") + \

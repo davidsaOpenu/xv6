@@ -1,3 +1,3 @@
 
 runoff:
-	make -C runoff
+	$(MAKE) -C runoff

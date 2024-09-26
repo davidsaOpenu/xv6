@@ -14,4 +14,12 @@ struct spinlock {
                     // that locked the lock.
 };
 
+void acquire(struct spinlock *);
+void getcallerpcs(void *, uint *);
+int holding(struct spinlock *);
+void initlock(struct spinlock *, char *);
+void release(struct spinlock *);
+void pushcli(void);
+void popcli(void);
+
 #endif /* XV6_SPINLOCK_H */

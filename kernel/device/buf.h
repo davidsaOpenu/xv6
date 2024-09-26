@@ -1,8 +1,8 @@
-#ifndef XV6_BUF_H
-#define XV6_BUF_H
+#ifndef XV6_DEVICE_BUF_H
+#define XV6_DEVICE_BUF_H
 
-#include "fs.h"
-#include "obj_fs.h"
+#include "fs/obj_fs.h"
+#include "fsdefs.h"
 #include "sleeplock.h"
 #include "types.h"
 
@@ -25,7 +25,7 @@ union buf_id {
 struct buf {
   uint flags;
   uint alloc_flags;
-  uint dev;
+  const struct device *dev;
   union buf_id id;
   struct sleeplock lock;
   uint refcnt;
@@ -35,7 +35,13 @@ struct buf {
   struct cgroup *cgroup;
   uchar data[BUF_DATA_SIZE];
 };
-#define B_VALID 0x2  // buffer has been read from disk
-#define B_DIRTY 0x4  // buffer needs to be written to disk
 
-#endif /* XV6_BUF_H */
+enum B_FLAGS_SHIFT {
+  B_VALID_SHIFT = 1,
+  B_DIRTY_SHIFT = 2,
+};
+
+#define B_VALID (1 << B_VALID_SHIFT)  // buffer has been read from disk
+#define B_DIRTY (1 << B_DIRTY_SHIFT)  // buffer needs to be written to disk
+
+#endif /* XV6_DEVICE_BUF_H */

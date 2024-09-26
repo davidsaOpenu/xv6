@@ -2,10 +2,10 @@
 #define XV6_PROC_H
 
 #include "defs.h"
+#include "fs/vfs_file.h"
 #include "mmu.h"
 #include "param.h"
 #include "types.h"
-#include "vfs_file.h"
 
 struct cgroup;
 // Procfs root directory

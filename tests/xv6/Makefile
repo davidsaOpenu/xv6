@@ -1,5 +1,7 @@
 CURRENT_MAKEFILE_PATH := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
+include ../../common.mk
+
 CFLAGS += -I$(realpath $(CURRENT_MAKEFILE_PATH)/../) -I$(realpath $(CURRENT_MAKEFILE_PATH)/../../)
 
 %.o: %.c
