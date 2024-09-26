@@ -7,7 +7,7 @@ struct buf;
 union buf_id;
 struct context;
 struct file;
-struct inode;
+// struct native_inode;
 struct mount;
 struct mount_list;
 struct mount_ns;
@@ -18,25 +18,18 @@ struct rtcdate;
 struct spinlock;
 struct sleeplock;
 struct stat;
-struct superblock;
+// struct native_superblock;
 struct cgroup;
-struct objsuperblock;
+// struct objsuperblock;
 struct vfs_inode;
-struct vfs_file;
+// struct vfs_file;
+// struct vfs_superblock;
+struct device;
 typedef struct kvec vector;
 struct devsw;
 struct dev_stat;
 struct cgroup_io_device_statistics_s;
-
-// bio.c
-struct buf* bread(uint, uint);
-void bwrite(struct buf*);
-
-// buf_cache.c
-void buf_cache_init(void);
-void buf_cache_invalidate_blocks(uint dev);
-struct buf* buf_cache_get(uint dev, const union buf_id* id, uint alloc_flags);
-void buf_cache_release(struct buf* b);
+enum file_type;
 
 // console.c
 void consoleclear(void);
@@ -52,16 +45,8 @@ void tty_detach(struct vfs_inode* ip);
 int tty_gets(struct vfs_inode* ip, int command);
 
 // device.c
-int getorcreatedevice(struct vfs_inode*);
-int createobjdevice();
-struct obj_device* objdeviceget(uint dev);
-void deviceput(uint);
-void deviceget(uint);
-struct vfs_inode* getinodefordevice(uint);
-void objdevinit(uint dev);
-struct vfs_superblock* getsuperblock(uint);
-void devinit(void);
-int doesbackdevice(struct vfs_inode*);
+struct vfs_inode* getinodefordevice(const struct device*);
+int doesbackdevice(const struct vfs_inode*);
 
 // exec.c
 int exec(char*, char**);
@@ -75,22 +60,6 @@ int vfs_fileread(struct vfs_file*, int n, vector* dstvector);
 int vfs_filestat(struct vfs_file*, struct stat*);
 int vfs_filewrite(struct vfs_file*, char*, int n);
 
-// obj_fs.c
-void obj_fs_init(void);
-void obj_fs_init_dev(uint dev);
-struct vfs_inode* obj_ialloc(uint, short);
-void obj_iinit(void);
-struct vfs_inode* obj_iget(uint dev, uint inum);
-struct vfs_inode* obj_initprocessroot(struct mount**);
-
-// fs.c
-void readsb(int dev, struct superblock* sb);
-struct vfs_inode* ialloc(uint, short);
-void iinit(uint dev);
-struct vfs_inode* iget(uint dev, uint inum);
-void fsinit(uint);
-struct vfs_inode* initprocessroot(struct mount**);
-
 // vfs_fs.c
 struct vfs_inode* vfs_namei(char*);
 struct vfs_inode* vfs_nameimount(char*, struct mount**);
@@ -98,6 +67,9 @@ struct vfs_inode* vfs_nameiparent(char*, char*);
 struct vfs_inode* vfs_nameiparentmount(char*, char*, struct mount**);
 int vfs_namecmp(const char*, const char*);
 int vfs_namencmp(const char* s, const char* t, int length);
+struct vfs_superblock* sballoc();
+void sbdup(struct vfs_superblock* sb);
+void sbput(struct vfs_superblock* sb);
 
 // sysmount.c
 int handle_objfs_mounts();
@@ -106,10 +78,9 @@ int handle_proc_mounts();
 int handle_bind_mounts();
 int handle_nativefs_mounts();
 
-// mount.c
+// kmount.c
 void mntinit(void);
-int mount(struct vfs_inode*, struct vfs_inode*, struct vfs_inode*,
-          struct mount*);
+int mount(struct vfs_inode*, struct device*, struct vfs_inode*, struct mount*);
 int umount(struct mount*);
 struct mount* getrootmount(void);
 struct mount* mntdup(struct mount*);
@@ -119,11 +90,7 @@ void umountall(struct mount_list*);
 struct mount_list* copyactivemounts(void);
 struct mount* getroot(struct mount_list*);
 struct mount* getinitialrootmount(void);
-
-// ide.c
-void ideinit(void);
-void ideintr(void);
-void iderw(struct buf*);
+struct vfs_inode* initprocessroot(struct mount**);
 
 // ioapic.c
 void ioapicenable(int irq, int cpu);
@@ -167,7 +134,7 @@ void lapicstartap(uchar, uint);
 void microdelay(int);
 
 // log.c
-void initlog(int dev);
+void initlog(struct vfs_superblock*);
 void log_write(struct buf*);
 void begin_op();
 void end_op();
@@ -176,7 +143,7 @@ void end_op();
 void mount_nsinit(void);
 void mount_nsput(struct mount_ns*);
 struct mount_ns* mount_nsdup(struct mount_ns*);
-struct mount_ns* newmount_ns(void);
+struct mount_ns* get_root_mount_ns(void);
 struct mount_ns* copymount_ns(void);
 
 // mp.c
@@ -223,15 +190,6 @@ int cgroup_move_proc(struct cgroup* cgroup, int pid);
 
 // swtch.S
 void swtch(struct context**, struct context*);
-
-// spinlock.c
-void acquire(struct spinlock*);
-void getcallerpcs(void*, uint*);
-int holding(struct spinlock*);
-void initlock(struct spinlock*, char*);
-void release(struct spinlock*);
-void pushcli(void);
-void popcli(void);
 
 // sleeplock.c
 void acquiresleep(struct sleeplock*);
@@ -346,5 +304,10 @@ typedef enum {
   RESULT_SUCCESS,
   RESULT_SUCCESS_OPERATION
 } result_code;
+
+#define XV6_ASSERT(cond)               \
+  if (!(cond)) {                       \
+    panic("Assertion failed: " #cond); \
+  }
 
 #endif /* XV6_DEFS_H */

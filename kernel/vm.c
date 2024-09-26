@@ -188,7 +188,7 @@ int loaduvm(pde_t *pgdir, char *addr, struct vfs_inode *ip, uint offset,
     vector segment_buffer;
     segment_buffer = newvector(n, 1);
     unsigned int read_result =
-        ip->i_op.readi(ip, offset + i, n, &segment_buffer);
+        ip->i_op->readi(ip, offset + i, n, &segment_buffer);
     memmove_from_vector((char *)P2V(pa), segment_buffer, 0, n);
     freevector(&segment_buffer);
     if (read_result != n) {

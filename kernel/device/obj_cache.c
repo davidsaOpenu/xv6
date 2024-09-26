@@ -1,5 +1,6 @@
 #include "obj_cache.h"
 
+#include "buf_cache.h"
 #include "obj_disk.h"
 #include "proc.h"
 
@@ -25,8 +26,9 @@ static uint obj_cache_are_bufs_valid(vector bufs) {
   return 1;
 }
 
-static vector obj_cache_get_bufs(uint dev, const char *name, uint start,
-                                 uint count, struct bufs_alloc_hint *hints) {
+static vector obj_cache_get_bufs(struct device *dev, const char *name,
+                                 uint start, uint count,
+                                 struct bufs_alloc_hint *hints) {
   struct buf *curr_buf;
   vector bufs = newvector(count, sizeof(struct buf *));
   union buf_id id;
@@ -117,7 +119,7 @@ static void obj_cache_copy_from_bufs(vector bufs, uint size, uint offset,
   }
 }
 
-static uint validate_bufs(uint dev, const char *name, uint obj_size,
+static uint validate_bufs(struct device *dev, const char *name, uint obj_size,
                           vector obj_bufs, uint size, uint offset) {
   uint err = NO_ERR;
   struct buf *curr_buf;
@@ -184,7 +186,8 @@ static void obj_cache_set_contiguous_area_hints(
   alloc_hints[hints_index++] = (struct bufs_alloc_hint){.count = 0};
 }
 
-uint obj_cache_add(uint dev, const char *name, const void *data, uint size) {
+uint obj_cache_add(struct device *dev, const char *name, const void *data,
+                   uint size) {
   uint err = NO_ERR;
   vector obj_bufs = {0};
   struct bufs_alloc_hint alloc_hints[3];
@@ -212,8 +215,8 @@ clean:
   return NO_ERR;
 }
 
-uint obj_cache_write(uint dev, const char *name, const void *data, uint size,
-                     uint offset, uint prev_obj_size) {
+uint obj_cache_write(struct device *dev, const char *name, const void *data,
+                     uint size, uint offset, uint prev_obj_size) {
   uint err = NO_ERR;
   vector obj_bufs = {0};
   uint new_obj_size =
@@ -262,8 +265,8 @@ clean:
   return err;
 }
 
-uint obj_cache_read(uint dev, const char *name, vector *dst, uint size,
-                    uint offset, uint obj_size) {
+uint obj_cache_read(struct device *dev, const char *name, vector *dst,
+                    uint size, uint offset, uint obj_size) {
   uint err = NO_ERR;
   vector obj_bufs = {0};
   uint start_block = OFFSET_TO_BLOCKNO(offset);
@@ -299,7 +302,7 @@ clean:
   return err;
 }
 
-uint obj_cache_delete(uint dev, const char *name, uint obj_size) {
+uint obj_cache_delete(struct device *dev, const char *name, uint obj_size) {
   uint err = NO_ERR;
 
   if (obj_size > 0) {

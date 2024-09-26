@@ -1,12 +1,12 @@
 #include "defs.h"
+#include "device/device.h"
+#include "fs/fs.h"
+// #include "fs/vfs_file.h"
 #include "memlayout.h"
 #include "mmu.h"
-#include "obj_cache.h"
-#include "obj_disk.h"
 #include "param.h"
 #include "proc.h"
 #include "types.h"
-#include "vfs_file.h"
 #include "x86.h"
 
 static void startothers(void);
@@ -28,29 +28,30 @@ int main(void) {
   while (!gdb_attached) {
   }
 #endif
-  kinit1(end, P2V(4 * 1024 * 1024));           // phys page allocator
-  kvmalloc();                                  // kernel page table
-  mpinit();                                    // detect other processors
-  lapicinit();                                 // interrupt controller
-  seginit();                                   // segment descriptors
-  picinit();                                   // disable pic
-  ioapicinit();                                // another interrupt controller
-  consoleinit();                               // console hardware
-  ttyinit();                                   // create additional ttys
-  uartinit();                                  // serial port
-  pinit();                                     // process table
-  tvinit();                                    // trap vectors
-  buf_cache_init();                            // buffer cache
-  vfs_fileinit();                              // file table
-  obj_fs_init();                               // objfs
-  ideinit();                                   // disk
+  kinit1(end, P2V(4 * 1024 * 1024));  // phys page allocator
+  kvmalloc();                         // kernel page table
+  mpinit();                           // detect other processors
+  lapicinit();                        // interrupt controller
+  seginit();                          // segment descriptors
+  picinit();                          // disable pic
+  ioapicinit();                       // another interrupt controller
+  consoleinit();                      // console hardware
+  ttyinit();                          // create additional ttys
+  uartinit();                         // serial port
+  pinit();                            // process table
+  tvinit();                           // trap vectors
+
+  namespaceinit();  // initialize namespaces
+                    // vfs_fileinit();   // file table
+  devinit();        // devices
+  fsinit();         // file systems
+  mntinit();        // initialize mounts
+
   startothers();                               // start other processors
   kinit2(P2V(4 * 1024 * 1024), P2V(PHYSTOP));  // must come after startothers()
-  cginit();         // cgroup table, must come before userinit()
-  userinit();       // first user process
-  devinit();        // initialize devices
-  namespaceinit();  // initialize namespaces
-  mpmain();         // finish this processor's setup
+  cginit();    // cgroup table, must come before userinit()
+  userinit();  // first user process
+  mpmain();    // finish this processor's setup
 }
 
 // Other CPUs jump here from entryother.S.

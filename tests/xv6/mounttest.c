@@ -1,6 +1,6 @@
 #include "fcntl.h"
 #include "framework/tester.h"
-#include "fs.h"
+#include "fsdefs.h"
 #include "kernel/memlayout.h"
 #include "ns_types.h"
 #include "param.h"

@@ -6,7 +6,7 @@
 #include <unistd.h>
 
 #define stat xv6_stat  // avoid clash with host struct stat
-#include "include/fs.h"
+#include "include/fsdefs.h"
 #include "include/param.h"
 #include "include/stat.h"
 #include "include/types.h"
@@ -31,17 +31,17 @@ int nmeta;    // Number of meta blocks (boot, sb, nlog, inode, bitmap)
 int nblocks;  // Number of data blocks
 
 int fsfd;
-struct superblock sb;
+struct native_superblock sb;
 char zeroes[BSIZE];
 uint freeinode = 1;
 uint freeblock;
 
 void balloc(int);
 void wsect(uint, void *);
-void winode(uint, struct dinode *);
-void rinode(uint inum, struct dinode *ip);
+void winode(uint, struct native_dinode *);
+void rinode(uint inum, struct native_dinode *ip);
 void rsect(uint sec, void *buf);
-uint ialloc(ushort type);
+uint ialloc(file_type type);
 void iappend(uint inum, void *p, int n);
 
 // convert to intel byte order
@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
   uint rootino, inum, off;
   struct dirent de;
   char buf[BSIZE];
-  struct dinode din;
+  struct native_dinode din;
 
   static_assert(sizeof(int) == 4, "Integers must be 4 bytes!");
 
@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
   int fssize = is_internal ? INT_FSSIZE : FSSIZE;
   int nbitmap = fssize / (BSIZE * 8) + 1;
 
-  assert((BSIZE % sizeof(struct dinode)) == 0);
+  assert((BSIZE % sizeof(struct native_dinode)) == 0);
   assert((BSIZE % sizeof(struct dirent)) == 0);
 
   fsfd = open(argv[1], O_RDWR | O_CREAT | O_TRUNC, 0666);
@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
 
   sb.size = xint(fssize);
   sb.nblocks = xint(nblocks);
-  sb.vfs_sb.ninodes = xint(NINODES);
+  sb.ninodes = xint(NINODES);
   sb.nlog = xint(nlog);
   sb.logstart = xint(2);
   sb.inodestart = xint(2 + nlog);
@@ -191,26 +191,26 @@ void wsect(uint sec, void *buf) {
   }
 }
 
-void winode(uint inum, struct dinode *ip) {
+void winode(uint inum, struct native_dinode *ip) {
   char buf[BSIZE];
   uint bn;
-  struct dinode *dip;
+  struct native_dinode *dip;
 
   bn = IBLOCK(inum, sb);
   rsect(bn, buf);
-  dip = ((struct dinode *)buf) + (inum % IPB);
+  dip = ((struct native_dinode *)buf) + (inum % IPB);
   *dip = *ip;
   wsect(bn, buf);
 }
 
-void rinode(uint inum, struct dinode *ip) {
+void rinode(uint inum, struct native_dinode *ip) {
   char buf[BSIZE];
   uint bn;
-  struct dinode *dip;
+  struct native_dinode *dip;
 
   bn = IBLOCK(inum, sb);
   rsect(bn, buf);
-  dip = ((struct dinode *)buf) + (inum % IPB);
+  dip = ((struct native_dinode *)buf) + (inum % IPB);
   *ip = *dip;
 }
 
@@ -225,13 +225,13 @@ void rsect(uint sec, void *buf) {
   }
 }
 
-uint ialloc(ushort type) {
+uint ialloc(file_type type) {
   uint inum = freeinode++;
-  struct dinode din;
+  struct native_dinode din;
 
   bzero(&din, sizeof(din));
-  din.vfs_dinode.type = xshort(type);
-  din.vfs_dinode.nlink = xshort(1);
+  din.base_dinode.type = xshort(type);
+  din.base_dinode.nlink = xshort(1);
   din.size = xint(0);
   winode(inum, &din);
   return inum;
@@ -256,7 +256,7 @@ void balloc(int used) {
 void iappend(uint inum, void *xp, int n) {
   char *p = (char *)xp;
   uint fbn, off, n1;
-  struct dinode din;
+  struct native_dinode din;
   char buf[BSIZE];
   uint indirect[NINDIRECT];
   uint x;

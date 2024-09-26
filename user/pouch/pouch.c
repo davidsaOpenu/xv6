@@ -4,7 +4,7 @@
 #include "configs.h"
 #include "container.h"
 #include "fcntl.h"
-#include "fs.h"
+#include "fsdefs.h"
 #include "image.h"
 #include "lib/mutex.h"
 #include "lib/user.h"
@@ -370,13 +370,14 @@ const struct pouch_cli_command* pouch_cli_get_command_from_args(
       has_name_match = true;
       if (inside_container &&
           !(supported_pouch_commands[i].inside_or_out & INSIDE_CONTAINER)) {
-        printf(stderr, "Error: Invalid command for inside container.\n");
+        printf(stderr, "Error: Invalid command %s for inside container.\n",
+               argv[1]);
         goto error;
       }
       if (!inside_container &&
           !(supported_pouch_commands[i].inside_or_out & OUTSIDE_CONTAINER)) {
-        printf(stderr, "Error: Invalid command for outside container %d %d.\n",
-               supported_pouch_commands[i].inside_or_out, INSIDE_CONTAINER);
+        printf(stderr, "Error: Invalid command %s for outside container.\n",
+               argv[1]);
         goto error;
       }
       return &supported_pouch_commands[i];
