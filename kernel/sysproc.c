@@ -2,7 +2,6 @@
 #include "date.h"
 #include "defs.h"
 #include "fcntl.h"
-#include "file.h"
 #include "ioctl_request.h"
 #include "memlayout.h"
 #include "mmu.h"
@@ -127,20 +126,20 @@ int sys_ioctl(void) {
     return -1;
   }
 
-  ip->i_op.ilock(ip);
+  ip->i_op->ilock(ip);
 
   if (ip->type != T_DEV) {
-    ip->i_op.iunlockput(ip);
+    ip->i_op->iunlockput(ip);
     return -1;
   }
 
   if (ip->major >= NDEV) {
-    ip->i_op.iunlockput(ip);
+    ip->i_op->iunlockput(ip);
     return -1;
   }
 
   if (ip->minor >= MAX_TTY) {
-    ip->i_op.iunlockput(ip);
+    ip->i_op->iunlockput(ip);
     return -1;
   }
 
@@ -176,14 +175,14 @@ int sys_ioctl(void) {
       break;
     case TTYGETS:
       ret = tty_gets(ip, command);
-      ip->i_op.iunlock(ip);
+      ip->i_op->iunlock(ip);
       return ret;
     default:
-      ip->i_op.iunlock(ip);
+      ip->i_op->iunlock(ip);
       return -1;
   }
 
-  ip->i_op.iunlock(ip);
+  ip->i_op->iunlock(ip);
   return 0;
 }
 

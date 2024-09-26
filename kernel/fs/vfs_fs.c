@@ -1,6 +1,7 @@
 // #include "defs.h"
-#include "device.h"
-#include "fs.h"
+#include "vfs_fs.h"
+
+#include "device/device.h"
 #include "mount.h"
 #include "obj_fs.h"
 #include "proc.h"
@@ -49,65 +50,60 @@ static struct vfs_inode *vfs_namex(char *path, int nameiparent, char *name,
 
   if (*path == '/') {
     curmount = mntdup(getrootmount());
-    ip = iget(ROOTDEV, ROOTINO);
+    ip = initprocessroot(NULL);
 
   } else {
     curmount = mntdup(myproc()->cwdmount);
-    ip = myproc()->cwd->i_op.idup(myproc()->cwd);
+    ip = myproc()->cwd->i_op->idup(myproc()->cwd);
   }
 
   while ((path = vfs_skipelem(path, name)) != 0) {
-    ip->i_op.ilock(ip);
+    ip->i_op->ilock(ip);
     if (ip->type != T_DIR) {
-      ip->i_op.iunlockput(ip);
+      ip->i_op->iunlockput(ip);
       mntput(curmount);
       return 0;
     }
     if (nameiparent && *path == '\0') {
       // Stop one level early.
-      ip->i_op.iunlock(ip);
+      ip->i_op->iunlock(ip);
       *mnt = curmount;
       return ip;
     }
 
-    if ((next = ip->i_op.dirlookup(ip, name, 0)) == 0) {
-      ip->i_op.iunlockput(ip);
+    if ((next = ip->i_op->dirlookup(ip, name, 0)) == 0) {
+      ip->i_op->iunlockput(ip);
       mntput(curmount);
       return 0;
     }
 
     mntinum = ip->inum;
-    ip->i_op.iunlockput(ip);
+    ip->i_op->iunlockput(ip);
     if ((!vfs_namencmp(name, "..", 3)) && curmount != 0 &&
-        (curmount->dev != ROOTDEV) &&
+        (curmount != getinitialrootmount()) &&
         ((mntinum == ROOTINO) || (mntinum == OBJ_ROOTINO)) &&
         curmount->mountpoint != 0 &&
-        curmount->mountpoint->i_op.dirlookup != 0) {
+        curmount->mountpoint->i_op->dirlookup != NULL) {
       nextmount = mntdup(curmount->parent);
       mntinum =
-          curmount->mountpoint->i_op.dirlookup(curmount->mountpoint, "..", 0)
+          curmount->mountpoint->i_op->dirlookup(curmount->mountpoint, "..", 0)
               ->inum;
     } else {
       nextmount = mntlookup(next, curmount);
     }
 
-    if (nextmount != 0) {
-      if (IS_OBJ_DEVICE(nextmount->dev)) {
-        mntinum = OBJ_ROOTINO;
-      } else {
-        mntinum = ROOTINO;
-      }
-
+    if (nextmount != NULL) {
       mntput(curmount);
       curmount = nextmount;
+      ip->i_op->iput(next);
 
-      ip->i_op.iput(next);
-      if (curmount->bind != 0) {
-        next = curmount->bind->i_op.idup(curmount->bind);
-      } else if (IS_OBJ_DEVICE(curmount->dev)) {
-        next = obj_iget(curmount->dev, mntinum);
+      if (curmount->isbind) {
+        XV6_ASSERT(curmount->bind != 0);
+        next = curmount->bind->i_op->idup(curmount->bind);
       } else {
-        next = iget(curmount->dev, mntinum);
+        XV6_ASSERT(curmount->sb != 0);
+        struct vfs_inode *root_inode = curmount->sb->root_ip;
+        next = root_inode->i_op->idup(root_inode);  // ref
       }
     }
 
@@ -115,7 +111,7 @@ static struct vfs_inode *vfs_namex(char *path, int nameiparent, char *name,
   }
 
   if (nameiparent) {
-    ip->i_op.iput(ip);
+    ip->i_op->iput(ip);
     mntput(curmount);
     return 0;
   }
@@ -160,4 +156,35 @@ int vfs_namecmp(const char *s, const char *t) { return strncmp(s, t, DIRSIZ); }
 
 int vfs_namencmp(const char *s, const char *t, int length) {
   return strncmp(s, t, length);
+}
+
+struct vfs_superblock *sballoc() {
+  struct vfs_superblock *sb = (struct vfs_superblock *)kalloc();
+  if (sb == 0) {
+    return 0;
+  }
+  memset(sb, 0, sizeof(*sb));
+  initlock(&sb->lock, "vfs_sb");
+  sb->ref = 1;
+  return sb;
+}
+
+void sbdup(struct vfs_superblock *sb) {
+  XV6_ASSERT(sb->ref > 0);
+  acquire(&sb->lock);
+  sb->ref++;
+  release(&sb->lock);
+}
+
+void sbput(struct vfs_superblock *sb) {
+  XV6_ASSERT(sb->ref > 0);
+  acquire(&sb->lock);
+  sb->ref--;
+  release(&sb->lock);
+  if (sb->ref == 0) {
+    // teardown the filesystem
+    sb->ops->destroy(sb);
+    // and release the superblock
+    kfree((char *)sb);
+  }
 }

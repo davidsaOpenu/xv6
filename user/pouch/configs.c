@@ -16,8 +16,12 @@ pouch_status pouch_pconf_init() {
   for (i = 0; i < (MAX_TTY - 1); i++) {
     char ttyc[] = "tty.cX";
     ttyc[5] = '0' + i;
-    // check if cname ttys already created
-    if (open(ttyc, O_RDWR) > 0) continue;
+
+    // check if cname ttys already created, if so, continue:
+    if ((ttyc_fd = open(ttyc, O_RDWR)) >= 0) {
+      close(ttyc_fd);
+      continue;
+    }
 
     if ((ttyc_fd = open(ttyc, O_CREATE | O_RDWR)) < 0) {
       printf(stderr, "cannot open %s fd\n", ttyc);
@@ -74,6 +78,7 @@ pouch_status pouch_pconf_remove(const char* ttyname) {
     goto end;
   }
 
+  close(ttyc_fd);
   if (unlink(ttyc) < 0) {
     printf(stderr, "cannot unlink %s\n", ttyc);
     status = ERROR_CODE;

@@ -6,8 +6,8 @@
 
 #include "defs.h"
 #include "fcntl.h"
-#include "file.h"
-#include "fs.h"
+#include "fs/vfs_file.h"
+#include "fsdefs.h"
 #include "kvector.h"
 #include "memlayout.h"
 #include "mmu.h"
@@ -17,7 +17,6 @@
 #include "sleeplock.h"
 #include "traps.h"
 #include "types.h"
-#include "vfs_file.h"
 #include "x86.h"
 
 static ushort *crt = (ushort *)P2V(0xb8000);  // CGA memory
@@ -243,14 +242,14 @@ int consoleread(struct vfs_inode *ip, int n, vector *dstvector) {
   uint target;
   int c;
   int dstindx = 0;
-  ip->i_op.iunlock(ip);
+  ip->i_op->iunlock(ip);
   target = n;
   acquire(&cons.lock);
   while (n > 0) {
     while (input.r == input.w) {
       if (myproc()->killed) {
         release(&cons.lock);
-        ip->i_op.ilock(ip);
+        ip->i_op->ilock(ip);
         return -1;
       }
       sleep(&input.r, &cons.lock);
@@ -275,7 +274,7 @@ int consoleread(struct vfs_inode *ip, int n, vector *dstvector) {
     if (c == '\n') break;
   }
   release(&cons.lock);
-  ip->i_op.ilock(ip);
+  ip->i_op->ilock(ip);
 
   return target - n;
 }
@@ -290,12 +289,12 @@ int ttyread(struct vfs_inode *ip, int n, vector *dstvector) {
   }
 
   if (tty_table[ip->minor].flags & DEV_ATTACH) {
-    ip->i_op.iunlock(ip);
+    ip->i_op->iunlock(ip);
     acquire(&tty_table[ip->minor].lock);
     sleep(&tty_table[ip->minor], &tty_table[ip->minor].lock);
     // after wakeup has been called
     release(&tty_table[ip->minor].lock);
-    ip->i_op.ilock(ip);
+    ip->i_op->ilock(ip);
   }
   return -1;
 }
@@ -303,7 +302,7 @@ int ttyread(struct vfs_inode *ip, int n, vector *dstvector) {
 int consolewrite(struct vfs_inode *ip, char *buf, int n) {
   int i;
 
-  ip->i_op.iunlock(ip);
+  ip->i_op->iunlock(ip);
   acquire(&cons.lock);
   for (i = 0; i < n; i++) {
     consputc(buf[i] & 0xff);
@@ -311,7 +310,7 @@ int consolewrite(struct vfs_inode *ip, char *buf, int n) {
     tty_table[ip->minor].tty_bytes_written++;
   }
   release(&cons.lock);
-  ip->i_op.ilock(ip);
+  ip->i_op->ilock(ip);
 
   return n;
 }
