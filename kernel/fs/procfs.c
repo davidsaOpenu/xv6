@@ -1,9 +1,8 @@
 #include "procfs.h"
 
 #include "defs.h"
-#include "device.h"
+#include "device/device.h"
 #include "fcntl.h"
-#include "fs.h"
 #include "mount_ns.h"
 #include "namespace.h"
 #include "param.h"
@@ -142,12 +141,15 @@ int unsafe_proc_open_file(char* filename, int omode) {
       break;
 
     case PROC_DEVICES:
+      memset(f->proc.devs, 0, sizeof(f->proc.devs));
       acquire(&dev_holder.lock);
       f->count = 0;
-      for (int i = 0; i < NLOOPDEVS; i++) {
-        f->proc.devs[i].ip = dev_holder.loopdevs[i].ip;
-        f->proc.devs[i].ref = dev_holder.loopdevs[i].ref;
-        if (dev_holder.loopdevs[i].ref != 0) f->count++;
+      for (int i = 0; i < NMAXDEVS; i++) {
+        if (dev_holder.devs[i].type != DEVICE_TYPE_LOOP) continue;
+        f->proc.devs[i].private = dev_holder.devs[i].private;
+        f->proc.devs[i].ref = dev_holder.devs[i].ref;
+        f->proc.devs[i].type = dev_holder.devs[i].type;
+        if (dev_holder.devs[i].ref != 0) f->count++;
       }
       release(&dev_holder.lock);
       break;
@@ -262,8 +264,9 @@ static int read_file_proc_devices(struct vfs_file* f, char* addr, int n) {
 
   memset(buf, 0, sizeof(buf));
 
-  for (int i = 0; i < NLOOPDEVS; i++) {
-    if (f->proc.devs[i].ref == 0) continue;
+  for (int i = 0; i < NMAXDEVS; i++) {
+    if (f->proc.devs[i].ref == 0 || f->proc.devs[i].type != DEVICE_TYPE_LOOP)
+      continue;
 
     copy_and_move_buffer(&bufp, DEVICES_DEVICE, sizeof(DEVICES_DEVICE));
 
@@ -272,7 +275,7 @@ static int read_file_proc_devices(struct vfs_file* f, char* addr, int n) {
 
     copy_and_move_buffer(&bufp, DEVICES_BACKED_BY_INODE,
                          sizeof(DEVICES_BACKED_BY_INODE));
-    bufp += utoa(bufp, (uint)f->proc.devs[i].ip);
+    bufp += utoa(bufp, (uint)f->proc.devs[i].private);
 
     copy_and_move_buffer(&bufp, DEVICES_WITH_REF, sizeof(DEVICES_WITH_REF));
     bufp += itoa(bufp, f->proc.devs[i].ref);
@@ -360,7 +363,7 @@ static int proc_file_size(struct vfs_file* f) {
       size += sizeof(DEVICES_DEVICE);
       size += sizeof(uint);  // index.
       size += sizeof(DEVICES_BACKED_BY_INODE);
-      size += sizeof(f->proc.devs[0].ip);
+      size += sizeof(f->proc.devs[0].private);
       size += sizeof(DEVICES_WITH_REF);
       size += sizeof(f->proc.devs[0].ref);
       size += 1;  // \n.

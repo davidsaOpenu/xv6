@@ -1,15 +1,14 @@
 #include "cgroup.h"
 #include "defs.h"
 #include "elf.h"
-#include "file.h"
+#include "fs/vfs_file.h"
+#include "fs/vfs_fs.h"
 #include "kvector.h"
 #include "memlayout.h"
 #include "mmu.h"
 #include "param.h"
 #include "proc.h"
 #include "types.h"
-#include "vfs_file.h"
-#include "vfs_fs.h"
 #include "x86.h"
 
 int exec(char *path, char **argv) {
@@ -32,11 +31,11 @@ int exec(char *path, char **argv) {
     end_op();
     return -1;
   }
-  ip->i_op.ilock(ip);
+  ip->i_op->ilock(ip);
   pgdir = 0;
 
   // Check ELF header
-  if (ip->i_op.readi(ip, 0, sizeof(elf), &elfv) != sizeof(elf)) goto bad;
+  if (ip->i_op->readi(ip, 0, sizeof(elf), &elfv) != sizeof(elf)) goto bad;
 
   // vectormemcmp("exec", elfv, 0, (char*)&elf, sizeof(struct elfhdr));
   // Restore data from vector to object
@@ -50,7 +49,7 @@ int exec(char *path, char **argv) {
   // Load program into memory.
   sz = 0;
   for (i = 0, off = elf.phoff; i < elf.phnum; i++, off += sizeof(ph)) {
-    if (ip->i_op.readi(ip, off, sizeof(ph), &phv) != sizeof(ph)) goto bad;
+    if (ip->i_op->readi(ip, off, sizeof(ph), &phv) != sizeof(ph)) goto bad;
     memmove_from_vector((char *)(&ph), phv, 0,
                         phv.vectorsize);  // now phv is the source of ph.
     if (ph.type != ELF_PROG_LOAD) continue;
@@ -60,7 +59,7 @@ int exec(char *path, char **argv) {
     if (ph.vaddr % PGSIZE != 0) goto bad;
     if (loaduvm(pgdir, (char *)ph.vaddr, ip, ph.off, ph.filesz) < 0) goto bad;
   }
-  ip->i_op.iunlockput(ip);
+  ip->i_op->iunlockput(ip);
   end_op();
   ip = 0;
 
@@ -110,7 +109,7 @@ int exec(char *path, char **argv) {
 bad:
   if (pgdir) freevm(pgdir);
   if (ip) {
-    ip->i_op.iunlockput(ip);
+    ip->i_op->iunlockput(ip);
     end_op();
   }
   return -1;

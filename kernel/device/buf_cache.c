@@ -1,6 +1,7 @@
+#include "buf_cache.h"
+
 #include "buf.h"
 #include "cgroup.h"
-#include "defs.h"
 #include "param.h"
 
 struct {
@@ -30,7 +31,7 @@ void buf_cache_init(void) {
   }
 }
 
-void buf_cache_invalidate_blocks(uint dev) {
+void buf_cache_invalidate_blocks(const struct device *const dev) {
   acquire(&bufs_cache.lock);
   struct buf *b;
   for (b = bufs_cache.head.next; b != &bufs_cache.head; b = b->next) {
@@ -44,7 +45,8 @@ void buf_cache_invalidate_blocks(uint dev) {
 // Look through buffer cache for block on device dev.
 // If not found, allocate a buffer.
 // In either case, return locked buffer.
-struct buf *buf_cache_get(uint dev, const union buf_id *id, uint alloc_flags) {
+struct buf *buf_cache_get(const struct device *const dev,
+                          const union buf_id *id, const uint alloc_flags) {
   struct buf *b;
   struct cgroup *cg = proc_get_cgroup();
 
@@ -82,7 +84,7 @@ struct buf *buf_cache_get(uint dev, const union buf_id *id, uint alloc_flags) {
 }
 
 // Release a locked buffer.
-void buf_cache_release(struct buf *b) {
+void buf_cache_release(struct buf *const b) {
   if (!holdingsleep(&b->lock)) panic("buf_cache_release");
 
   releasesleep(&b->lock);

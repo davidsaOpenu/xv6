@@ -1,8 +1,10 @@
-#include "buf.h"
 #include "cgroup.h"
 #include "defs.h"
-#include "device.h"
-#include "fs.h"
+#include "device/bio.h"
+#include "device/buf.h"
+#include "device/buf_cache.h"
+#include "device/device.h"
+#include "native_fs.h"
 #include "param.h"
 #include "proc.h"
 #include "sleeplock.h"
@@ -45,7 +47,7 @@ struct log {
   int size;
   int outstanding;  // how many FS sys calls are executing.
   int committing;   // in commit(), please wait.
-  int dev;
+  struct device *dev;
   struct logheader lh;
 };
 struct log log;
@@ -53,15 +55,19 @@ struct log log;
 static void recover_from_log(void);
 static void commit();
 
-void initlog(int dev) {
+void initlog(struct vfs_superblock *vfs_sb) {
+  XV6_ASSERT(vfs_sb->private != NULL);
+
+  struct native_superblock_private *sb = sb_private(vfs_sb);
   if (sizeof(struct logheader) >= BSIZE) panic("initlog: too big logheader");
 
-  struct superblock sb;
+  struct native_superblock_private *sbp = sb_private(vfs_sb);
+  deviceget(sbp->dev);
+
   initlock(&log.lock, "log");
-  readsb(dev, &sb);
-  log.start = sb.logstart;
-  log.size = sb.nlog;
-  log.dev = dev;
+  log.start = sb->sb.logstart;
+  log.size = sb->sb.nlog;
+  log.dev = sbp->dev;
   recover_from_log();
 }
 
@@ -202,7 +208,7 @@ void log_write(struct buf *b) {
     panic("too big a transaction");
   if (log.outstanding < 1) panic("log_write outside of trans");
 
-  if (IS_LOOP_DEVICE(b->dev)) {
+  if (b->dev->type == DEVICE_TYPE_LOOP) {
     // disable journaling for loop devices.
     bwrite(b);
     return;

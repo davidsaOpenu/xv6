@@ -4,22 +4,24 @@
 
 #include "common_mocks.h"
 #include "framework/test.h"
-#include "kernel/buf.h"
 #include "kernel/defs.h"
-#include "kernel/device.h"
-#include "kernel/obj_cache.h"
-#include "kernel/obj_disk.h"
+#include "kernel/device/buf.h"
+#include "kernel/device/buf_cache.h"
+#include "kernel/device/device.h"
+#include "kernel/device/obj_cache.h"
+#include "kernel/device/obj_disk.h"
 
-#define TESTED_DEVICE (0)
+struct device mock_device = {
+    .id = 1,
+    .type = DEVICE_TYPE_OBJ,
+    .private = NULL,
+    .ref = 1,
+    .ops = NULL,
+};
 
-/**
- * Objfs mockings
- */
-struct obj_device g_tested_dev = {0};
+#define TESTED_DEVICE (&mock_device)
 
-struct obj_device* objdeviceget(uint dev) { return &g_tested_dev; }
-
-void deviceput(uint dev) {}
+void deviceput(struct device* dev) {}
 
 /**
  * Utility test functions
@@ -84,17 +86,18 @@ static vector new_bufs_vector(struct buf* bufs, uint len) {
  */
 
 const uint initial_objects_table_bytes =
-    INITIAL_OBJECT_TABLE_SIZE * sizeof(ObjectsTableEntry);
+    INITIAL_OBJECT_TABLE_SIZE * sizeof(objects_table_entry);
 
 /**
  * Tests that the metadata values inside the super block are intiialized
  * correctly by calling the get functions.
  */
 TEST(initialization) {
-  EXPECT_UINT_EQ(2, occupied_objects(&g_tested_dev));
-  EXPECT_UINT_EQ(STORAGE_DEVICE_SIZE, device_size(&g_tested_dev));
+  struct obj_device_private* device = dev_private(&mock_device);
+  EXPECT_UINT_EQ(2, occupied_objects(device));
+  EXPECT_UINT_EQ(STORAGE_DEVICE_SIZE, device_size(device));
   EXPECT_UINT_EQ(sizeof(struct objsuperblock) + initial_objects_table_bytes,
-                 occupied_bytes(&g_tested_dev));
+                 occupied_bytes(device));
 }
 
 /**
@@ -135,7 +138,7 @@ TEST(table_object) {
   ASSERT_NO_ERR(object_size(TESTED_DEVICE, OBJECT_TABLE_ID, &size));
   ASSERT_UINT_EQ(initial_objects_table_bytes, size);
 
-  ObjectsTableEntry table[INITIAL_OBJECT_TABLE_SIZE];
+  objects_table_entry table[INITIAL_OBJECT_TABLE_SIZE];
   ASSERT_NO_ERR(get_object(TESTED_DEVICE, OBJECT_TABLE_ID, bufs_vec));
   copy_bufs_vector_to_buffer((char*)&table, bufs_vec,
                              initial_objects_table_bytes);
@@ -335,8 +338,10 @@ TEST(writing_multiple_objects) {
 
 TEST(add_to_full_table) {
   // Fill the disk
+
+  struct obj_device_private* device = dev_private(&mock_device);
   uint num_of_free_entries =
-      INITIAL_OBJECT_TABLE_SIZE - occupied_objects(&g_tested_dev);
+      INITIAL_OBJECT_TABLE_SIZE - occupied_objects(device);
   char object_id[OBJECT_ID_LENGTH] = {};
   const ulong small_object_size = 1000;
   ulong object_size = 0;
@@ -352,7 +357,8 @@ TEST(add_to_full_table) {
     if ((num_of_free_entries - 1) == i) {
       freevector(&bufs_vec);
 
-      object_size = device_size(&g_tested_dev) - occupied_bytes(&g_tested_dev);
+      struct obj_device_private* device = dev_private(&mock_device);
+      object_size = device_size(device) - occupied_bytes(device);
       last_obj_bufs =
           malloc(SIZE_TO_NUM_OF_BUFS(object_size) * sizeof(struct buf));
       ASSERT_NE(last_obj_bufs, 0);
@@ -377,7 +383,7 @@ TEST(add_to_full_table) {
 }
 
 uint find_object_offset(const char* object_name) {
-  ObjectsTableEntry table[INITIAL_OBJECT_TABLE_SIZE];
+  objects_table_entry table[INITIAL_OBJECT_TABLE_SIZE];
   struct buf bufs[SIZE_TO_NUM_OF_BUFS(sizeof(table))];
   vector bufs_vec = new_bufs_vector(bufs, ARRAY_LEN(bufs));
 
@@ -558,11 +564,14 @@ void init_test() {
   init_mocks_environment();
   buf_cache_init();
 
-  init_obj_device(TESTED_DEVICE);
+  init_obj_device(&mock_device);
 }
+
+void end_test() { mock_device.ops->destroy(&mock_device); }
 
 int main() {
   SET_TEST_INITIALIZER(&init_test);
+  SET_TEST_END_FUNC(&end_test);
 
   // Driver layer
   run_test(initialization);

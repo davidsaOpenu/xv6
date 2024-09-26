@@ -1,10 +1,9 @@
-#ifndef XV6_FS_H
-#define XV6_FS_H
+#ifndef XV6_FSDEFS_H
+#define XV6_FSDEFS_H
 
+#include "types.h"
 // On-disk file system format.
 // Both the kernel and user programs use this header file.
-
-#include "vfs_fs.h"
 
 #define ROOTINO 1   // root i-number
 #define BSIZE 1024  // block size
@@ -15,20 +14,27 @@
 //
 // mkfs computes the super block and builds an initial file system. The
 // super block describes the disk layout:
-struct superblock {
-  uint size;                     // Size of file system image (blocks)
-  uint nblocks;                  // Number of data blocks
-  uint nlog;                     // Number of log blocks
-  uint logstart;                 // Block number of first log block
-  uint inodestart;               // Block number of first inode block
-  uint bmapstart;                // Block number of first free map block
-  struct vfs_superblock vfs_sb;  // Keeps one to one correspondence between
-  // a phisical superblock as described and it's vfs_superblock counterpart
+struct native_superblock {
+  uint size;        // Size of file system image (blocks)
+  uint nblocks;     // Number of data blocks
+  uint nlog;        // Number of log blocks
+  uint logstart;    // Block number of first log block
+  uint inodestart;  // Block number of first inode block
+  uint bmapstart;   // Block number of first free map block
+  uint ninodes;     // Number of inodes.
 };
 
 #define NDIRECT 12
 #define NINDIRECT (BSIZE / sizeof(uint))
 #define MAXFILE (NDIRECT + NINDIRECT)
+
+// On-disk inode structure
+struct vfs_dinode {
+  short type;   // File type
+  short major;  // Major device number (T_DEV only)
+  short minor;  // Minor device number (T_DEV only)
+  short nlink;  // Number of links to inode in file system
+};
 
 // On-disk inode structure
 // that also keeps one to one correspondence between On-disk inode structure and
@@ -54,4 +60,9 @@ struct dinode {
 // Directory is a file containing a sequence of dirent structures.
 #define DIRSIZ 14
 
-#endif /* XV6_FS_H */
+struct dirent {
+  ushort inum;
+  char name[DIRSIZ];
+};
+
+#endif /* XV6_FSDEFS_H */
