@@ -1,8 +1,6 @@
 #include "namespace.h"
 
 #include "defs.h"
-#include "file.h"
-#include "fs.h"
 #include "mmu.h"
 #include "mount.h"
 #include "ns_types.h"
@@ -60,7 +58,7 @@ static struct nsproxy* allocnsproxyinternal(void) {
 struct nsproxy* emptynsproxy(void) {
   acquire(&namespacetable.lock);
   struct nsproxy* result = allocnsproxyinternal();
-  result->mount_ns = newmount_ns();
+  result->mount_ns = get_root_mount_ns();
   result->pid_ns = pid_ns_new(0);
   release(&namespacetable.lock);
 

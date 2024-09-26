@@ -2,9 +2,9 @@
 #define XV6_CGROUP_H
 
 #include "defs.h"
+#include "fs/vfs_file.h"
 #include "param.h"
 #include "proc.h"
-#include "vfs_file.h"
 
 /* Max length of string representation of descendants number. (the value is
  * a number of at most two digits + null terminator) */

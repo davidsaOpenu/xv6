@@ -1,8 +1,7 @@
 // Simple PIO-based (non-DMA) IDE driver code.
+#include "ide.h"
 
-#include "buf.h"
 #include "defs.h"
-#include "fs.h"
 #include "memlayout.h"
 #include "mmu.h"
 #include "param.h"
@@ -32,10 +31,10 @@ static struct spinlock idelock;
 static struct buf *idequeue;
 
 static int havedisk1;
-static void idestart(struct buf *);
+static void idestart(const struct buf *);
 
 // Wait for IDE disk to become ready.
-static int idewait(int checkerr) {
+static int idewait(const int checkerr) {
   int r;
 
   while (((r = inb(0x1f7)) & (IDE_BSY | IDE_DRDY)) != IDE_DRDY) {
@@ -65,7 +64,7 @@ void ideinit(void) {
 }
 
 // Start the request for b.  Caller must hold idelock.
-static void idestart(struct buf *b) {
+static void idestart(const struct buf *const b) {
   if (b == 0) panic("idestart");
   if (b->id.blockno >= FSSIZE) panic("incorrect blockno");
   int sector_per_block = BSIZE / SECTOR_SIZE;
@@ -75,13 +74,14 @@ static void idestart(struct buf *b) {
 
   if (sector_per_block > 7) panic("idestart");
 
+  uint ide_port_id = (uint)b->dev->private;
   idewait(0);
   outb(0x3f6, 0);                 // generate interrupt
   outb(0x1f2, sector_per_block);  // number of sectors
   outb(0x1f3, sector & 0xff);
   outb(0x1f4, (sector >> 8) & 0xff);
   outb(0x1f5, (sector >> 16) & 0xff);
-  outb(0x1f6, 0xe0 | ((b->dev & 1) << 4) | ((sector >> 24) & 0x0f));
+  outb(0x1f6, 0xe0 | ((ide_port_id & 1) << 4) | ((sector >> 24) & 0x0f));
   if (b->flags & B_DIRTY) {
     outb(0x1f7, write_cmd);
     outsl(0x1f0, b->data, BSIZE / 4);
@@ -121,7 +121,7 @@ void ideintr(void) {
 //  Sync buf with disk.
 //  If B_DIRTY is set, write buf to disk, clear B_DIRTY, set B_VALID.
 //  Else if B_VALID is not set, read buf from disk, set B_VALID.
-void iderw(struct buf *b) {
+void iderw(struct buf *const b) {
   struct buf **pp;
 
   if (!holdingsleep(&b->lock)) panic("iderw: buf not locked");

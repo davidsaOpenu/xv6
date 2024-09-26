@@ -6,7 +6,7 @@
 #include <unistd.h>
 
 #define stat xv6_stat  // avoid clash with host struct stat
-#include "include/fs.h"
+#include "include/fsdefs.h"
 #include "include/param.h"
 #include "include/stat.h"
 #include "include/types.h"
@@ -31,7 +31,7 @@ int nmeta;    // Number of meta blocks (boot, sb, nlog, inode, bitmap)
 int nblocks;  // Number of data blocks
 
 int fsfd;
-struct superblock sb;
+struct native_superblock sb;
 char zeroes[BSIZE];
 uint freeinode = 1;
 uint freeblock;
@@ -41,7 +41,7 @@ void wsect(uint, void *);
 void winode(uint, struct dinode *);
 void rinode(uint inum, struct dinode *ip);
 void rsect(uint sec, void *buf);
-uint ialloc(ushort type);
+uint ialloc(file_type type);
 void iappend(uint inum, void *p, int n);
 
 // convert to intel byte order
@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
 
   sb.size = xint(fssize);
   sb.nblocks = xint(nblocks);
-  sb.vfs_sb.ninodes = xint(NINODES);
+  sb.ninodes = xint(NINODES);
   sb.nlog = xint(nlog);
   sb.logstart = xint(2);
   sb.inodestart = xint(2 + nlog);
@@ -225,7 +225,7 @@ void rsect(uint sec, void *buf) {
   }
 }
 
-uint ialloc(ushort type) {
+uint ialloc(file_type type) {
   uint inum = freeinode++;
   struct dinode din;
 

@@ -1,7 +1,7 @@
 #include "image.h"
 
 #include "fcntl.h"
-#include "fs.h"
+#include "fsdefs.h"
 #include "lib/user.h"
 #include "param.h"
 #include "pouch.h"
@@ -32,6 +32,7 @@ pouch_status pouch_images_print() {
   bool printed_first = false;
   if (st.type != T_DIR) {
     printf(stderr, "%s should be a directory\n", IMAGE_DIR);
+    close(fd);
     return ERROR_IMAGE_INVALID_CODE;
   }
 

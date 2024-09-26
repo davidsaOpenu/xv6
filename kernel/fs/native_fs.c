@@ -9,15 +9,18 @@
 // routines.  The (higher-level) system call implementations
 // are in sysfile.c.
 
-#include "fs.h"
+#include "native_fs.h"
 
-#include "buf.h"
 #include "defs.h"
-#include "device.h"
-#include "file.h"
+#include "device/bio.h"
+#include "device/buf.h"
+#include "device/buf_cache.h"
+#include "device/device.h"
+#include "fs.h"
 #include "kvector.h"
 #include "mmu.h"
 #include "mount.h"
+#include "native_file.h"
 #include "param.h"
 #include "proc.h"
 #include "sleeplock.h"
@@ -26,35 +29,30 @@
 #include "types.h"
 #include "vfs_fs.h"
 
-int dirlink(struct vfs_inode *, char *, uint);
-struct vfs_inode *dirlookup(struct vfs_inode *, char *, uint *);
-struct vfs_inode *idup(struct vfs_inode *);
-void ilock(struct vfs_inode *);
-void iput(struct vfs_inode *);
-void iunlock(struct vfs_inode *);
-void iunlockput(struct vfs_inode *);
-void iupdate(struct vfs_inode *);
-int readi(struct vfs_inode *, uint, uint, vector *);
-void stati(struct vfs_inode *, struct stat *);
-int writei(struct vfs_inode *, char *, uint, uint);
-int isdirempty(struct vfs_inode *);
+static const struct sb_ops native_ops;
+static const struct inode_operations native_inode_ops;
 
-static void itrunc(struct vfs_inode *ip);
+static inline struct buf *fs_bread(struct vfs_superblock *vfs_sb,
+                                   uint blockno) {
+  struct native_superblock_private *sb = sb_private(vfs_sb);
+  return bread(sb->dev, blockno);
+}
 
 // Read the super block.
-void readsb(int dev, struct superblock *sb) {
+static void readsb(struct vfs_superblock *vfs_sb,
+                   struct native_superblock *sb) {
   struct buf *bp;
 
-  bp = bread(dev, 1);
+  bp = fs_bread(vfs_sb, 1);
   memmove(sb, bp->data, sizeof(*sb));
   buf_cache_release(bp);
 }
 
 // Zero a block.
-static void bzero(int dev, int bno) {
+static void bzero(struct vfs_superblock *vfs_sb, int bno) {
   struct buf *bp;
 
-  bp = bread(dev, bno);
+  bp = fs_bread(vfs_sb, bno);
   memset(bp->data, 0, BSIZE);
   log_write(bp);
   buf_cache_release(bp);
@@ -63,23 +61,23 @@ static void bzero(int dev, int bno) {
 // Blocks.
 
 // Allocate a zeroed disk block.
-static uint balloc(uint dev) {
+static uint balloc(struct vfs_superblock *vfs_sb) {
   int b, bi, m;
   struct buf *bp;
 
   bp = 0;
-  struct vfs_superblock *vfs_sb = getsuperblock(dev);
-  struct superblock *sb = container_of(vfs_sb, struct superblock, vfs_sb);
+  struct native_superblock_private *sbp = sb_private(vfs_sb);
+  struct native_superblock *sb = &sbp->sb;
 
   for (b = 0; b < sb->size; b += BPB) {
-    bp = bread(dev, BBLOCK(b, *sb));
+    bp = fs_bread(vfs_sb, BBLOCK(b, *sb));
     for (bi = 0; bi < BPB && b + bi < sb->size; bi++) {
       m = 1 << (bi % 8);
       if ((bp->data[bi / 8] & m) == 0) {  // Is block free?
         bp->data[bi / 8] |= m;            // Mark block in use.
         log_write(bp);
         buf_cache_release(bp);
-        bzero(dev, b + bi);
+        bzero(vfs_sb, b + bi);
         return b + bi;
       }
     }
@@ -89,14 +87,14 @@ static uint balloc(uint dev) {
 }
 
 // Free a disk block.
-static void bfree(int dev, uint b) {
+static void bfree(struct vfs_superblock *vfs_sb, uint b) {
   struct buf *bp;
   int bi, m;
 
-  struct vfs_superblock *vfs_sb = getsuperblock(dev);
-  struct superblock *sb = container_of(vfs_sb, struct superblock, vfs_sb);
-  readsb(dev, sb);
-  bp = bread(dev, BBLOCK(b, *sb));
+  struct native_superblock_private *sbp = sb_private(vfs_sb);
+  struct native_superblock *sb = &sbp->sb;
+  readsb(vfs_sb, sb);
+  bp = fs_bread(vfs_sb, BBLOCK(b, *sb));
   bi = b % BPB;
   m = 1 << (bi % 8);
   if ((bp->data[bi / 8] & m) == 0) panic("freeing free block");
@@ -176,95 +174,21 @@ static void bfree(int dev, uint b) {
 
 struct {
   struct spinlock lock;
-  struct inode inode[NINODE];
+  struct native_inode inode[NINODE];
 } icache;
-
-void iinit(uint dev) {
-  int i = 0;
-
-  initlock(&icache.lock, "icache");
-  for (i = 0; i < NINODE; i++) {
-    initsleeplock(&icache.inode[i].vfs_inode.lock, "inode");
-  }
-
-  fsinit(dev);
-}
-
-void fsinit(uint dev) {
-  struct vfs_superblock *vfs_sb = getsuperblock(dev);
-  struct superblock *sb = container_of(vfs_sb, struct superblock, vfs_sb);
-
-  readsb(dev, sb);
-  /* cprintf(
-      "sb: size %d nblocks %d ninodes %d nlog %d logstart %d "
-      "inodestart %d bmap start %d\n",
-      sb->size, sb->nblocks, sb->vfs_sb.ninodes, sb->nlog, sb->logstart,
-      sb->inodestart, sb->bmapstart);*/
-}
-
-// PAGEBREAK!
-//  Allocate an inode on device dev.
-//  Mark it as allocated by  giving it type type.
-//  Returns an unlocked but allocated and referenced inode.
-struct vfs_inode *ialloc(uint dev, short type) {
-  int inum;
-  struct buf *bp;
-  struct dinode *dip;
-
-  struct vfs_superblock *vfs_sb = getsuperblock(dev);
-  struct superblock *sb = container_of(vfs_sb, struct superblock, vfs_sb);
-  for (inum = 1; inum < sb->vfs_sb.ninodes; inum++) {
-    bp = bread(dev, IBLOCK(inum, *sb));
-    dip = (struct dinode *)bp->data + inum % IPB;
-    if (dip->vfs_dinode.type == 0) {  // a free inode
-      memset(dip, 0, sizeof(*dip));
-      dip->vfs_dinode.type = type;
-      log_write(bp);  // mark it allocated on the disk
-      buf_cache_release(bp);
-      return iget(dev, inum);
-    }
-    buf_cache_release(bp);
-  }
-
-  panic("ialloc: no inodes");
-}
-
-// Copy a modified in-memory inode to disk.
-// Must be called after every change to an ip->xxx field
-// that lives on disk, since i-node cache is write-through.
-// Caller must hold ip->lock.
-void iupdate(struct vfs_inode *vfs_ip) {
-  struct buf *bp;
-  struct dinode *dip;
-  struct inode *ip = container_of(vfs_ip, struct inode, vfs_inode);
-
-  struct vfs_superblock *vfs_sb = getsuperblock(ip->vfs_inode.dev);
-  struct superblock *sb = container_of(vfs_sb, struct superblock, vfs_sb);
-
-  bp = bread(ip->vfs_inode.dev, IBLOCK(ip->vfs_inode.inum, *sb));
-  dip = (struct dinode *)bp->data + ip->vfs_inode.inum % IPB;
-  dip->vfs_dinode.type = ip->vfs_inode.type;
-  dip->vfs_dinode.major = ip->vfs_inode.major;
-  dip->vfs_dinode.minor = ip->vfs_inode.minor;
-  dip->vfs_dinode.nlink = ip->vfs_inode.nlink;
-  dip->size = ip->vfs_inode.size;
-  memmove(dip->addrs, ip->addrs, sizeof(ip->addrs));
-  log_write(bp);
-  buf_cache_release(bp);
-}
 
 // Find the inode with number inum on device dev
 // and return the in-memory copy. Does not lock
 // the inode and does not read it from disk.
-struct vfs_inode *iget(uint dev, uint inum) {
-  struct inode *ip, *empty;
-
+static struct vfs_inode *iget(struct vfs_superblock *vfs_sb, uint inum) {
+  struct native_inode *ip, *empty;
+  XV6_ASSERT(vfs_sb->private != NULL);
   acquire(&icache.lock);
 
   // Is the inode already cached?
   empty = 0;
   for (ip = &icache.inode[0]; ip < &icache.inode[NINODE]; ip++) {
-    if (ip->vfs_inode.ref > 0 && ip->vfs_inode.dev == dev &&
+    if (ip->vfs_inode.ref > 0 && ip->vfs_inode.sb == vfs_sb &&
         ip->vfs_inode.inum == inum) {
       ip->vfs_inode.ref++;
       release(&icache.lock);
@@ -278,31 +202,125 @@ struct vfs_inode *iget(uint dev, uint inum) {
     empty = ip;
 
   // Recycle an inode cache entry.
-  if (empty == 0) panic("iget: no inodes");
+  if (empty == 0) {
+    panic("iget: no inodes");
+  }
 
-  deviceget(dev);
+  struct native_superblock_private *sbp = sb_private(vfs_sb);
+  deviceget(sbp->dev);
+
   ip = empty;
-  ip->vfs_inode.dev = dev;
+  ip->vfs_inode.sb = vfs_sb;
   ip->vfs_inode.inum = inum;
   ip->vfs_inode.ref = 1;
   ip->vfs_inode.valid = 0;
 
   /* Initiate inode operations for regular fs */
-  ip->vfs_inode.i_op.idup = &idup;
-  ip->vfs_inode.i_op.iupdate = &iupdate;
-  ip->vfs_inode.i_op.iput = &iput;
-  ip->vfs_inode.i_op.dirlink = &dirlink;
-  ip->vfs_inode.i_op.dirlookup = &dirlookup;
-  ip->vfs_inode.i_op.ilock = &ilock;
-  ip->vfs_inode.i_op.iunlock = &iunlock;
-  ip->vfs_inode.i_op.readi = &readi;
-  ip->vfs_inode.i_op.stati = &stati;
-  ip->vfs_inode.i_op.writei = &writei;
-  ip->vfs_inode.i_op.iunlockput = &iunlockput;
-  ip->vfs_inode.i_op.isdirempty = &isdirempty;
+  ip->vfs_inode.i_op = &native_inode_ops;
 
   release(&icache.lock);
   return &ip->vfs_inode;
+}
+
+// PAGEBREAK!
+//  Allocate an inode on device dev.
+//  Mark it as allocated by  giving it type type.
+//  Returns an unlocked but allocated and referenced inode.
+static struct vfs_inode *ialloc(struct vfs_superblock *vfs_sb, file_type type) {
+  int inum;
+  struct buf *bp;
+  struct dinode *dip;
+
+  XV6_ASSERT(vfs_sb->private != NULL);
+  struct native_superblock_private *sbp = sb_private(vfs_sb);
+  struct native_superblock *sb = &sbp->sb;
+  for (inum = 1; inum < sb->ninodes; inum++) {
+    bp = fs_bread(vfs_sb, IBLOCK(inum, *sb));
+    dip = (struct dinode *)bp->data + inum % IPB;
+    if (dip->vfs_dinode.type == 0) {  // a free inode
+      memset(dip, 0, sizeof(*dip));
+      dip->vfs_dinode.type = type;
+      log_write(bp);  // mark it allocated on the disk
+      buf_cache_release(bp);
+      return iget(vfs_sb, inum);
+    }
+    buf_cache_release(bp);
+  }
+
+  panic("ialloc: no inodes");
+}
+
+// Copy a modified in-memory inode to disk.
+// Must be called after every change to an ip->xxx field
+// that lives on disk, since i-node cache is write-through.
+// Caller must hold ip->lock.
+static void iupdate(struct vfs_inode *vfs_ip) {
+  struct buf *bp;
+  struct dinode *dip;
+  struct native_inode *ip =
+      container_of(vfs_ip, struct native_inode, vfs_inode);
+
+  struct vfs_superblock *vfs_sb = vfs_ip->sb;
+  struct native_superblock_private *sbp = sb_private(vfs_sb);
+  struct native_superblock *sb = &sbp->sb;
+
+  bp = fs_bread(vfs_sb, IBLOCK(ip->vfs_inode.inum, *sb));
+  dip = (struct dinode *)bp->data + ip->vfs_inode.inum % IPB;
+  dip->vfs_dinode.type = ip->vfs_inode.type;
+  dip->vfs_dinode.major = ip->vfs_inode.major;
+  dip->vfs_dinode.minor = ip->vfs_inode.minor;
+  dip->vfs_dinode.nlink = ip->vfs_inode.nlink;
+  dip->size = ip->vfs_inode.size;
+  memmove(dip->addrs, ip->addrs, sizeof(ip->addrs));
+  log_write(bp);
+  buf_cache_release(bp);
+}
+
+// Truncate inode (discard contents).
+// Only called when the inode has no links
+// to it (no directory entries referring to it)
+// and has no in-memory reference to it (is
+// not an open file or current directory).
+static void itrunc(struct vfs_inode *vfs_ip) {
+  int i, j;
+  struct buf *bp;
+  uint *a;
+  struct native_inode *ip =
+      container_of(vfs_ip, struct native_inode, vfs_inode);
+
+  for (i = 0; i < NDIRECT; i++) {
+    if (ip->addrs[i]) {
+      bfree(ip->vfs_inode.sb, ip->addrs[i]);
+      ip->addrs[i] = 0;
+    }
+  }
+
+  if (ip->addrs[NDIRECT]) {
+    bp = fs_bread(ip->vfs_inode.sb, ip->addrs[NDIRECT]);
+    a = (uint *)bp->data;
+    for (j = 0; j < NINDIRECT; j++) {
+      if (a[j]) bfree(ip->vfs_inode.sb, a[j]);
+    }
+    buf_cache_release(bp);
+    bfree(ip->vfs_inode.sb, ip->addrs[NDIRECT]);
+    ip->addrs[NDIRECT] = 0;
+  }
+
+  ip->vfs_inode.size = 0;
+  iupdate(&ip->vfs_inode);
+}
+
+// Must run from context of a process (uses sleep locks)
+static void fsstart(struct vfs_superblock *vfs_sb) {
+  XV6_ASSERT(vfs_sb->private != NULL);
+  struct native_superblock_private *sbp = sb_private(vfs_sb);
+  struct native_superblock *sb = &sbp->sb;
+  readsb(vfs_sb, sb);
+  vfs_sb->root_ip = iget(vfs_sb, ROOTINO);
+
+  if (sbp->dev->type != DEVICE_TYPE_LOOP) {
+    initlog(vfs_sb);
+  }
 }
 
 // Increment reference count for ip.
@@ -316,20 +334,21 @@ struct vfs_inode *idup(struct vfs_inode *ip) {
 
 // Lock the given inode.
 // Reads the inode from disk if necessary.
-void ilock(struct vfs_inode *vfs_ip) {
+static void ilock(struct vfs_inode *vfs_ip) {
   struct buf *bp;
   struct dinode *dip;
-  struct inode *ip = container_of(vfs_ip, struct inode, vfs_inode);
+  struct native_inode *ip =
+      container_of(vfs_ip, struct native_inode, vfs_inode);
 
   if (ip == 0 || ip->vfs_inode.ref < 1) panic("ilock");
 
   acquiresleep(&ip->vfs_inode.lock);
 
   if (ip->vfs_inode.valid == 0) {
-    struct vfs_superblock *vfs_sb = getsuperblock(ip->vfs_inode.dev);
-    struct superblock *sb = container_of(vfs_sb, struct superblock, vfs_sb);
+    struct native_superblock_private *sbp = sb_private(ip->vfs_inode.sb);
+    struct native_superblock *sb = &sbp->sb;
 
-    bp = bread(ip->vfs_inode.dev, IBLOCK(ip->vfs_inode.inum, *sb));
+    bp = fs_bread(ip->vfs_inode.sb, IBLOCK(ip->vfs_inode.inum, *sb));
     dip = (struct dinode *)bp->data + ip->vfs_inode.inum % IPB;
     ip->vfs_inode.type = dip->vfs_dinode.type;
     ip->vfs_inode.major = dip->vfs_dinode.major;
@@ -344,7 +363,7 @@ void ilock(struct vfs_inode *vfs_ip) {
 }
 
 // Unlock the given inode.
-void iunlock(struct vfs_inode *ip) {
+static void iunlock(struct vfs_inode *ip) {
   if (ip == 0 || !holdingsleep(&ip->lock) || ip->ref < 1) panic("iunlock");
 
   releasesleep(&ip->lock);
@@ -357,7 +376,7 @@ void iunlock(struct vfs_inode *ip) {
 // to it, free the inode (and its content) on disk.
 // All calls to iput() must be inside a transaction in
 // case it has to free the inode.
-void iput(struct vfs_inode *ip) {
+static void iput(struct vfs_inode *ip) {
   acquiresleep(&ip->lock);
   if (ip->valid && ip->nlink == 0) {
     acquire(&icache.lock);
@@ -367,22 +386,24 @@ void iput(struct vfs_inode *ip) {
       // inode has no links and no other references: truncate and free.
       itrunc(ip);
       ip->type = 0;
-      ip->i_op.iupdate(ip);
+      ip->i_op->iupdate(ip);
       ip->valid = 0;
     }
   }
   releasesleep(&ip->lock);
-  acquire(&icache.lock);
 
+  acquire(&icache.lock);
   ip->ref--;
-  if (ip->ref == 0) {
-    deviceput(ip->dev);
-  }
   release(&icache.lock);
+
+  if (ip->ref == 0) {
+    struct native_superblock_private *sbp = sb_private(ip->sb);
+    deviceput(sbp->dev);
+  }
 }
 
 // Common idiom: unlock, then put.
-void iunlockput(struct vfs_inode *ip) {
+static void iunlockput(struct vfs_inode *ip) {
   iunlock(ip);
   iput(ip);
 }
@@ -397,13 +418,13 @@ void iunlockput(struct vfs_inode *ip) {
 
 // Return the disk block address of the nth block in inode ip.
 // If there is no such block, bmap allocates one.
-static uint bmap(struct inode *ip, uint bn) {
+static uint bmap(struct native_inode *ip, uint bn) {
   uint addr, *a;
   struct buf *bp;
 
   if (bn < NDIRECT) {
     if ((addr = ip->addrs[bn]) == 0)
-      ip->addrs[bn] = addr = balloc(ip->vfs_inode.dev);
+      ip->addrs[bn] = addr = balloc(ip->vfs_inode.sb);
     return addr;
   }
   bn -= NDIRECT;
@@ -411,11 +432,11 @@ static uint bmap(struct inode *ip, uint bn) {
   if (bn < NINDIRECT) {
     // Load indirect block, allocating if necessary.
     if ((addr = ip->addrs[NDIRECT]) == 0)
-      ip->addrs[NDIRECT] = addr = balloc(ip->vfs_inode.dev);
-    bp = bread(ip->vfs_inode.dev, addr);
+      ip->addrs[NDIRECT] = addr = balloc(ip->vfs_inode.sb);
+    bp = fs_bread(ip->vfs_inode.sb, addr);
     a = (uint *)bp->data;
     if ((addr = a[bn]) == 0) {
-      a[bn] = addr = balloc(ip->vfs_inode.dev);
+      a[bn] = addr = balloc(ip->vfs_inode.sb);
       log_write(bp);
     }
     buf_cache_release(bp);
@@ -425,45 +446,14 @@ static uint bmap(struct inode *ip, uint bn) {
   panic("bmap: out of range");
 }
 
-// Truncate inode (discard contents).
-// Only called when the inode has no links
-// to it (no directory entries referring to it)
-// and has no in-memory reference to it (is
-// not an open file or current directory).
-static void itrunc(struct vfs_inode *vfs_ip) {
-  int i, j;
-  struct buf *bp;
-  uint *a;
-  struct inode *ip = container_of(vfs_ip, struct inode, vfs_inode);
-
-  for (i = 0; i < NDIRECT; i++) {
-    if (ip->addrs[i]) {
-      bfree(ip->vfs_inode.dev, ip->addrs[i]);
-      ip->addrs[i] = 0;
-    }
-  }
-
-  if (ip->addrs[NDIRECT]) {
-    bp = bread(ip->vfs_inode.dev, ip->addrs[NDIRECT]);
-    a = (uint *)bp->data;
-    for (j = 0; j < NINDIRECT; j++) {
-      if (a[j]) bfree(ip->vfs_inode.dev, a[j]);
-    }
-    buf_cache_release(bp);
-    bfree(ip->vfs_inode.dev, ip->addrs[NDIRECT]);
-    ip->addrs[NDIRECT] = 0;
-  }
-
-  ip->vfs_inode.size = 0;
-  iupdate(&ip->vfs_inode);
-}
-
 // Copy stat information from inode.
 // Caller must hold ip->lock.
-void stati(struct vfs_inode *vfs_ip, struct stat *st) {
-  struct inode *ip = container_of(vfs_ip, struct inode, vfs_inode);
+static void stati(struct vfs_inode *vfs_ip, struct stat *st) {
+  struct native_inode *ip =
+      container_of(vfs_ip, struct native_inode, vfs_inode);
 
-  st->dev = ip->vfs_inode.dev;
+  struct native_superblock_private *sbp = sb_private(ip->vfs_inode.sb);
+  st->dev = sbp->dev->id;
   st->ino = ip->vfs_inode.inum;
   st->type = ip->vfs_inode.type;
   st->nlink = ip->vfs_inode.nlink;
@@ -473,10 +463,12 @@ void stati(struct vfs_inode *vfs_ip, struct stat *st) {
 // PAGEBREAK!
 //  Read data from inode.
 //  Caller must hold ip->lock.
-int readi(struct vfs_inode *vfs_ip, uint off, uint n, vector *dstvector) {
+static int readi(struct vfs_inode *vfs_ip, uint off, uint n,
+                 vector *dstvector) {
   uint tot, m;
   struct buf *bp;
-  struct inode *ip = container_of(vfs_ip, struct inode, vfs_inode);
+  struct native_inode *ip =
+      container_of(vfs_ip, struct native_inode, vfs_inode);
 
   if (ip->vfs_inode.type == T_DEV) {
     if (ip->vfs_inode.major < 0 || ip->vfs_inode.major >= NDEV ||
@@ -493,7 +485,7 @@ int readi(struct vfs_inode *vfs_ip, uint off, uint n, vector *dstvector) {
 
   unsigned int dstoffset = 0;
   for (tot = 0; tot < n; tot += m, off += m, dstoffset += m) {
-    bp = bread(ip->vfs_inode.dev, bmap(ip, off / BSIZE));
+    bp = fs_bread(ip->vfs_inode.sb, bmap(ip, off / BSIZE));
     m = min(n - tot,
             BSIZE - off % BSIZE);  // NOLINT(build/include_what_you_use)
     memmove_into_vector_bytes(*dstvector, dstoffset,
@@ -508,10 +500,11 @@ int readi(struct vfs_inode *vfs_ip, uint off, uint n, vector *dstvector) {
 // PAGEBREAK!
 // Write data to inode.
 // Caller must hold ip->lock.
-int writei(struct vfs_inode *vfs_ip, char *src, uint off, uint n) {
+static int writei(struct vfs_inode *vfs_ip, char *src, uint off, uint n) {
   uint tot, m;
   struct buf *bp;
-  struct inode *ip = container_of(vfs_ip, struct inode, vfs_inode);
+  struct native_inode *ip =
+      container_of(vfs_ip, struct native_inode, vfs_inode);
 
   if (ip->vfs_inode.type == T_DEV) {
     if (ip->vfs_inode.major < 0 || ip->vfs_inode.major >= NDEV ||
@@ -525,7 +518,7 @@ int writei(struct vfs_inode *vfs_ip, char *src, uint off, uint n) {
   if (off + n > MAXFILE * BSIZE) return -1;
 
   for (tot = 0; tot < n; tot += m, off += m, src += m) {
-    bp = bread(ip->vfs_inode.dev, bmap(ip, off / BSIZE));
+    bp = fs_bread(ip->vfs_inode.sb, bmap(ip, off / BSIZE));
     m = min(n - tot,  // NOLINT(build/include_what_you_use)
             BSIZE - off % BSIZE);
     memmove(bp->data + off % BSIZE, src, m);
@@ -544,16 +537,17 @@ int writei(struct vfs_inode *vfs_ip, char *src, uint off, uint n) {
 //  Directories
 
 // Is the directory dp empty except for "." and ".." ?
-int isdirempty(struct vfs_inode *vfs_dp) {
+static int isdirempty(struct vfs_inode *vfs_dp) {
   int off;
   struct dirent de;
   vector direntryvec;
-  struct inode *dp = container_of(vfs_dp, struct inode, vfs_inode);
+  struct native_inode *dp =
+      container_of(vfs_dp, struct native_inode, vfs_inode);
   direntryvec = newvector(sizeof(de), 1);
 
   for (off = 2 * sizeof(de); off < dp->vfs_inode.size; off += sizeof(de)) {
-    if (dp->vfs_inode.i_op.readi(&dp->vfs_inode, off, sizeof(de),
-                                 &direntryvec) != sizeof(de))
+    if (dp->vfs_inode.i_op->readi(&dp->vfs_inode, off, sizeof(de),
+                                  &direntryvec) != sizeof(de))
       panic("isdirempty: readi");
     // vectormemcmp("isdirempty", direntryvec,0, (char *) &de, sizeof(de));
     memmove_from_vector((char *)&de, direntryvec, 0, sizeof(de));
@@ -565,11 +559,13 @@ int isdirempty(struct vfs_inode *vfs_dp) {
 
 // Look for a directory entry in a directory.
 // If found, set *poff to byte offset of entry.
-struct vfs_inode *dirlookup(struct vfs_inode *vfs_dp, char *name, uint *poff) {
+static struct vfs_inode *dirlookup(struct vfs_inode *vfs_dp, char *name,
+                                   uint *poff) {
   uint off, inum;
   struct dirent de;
   vector direntryvec;
-  struct inode *dp = container_of(vfs_dp, struct inode, vfs_inode);
+  struct native_inode *dp =
+      container_of(vfs_dp, struct native_inode, vfs_inode);
   direntryvec = newvector(sizeof(de), 1);
 
   if (dp->vfs_inode.type != T_DIR) panic("dirlookup not DIR");
@@ -585,7 +581,7 @@ struct vfs_inode *dirlookup(struct vfs_inode *vfs_dp, char *name, uint *poff) {
       if (poff) *poff = off;
       inum = de.inum;
       freevector(&direntryvec);
-      return iget(dp->vfs_inode.dev, inum);
+      return dp->vfs_inode.sb->ops->iget(dp->vfs_inode.sb, inum);
     }
   }
   freevector(&direntryvec);
@@ -593,11 +589,12 @@ struct vfs_inode *dirlookup(struct vfs_inode *vfs_dp, char *name, uint *poff) {
 }
 
 // Write a new directory entry (name, inum) into the directory dp.
-int dirlink(struct vfs_inode *vfs_dp, char *name, uint inum) {
+static int dirlink(struct vfs_inode *vfs_dp, char *name, uint inum) {
   int off;
   struct dirent de;
   struct vfs_inode *ip;
-  struct inode *dp = container_of(vfs_dp, struct inode, vfs_inode);
+  struct native_inode *dp =
+      container_of(vfs_dp, struct native_inode, vfs_inode);
   vector direntryvec;
   direntryvec = newvector(sizeof(de), 1);
 
@@ -625,9 +622,49 @@ int dirlink(struct vfs_inode *vfs_dp, char *name, uint inum) {
   return 0;
 }
 
-// PAGEBREAK!
-//  Paths
-struct vfs_inode *initprocessroot(struct mount **mnt) {
-  *mnt = getinitialrootmount();
-  return iget(ROOTDEV, ROOTINO);
+void native_iinit() {
+  int i = 0;
+
+  initlock(&icache.lock, "icache");
+  for (i = 0; i < NINODE; i++) {
+    initsleeplock(&icache.inode[i].vfs_inode.lock, "inode");
+  }
 }
+
+void native_fs_init(struct vfs_superblock *vfs_sb, struct device *dev) {
+  struct native_superblock_private *sbp =
+      (struct native_superblock_private *)kalloc();
+  sbp->dev = dev;
+
+  vfs_sb->private = sbp;
+  vfs_sb->ops = &native_ops;
+  /* cprintf(
+      "sb: size %d nblocks %d ninodes %d nlog %d logstart %d "
+      "inodestart %d bmap start %d\n",
+      sb->size, sb->nblocks, sb->ninodes, sb->nlog, sb->logstart,
+      sb->inodestart, sb->bmapstart);*/
+}
+
+static void fsdestroy(struct vfs_superblock *vfs_sb) {
+  struct native_superblock_private *sbp = sb_private(vfs_sb);
+  iput(vfs_sb->root_ip);
+  kfree((char *)sbp);
+}
+
+static const struct sb_ops native_ops = {
+    .ialloc = ialloc, .iget = iget, .destroy = fsdestroy, .start = fsstart};
+
+static const struct inode_operations native_inode_ops = {
+    .idup = &idup,
+    .iupdate = &iupdate,
+    .iput = &iput,
+    .dirlink = &dirlink,
+    .dirlookup = &dirlookup,
+    .ilock = &ilock,
+    .iunlock = &iunlock,
+    .readi = &readi,
+    .stati = &stati,
+    .writei = &writei,
+    .iunlockput = &iunlockput,
+    .isdirempty = &isdirempty,
+};
