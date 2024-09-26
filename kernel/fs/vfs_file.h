@@ -2,7 +2,7 @@
 #define XV6_VFS_FILE_H
 
 #include "defs.h"
-#include "device.h"
+#include "device/device.h"
 #include "kvector.h"
 #include "param.h"
 #include "sleeplock.h"
@@ -105,7 +105,7 @@ struct vfs_file {
       union {
         uint mem;
         struct mount_list *mount_entry;
-        struct device devs[NLOOPDEVS];
+        struct device devs[NMAXDEVS];
       } proc;
       uint count; /* Useful to count mount entries/devs, etc.. */
     };
@@ -136,17 +136,18 @@ struct inode_operations {
 
 // in-memory copy of an inode
 struct vfs_inode {
-  uint dev;               // Device number
-  uint inum;              // Inode number
-  int ref;                // Reference count
-  struct sleeplock lock;  // protects everything below here
-  int valid;              // inode has been read from disk?
-  short type;             // copy of disk inode
+  struct vfs_superblock *sb;  // The vfs_superblock that this inode belongs to
+  uint inum;                  // Inode number
+  int ref;                    // Reference count
+  struct sleeplock lock;      // protects everything below here
+  int valid;                  // inode has been read from disk?
+  short type;                 // copy of disk inode
   short major;
   short minor;
   short nlink;
   uint size;
-  struct inode_operations i_op;
+  const struct inode_operations *i_op;
+  struct mount *mnt;  // if this inode is a mount point, this is the mount
 };
 
 // table mapping major device number to

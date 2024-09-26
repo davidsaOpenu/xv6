@@ -1,6 +1,6 @@
 #include "cgroup.h"
 
-#include "cgfs.h"
+#include "fs/cgfs.h"
 #include "memlayout.h"
 #include "spinlock.h"
 

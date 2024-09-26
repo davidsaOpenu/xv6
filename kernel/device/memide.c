@@ -3,7 +3,6 @@
 
 #include "buf.h"
 #include "defs.h"
-#include "fs.h"
 #include "mmu.h"
 #include "param.h"
 #include "proc.h"

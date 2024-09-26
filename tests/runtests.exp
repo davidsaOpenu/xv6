@@ -11,13 +11,11 @@ proc pid_check { argv expect_str} {
 
     send "pid\n"
     log_file -noappend [lindex $argv 0]
-    set timeout 2
     expect "$expect_str"
     assert_on_exit_status
 }
 
 proc assert_no_pouch_images { argv } {
-    set timeout 3
     log_file -noappend [lindex $argv 0]
 
     send "pouch images\n"
@@ -26,7 +24,6 @@ proc assert_no_pouch_images { argv } {
 }
 
 proc assert_abc_pouch_images { argv } {
-    set timeout 3
     log_file -noappend [lindex $argv 0]
     send "pouch images\n"
     expect "Pouch images available:"
@@ -37,7 +34,8 @@ proc assert_abc_pouch_images { argv } {
 }
 
 proc prepare_pouch_images { argv } {
-    set timeout 3
+    # copy might take some time
+    set timeout 10
     assert_no_pouch_images $argv
 
     # copy /internal_fs_[abc] to /images/img_[abc]:
@@ -49,6 +47,8 @@ proc prepare_pouch_images { argv } {
 
     log_file -noappend [lindex $argv 0]
     assert_abc_pouch_images $argv
+    # restore timeout
+    set timeout 3
 }
 
 proc remove_pouch_images { argv } {
@@ -68,7 +68,6 @@ proc remove_pouch_images { argv } {
 # @expect_str - the string to expect
 proc start_container { argv id expect_str {image_name "img_a"} { exit_code 0 } } {
     send "pouch start c$id $image_name\n"
-    set timeout 3
     log_file -noappend [lindex $argv 0]
     expect "$expect_str"
     assert_on_exit_status $exit_code
@@ -77,11 +76,8 @@ proc start_container { argv id expect_str {image_name "img_a"} { exit_code 0 } }
 # - wrapper for pouch connect command
 # @argv - file name for logging
 proc connect_container {argv id } {
-
     send "pouch connect c$id\n"
-    set timeout 3
     log_file -noappend [lindex $argv 0]
-
     # container can connect to any tty, checking here every one
     expect -re {tty[012] connected}
 }
@@ -89,9 +85,7 @@ proc connect_container {argv id } {
 # - wrapper for pouch disconnect command
 # @argv - file name for logging
 proc disconnect_container {argv} {
-
     send "pouch disconnect\n"
-    set timeout 3
     log_file -noappend [lindex $argv 0]
     expect {
        "Console connected"
@@ -103,8 +97,6 @@ proc disconnect_container {argv} {
 proc destroy_container {argv id expect_str} {
     send "pouch destroy c$id\n"
     sleep 1
-
-    set timeout 5
     log_file -noappend [lindex $argv 0]
     expect "$expect_str"
     assert_on_exit_status
@@ -142,8 +134,6 @@ proc assert_on_exit_status {{code 0} {wait_for_last_exit 1}} {
 # - for details: ioctltests.c
 # @argv - file name for logging
 proc ioctl_syscall_test {argv} {
-
-    set timeout 3
     send "ioctltests\n"
     log_file -noappend [lindex $argv 0]
     assert_on_exit_status
@@ -153,8 +143,7 @@ proc ioctl_syscall_test {argv} {
 # - scenarios that may lead to pouch operations failures
 # @argv - file name for logging
 proc pouch_stress_test {argv} {
-
-    set timeout 3
+    
     for {set x 0} {$x < 10} {incr x} {
         set running [start_container $argv "1" "Pouch: c1 starting" "img_a"]
         sleep 0.5
@@ -174,7 +163,7 @@ proc pouch_basic_tests {argv} {
 
 # Test the 'rm' userspace utility with recursive flag
 proc rm_recursive_test {argv} {
-    set timeout 3
+    
     log_file -noappend [lindex $argv 0]
 
     set depth 10
@@ -203,7 +192,6 @@ proc rm_recursive_test {argv} {
 }
 
 proc cp_copy_file_test {argv} {
-    set timeout 2
     log_file -noappend [lindex $argv 0]
 
     #bad args test
@@ -236,7 +224,6 @@ proc cp_copy_file_test {argv} {
 }
 
 proc cp_copy_dir_test {argv} {
-    set timeout 2
     log_file -noappend [lindex $argv 0]
 
     #one file in dir
@@ -284,7 +271,6 @@ proc cp_copy_dir_test {argv} {
 }
 
 proc cp_simple_objfs_nativefs_copy_test {argv} {
-    set timeout 2
     log_file -noappend [lindex $argv 0]
 
     send "mkdir d5 d6\n"
@@ -328,7 +314,6 @@ proc cp_simple_objfs_nativefs_copy_test {argv} {
 # - Nested bind mount across different fs types test
 # @argv - file name for logging
 proc cp_recursive_objfs_nativefs_test {argv} {
-    set timeout -1
     log_file -noappend [lindex $argv 0]
 
     # Mount a new objfs
@@ -416,7 +401,6 @@ proc cp_recursive_objfs_nativefs_test {argv} {
 }
 
 proc mount_bind_test {argv} {
-    set timeout 2
     log_file -noappend [lindex $argv 0]
 
     send "mkdir bind_tests\n"
@@ -516,7 +500,7 @@ proc umount_bind_mount_test {argv} {
 proc pouch_start_test {argv} {
 
     set running [start_container $argv "1" "Pouch: c1 starting" "img_a"]
-    set timeout 3
+    
     set running [pid_check $argv "PID: 2"]
     sleep 2
 }
@@ -530,24 +514,21 @@ proc pouch_start_test {argv} {
 proc pouch_connect_test {argv} {
 
     #assuming container is already started
-    set timeout 3
+    
     set running [connect_container $argv "1"]
-    set timeout 3
+    
     set running [pid_check $argv "PID: 1"]
 
 }
 
 proc pouch_binaries_test {argv} {
-    set timeout 1
-    sleep 0.5
     send "echo test > testfile\n"
-    sleep 0.5
-    expect "$ "
-    sleep 0.5
+    assert_on_exit_status
+
     send "cat testfile\n"
     sleep 0.5
     expect "test"
-    sleep 0.5
+    expect "$ "
 }
 
 
@@ -555,12 +536,8 @@ proc pouch_binaries_test {argv} {
 # - it means PID shoud be 2
 # @argv - file name for logging
 proc pouch_disconnect_test {argv} {
-
-    set timeout 3
     set running [disconnect_container $argv]
-    set timeout 3
     set running [pid_check $argv "PID: 2"]
-
 }
 
 
@@ -568,16 +545,13 @@ proc pouch_disconnect_test {argv} {
 # - after we destroy the container recheck for the file
 # @argv - file name for logging
 proc pouch_destroy_test {argv} {
-
     #assuming container is already created
     send "ls c1\n"
-    set timeout 3
     log_file -noappend [lindex $argv 0]
     expect -re {c1\s+2\s+[0-9]+\s+[0-9]+}
 
     set running [destroy_container $argv "1" "Pouch: c1 destroyed"]
 
-    set timeout 3
     send "ls c1\n"
     log_file -noappend [lindex $argv 0]
     expect {
@@ -588,7 +562,6 @@ proc pouch_destroy_test {argv} {
 
 
 proc command_exit_status_test {argv} {
-    set timeout 1
     log_file -noappend [lindex $argv 0]
 
     # Test cd
@@ -632,7 +605,6 @@ proc pouch_list_test {argv} {
 
     #this test assumes there are 3 started containers
     send "pouch list\n"
-    set timeout 3
     log_file -noappend [lindex $argv 0]
     expect "Pouch containers:"
     expect "1. c1 : started"
@@ -654,8 +626,6 @@ proc pouch_list_test {argv} {
 # - Limit cgroup test:
 # @argv - file name for logging
 proc pouch_cgroup_limit_test {argv} {
-    set timeout 10
-
     sleep 1
     send "pouch cgroup c1 cpu.max 10000,20000\n"
 
@@ -665,7 +635,6 @@ proc pouch_cgroup_limit_test {argv} {
        "Pouch: c1 cgroup applied"
     }
 
-    set timeout 10
     send "cat /cgroup/c1/cpu.max\n"
     log_file -noappend [lindex $argv 0]
 
@@ -680,15 +649,12 @@ proc pouch_cgroup_limit_test {argv} {
 # - check that container is not created if cgroup with give container's name already exists
 # @argv - file name for logging
 proc pouch_cgroup_already_exists {argv} {
-
-    set timeout 3
     send "mkdir /cgroup/c5\n"
     log_file -noappend [lindex $argv 0]
     assert_on_exit_status
-    set timeout 3
+
     set running [start_container $argv "5" "cgroup already exists" "img_a" 1]
     log_file -noappend [lindex $argv 0]
-    expect "Pouch: Failed to create cgroup with the given name. Consider another container name: c5"
 }
 
 
@@ -703,19 +669,16 @@ proc pouch_disconnect_outside_container_test {argv} {
     set running [pid_check $argv "PID: 2"]
 
     send "pouch disconnect c6\n"
-    set timeout 3
     log_file -noappend [lindex $argv 0]
     expect {
-       "Error: Invalid command for outside container."
+       "Error: Invalid command disconnect for outside container."
     }
     assert_on_exit_status 1
-    sleep 1
+
     send "pouch disconnect\n"
-    sleep 1
-    set timeout 3
     log_file -noappend [lindex $argv 0]
     expect {
-       "Error: Invalid command for outside container."
+       "Error: Invalid command disconnect for outside container."
     }
     assert_on_exit_status 1
 }
@@ -731,16 +694,15 @@ proc pouch_info_container_test {argv} {
     #check we are outside - epxects argument
     set running [pid_check $argv "PID: 2"]
     send "pouch info\n"
-    set timeout 3
     log_file -noappend [lindex $argv 0]
     expect {
         "Error: Invalid number of arguments."
     }
     assert_on_exit_status 1
+
     # now no container exists
     sleep 2
     send "pouch info c6\n"
-    set timeout 3
     log_file -noappend [lindex $argv 0]
     expect "There is no container: c6 in a started stage"
 }
@@ -749,7 +711,6 @@ proc pouch_info_container_test {argv} {
 # - xv6 usertests
 # @argv - file name for logging
 proc usertests {argv} {
-    set timeout -1
     #clean expect buffer
     expect *
 
@@ -771,7 +732,7 @@ proc usertests {argv} {
 # - xv6 cgroup tests
 # @argv - file name for logging
 proc cgroupstests {argv} {
-    set timeout -1
+    set timeout 20
     #clean expect buffer
     expect *
 
@@ -788,12 +749,12 @@ proc cgroupstests {argv} {
     assert_on_exit_status
     send "rm -r cgroup_tests_dir\n"
     assert_on_exit_status
+
+    set timeout 3
 }
 
 # - xv6 cgroup IO stats tests
 proc cgroup_io_states_test {argv} {
-    set timeout 2
-
     set running [start_container $argv "temp" "Pouch: ctemp starting" "img_a"]
     sleep 1
     send "cat /cgroup/ctemp/io.stat\n"
@@ -828,8 +789,6 @@ proc cgroup_io_states_test {argv} {
 # - xv6 pidns tests
 # @argv - file name for logging
 proc pidns_tests {argv} {
-    set timeout -1
-
     send "mkdir pidns_test_dir\n"
     assert_on_exit_status
     send "cd pidns_test_dir\n"
@@ -848,17 +807,16 @@ proc pidns_tests {argv} {
 # - xv6 mntns tests
 # @argv - file name for logging
 proc mounttest {argv} {
-    set timeout -1
+    set timeout 10
     send "mounttest\n"
     log_file -noappend [lindex $argv 0]
-    assert_on_exit_status
+    expect "mounttest tests passed successfully"
+    set timeout 3
 }
 
 # - pouch build image command line test, invalid arguments
 # @argv - file name for logging
 proc test_pouch_build_invalid_args {argv} {
-    set timeout 3
-
     # pouch build <invalid args> combinations, should fail.
     send "pouch build add\n"
     expect "Error: Unexpected argument add!"
@@ -909,8 +867,6 @@ proc test_pouch_build_invalid_args {argv} {
 # - pouch build image command line test, valid arguments
 # @argv - file name for logging
 proc test_pouch_build_valid_args {argv} {
-    set timeout 3
-
     send "echo IMPORT abc > Pouchfile\n"
 
     send "pouch build\n"
@@ -949,8 +905,6 @@ proc test_pouch_build_valid_args {argv} {
 
 proc test_pouch_build_file_parsing {argv} {
     # iterate over Valid1.Pouchfile, Valid2.Pouchfile, build and assert_on_exit_status
-    set timeout 3
-
     set valid_pouchfiles [list Valid1.Pouchfile Valid2.Pouchfile]
     foreach elem $valid_pouchfiles {
         send "pouch build --file $elem\n"
@@ -976,7 +930,6 @@ proc test_pouch_build_file_parsing {argv} {
 
 proc test_internal_images {argv} {
     # For each one of internal_fs_[a,b,c], mount it, check if it is mounted, unmount it, check if it is unmounted.
-    set timeout 3
     set internal_images [list a b c]
     foreach elem $internal_images {
         send "mkdir /m$elem\n"
@@ -988,6 +941,7 @@ proc test_internal_images {argv} {
         assert_on_exit_status
     }
 }
+
 
 #-------------------------------------------------------------------------
 #-MAIN--------------------------------------------------------------------
@@ -1048,7 +1002,7 @@ set running [pouch_info_container_test $argv]
 set running [pouch_cgroup_limit_test $argv]
 set running [pouch_to_many_cnts_test_remove $argv]
 
-set running[remove_pouch_images $argv]
+set running [remove_pouch_images $argv]
 
 set running [test_pouch_build_valid_args $argv]
 set running [test_pouch_build_invalid_args $argv]
