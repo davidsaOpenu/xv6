@@ -2,27 +2,30 @@
 // File descriptors
 //
 
-#include "file.h"
+#include "vfs_file.h"
 
 #include "defs.h"
-#include "fs.h"
+#include "device/device.h"
+#include "mount.h"
 #include "param.h"
 #include "sleeplock.h"
 #include "spinlock.h"
 #include "types.h"
 
 struct devsw devsw[NDEV];
+struct ftable_s ftable;
 
-void fileinit(void) { initlock(&ftable.lock, "ftable"); }
+void vfs_fileinit(void) { initlock(&ftable.lock, "ftable"); }
 
 // Allocate a file structure.
-struct file *filealloc(void) {
-  struct file *f;
+struct vfs_file *vfs_filealloc(void) {
+  struct vfs_file *f;
 
   acquire(&ftable.lock);
   for (f = ftable.file; f < ftable.file + NFILE; f++) {
     if (f->ref == 0) {
       f->ref = 1;
+      f->mnt = NULL;
       release(&ftable.lock);
       return f;
     }
@@ -32,20 +35,20 @@ struct file *filealloc(void) {
 }
 
 // Increment ref count for file f.
-struct file *filedup(struct file *f) {
+struct vfs_file *vfs_filedup(struct vfs_file *f) {
   acquire(&ftable.lock);
-  if (f->ref < 1) panic("filedup");
+  if (f->ref < 1) panic("vfs_filedup");
   f->ref++;
   release(&ftable.lock);
   return f;
 }
 
 // Close file f.  (Decrement ref count, close when reaches 0.)
-void fileclose(struct file *f) {
-  struct file ff;
+void vfs_fileclose(struct vfs_file *f) {
+  struct vfs_file ff;
 
   acquire(&ftable.lock);
-  if (f->ref < 1) panic("fileclose");
+  if (f->ref < 1) panic("vfs_fileclose");
   if (--f->ref > 0) {
     release(&ftable.lock);
     return;
@@ -55,60 +58,51 @@ void fileclose(struct file *f) {
   f->type = FD_NONE;
   release(&ftable.lock);
 
-  if (ff.type == FD_PIPE)
+  if (ff.type == FD_PIPE) {
     pipeclose(ff.pipe, ff.writable);
-  else if (ff.type == FD_INODE) {
+  } else if (ff.type == FD_INODE) {
     mntput(ff.mnt);
     begin_op();
-    iput(ff.ip);
+    ff.ip->i_op->iput(ff.ip);
     end_op();
   }
 }
 
 // Get metadata about file f.
-int filestat(struct file *f, struct stat *st) {
-  if (f->type == FD_INODE) {
-    ilock(f->ip);
-    stati(f->ip, st);
-    iunlock(f->ip);
+int vfs_filestat(struct vfs_file *f, struct stat *st) {
+  if (f->type == FD_INODE && f->ip != 0) {
+    f->ip->i_op->ilock(f->ip);
+    f->ip->i_op->stati(f->ip, st);
+    f->ip->i_op->iunlock(f->ip);
     return 0;
   }
   return -1;
 }
 
 // Read from file f.
-int fileread(struct file *f, char *addr, int n) {
+int vfs_fileread(struct vfs_file *f, int n, vector *dstvector) {
   int r;
-  vector file_content;
-  file_content = newvector(n, 1);
 
-  if (f->readable == 0) {
-    freevector(&file_content);
-    return -1;
-  }
+  if (f->readable == 0) return -1;
   if (f->type == FD_PIPE) {
-    r = piperead(f->pipe, n, &file_content);
-    memmove_from_vector(addr, file_content, 0, n);
-    freevector(&file_content);
-    return r;
+    int piperesult = piperead(f->pipe, n, dstvector);
+    return piperesult;
   }
   if (f->type == FD_INODE) {
-    ilock(f->ip);
-    r = readi(f->ip, addr, f->off, n, &file_content);
-    memmove_from_vector(addr, file_content, 0, n);
-    if (r > 0) {
+    f->ip->i_op->ilock(f->ip);
+    if ((r = f->ip->i_op->readi(f->ip, f->off, n, dstvector)) > 0) {
       f->off += r;
     }
-    iunlock(f->ip);
-    freevector(&file_content);
+    f->ip->i_op->iunlock(f->ip);
     return r;
   }
-  panic("fileread");
+
+  panic("vfs_fileread");
 }
 
 // PAGEBREAK!
 //  Write to file f.
-int filewrite(struct file *f, char *addr, int n) {
+int vfs_filewrite(struct vfs_file *f, char *addr, int n) {
   int r;
 
   if (f->writable == 0) return -1;
@@ -127,16 +121,17 @@ int filewrite(struct file *f, char *addr, int n) {
       if (n1 > max) n1 = max;
 
       begin_op();
-      ilock(f->ip);
-      if ((r = writei(f->ip, addr + i, f->off, n1)) > 0) f->off += r;
-      iunlock(f->ip);
+      f->ip->i_op->ilock(f->ip);
+      if ((r = f->ip->i_op->writei(f->ip, addr + i, f->off, n1)) > 0)
+        f->off += r;
+      f->ip->i_op->iunlock(f->ip);
       end_op();
 
       if (r < 0) break;
-      if (r != n1) panic("short filewrite");
+      if (r != n1) panic("short vfs_filewrite");
       i += r;
     }
     return i == n ? n : -1;
   }
-  panic("filewrite");
+  panic("vfs_filewrite");
 }

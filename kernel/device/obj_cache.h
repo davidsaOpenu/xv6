@@ -1,5 +1,5 @@
-#ifndef XV6_OBJ_CACHE_H
-#define XV6_OBJ_CACHE_H
+#ifndef XV6_DEVICE_OBJ_CACHE_H
+#define XV6_DEVICE_OBJ_CACHE_H
 
 /**
  * Objfs cache module.
@@ -36,12 +36,13 @@
 
 /* NOTE: The following functions of this module assume the inode of the object
  *       param is locked when called. */
-uint obj_cache_add(uint dev, const char* name, const void* data, uint size);
-uint obj_cache_write(uint dev, const char* name, const void* data, uint size,
-                     uint offset, uint prev_obj_size);
-uint obj_cache_read(uint dev, const char* name, vector* dst, uint size,
-                    uint offset, uint obj_size);
-uint obj_cache_delete(uint dev, const char* name, uint obj_size);
+uint obj_cache_add(struct device* dev, const char* name, const void* data,
+                   uint size);
+uint obj_cache_write(struct device* dev, const char* name, const void* data,
+                     uint size, uint offset, uint prev_obj_size);
+uint obj_cache_read(struct device* dev, const char* name, vector* dst,
+                    uint size, uint offset, uint obj_size);
+uint obj_cache_delete(struct device* dev, const char* name, uint obj_size);
 
 /**
  * The following methods provides statistics about the cache layer. They can
@@ -53,4 +54,4 @@ uint objects_cache_hits();
 uint objects_cache_misses();
 uint cache_max_object_size();
 
-#endif /* XV6_OBJ_CACHE_H */
+#endif /* XV6_DEVICE_OBJ_CACHE_H */

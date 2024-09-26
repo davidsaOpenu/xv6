@@ -2,12 +2,13 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "framework/test.h"
 #include "kernel/defs.h"
 #include "kernel/mmu.h"
 #include "kernel/sleeplock.h"
-#include "kernel/spinlock.h"
+#include "spinlock.h"
 
 static char g_memory[NUMBER_OF_PAGES][PGSIZE] = {0};
 static int g_availability_index[NUMBER_OF_PAGES];

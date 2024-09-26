@@ -32,7 +32,8 @@ static int child_exit_status(int pid) {
 and set the variable testsPassed to be 1*/
 void run_test(test_func_t func, const char *name) {
   int pid = -1;
-
+  static int tnum = 0;
+  printf(stdout, "Running test %d: %s\n", tnum++, name);
   int ret = check(fork(), "fork failed");
   if (ret == 0) {
     exit(func());

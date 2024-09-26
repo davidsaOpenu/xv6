@@ -1,6 +1,7 @@
 #ifndef XV6_OBJ_FS_H
 #define XV6_OBJ_FS_H
 
+#include "device/device.h"
 #include "stat.h"
 #include "types.h"
 #include "vfs_fs.h"
@@ -33,7 +34,7 @@
  * of the object.
  */
 struct obj_dinode {
-  struct vfs_dinode vfs_dinode;
+  struct base_dinode base_dinode;
   // the object containning the data of this inode
   char data_object_name[MAX_OBJECT_NAME_LENGTH];
 };
@@ -44,5 +45,8 @@ struct obj_dinode {
  * 1 for null terminator
  */
 #define INODE_NAME_LENGTH (5 + sizeof(uint) + 1 + 1)
+
+void obj_iinit(void);
+void obj_fs_init(struct vfs_superblock*, struct device*);
 
 #endif /* XV6_OBJ_FS_H */
