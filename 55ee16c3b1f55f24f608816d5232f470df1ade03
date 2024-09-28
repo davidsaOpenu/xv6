@@ -71,6 +71,23 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "a01ec18e_36cc04b4",
+        "filename": "kernel/fs/vfs_fs.c",
+        "patchSetId": 3
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 1037916
+      },
+      "writtenOn": "2024-09-28T07:57:44Z",
+      "side": 1,
+      "message": "I\u0027m not sure it\u0027s safe to call it with NULL",
+      "revId": "55ee16c3b1f55f24f608816d5232f470df1ade03",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "f0854332_be0cb849",
         "filename": "kernel/sysfile.c",
         "patchSetId": 3
