@@ -18,6 +18,23 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "d407bfb1_4e7d752f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-09-28T09:13:43Z",
+      "side": 1,
+      "message": "Issued a fix to @AlonZ CR.",
+      "revId": "55ee16c3b1f55f24f608816d5232f470df1ade03",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "d5ef3448_3a18b1d1",
@@ -31,6 +48,24 @@
       "writtenOn": "2024-09-28T07:33:29Z",
       "side": 1,
       "message": "Maybe a different description will be better for this struct (or the next one)",
+      "revId": "55ee16c3b1f55f24f608816d5232f470df1ade03",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "828bfe33_61dc0f8c",
+        "filename": "include/fsdefs.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-09-28T09:13:43Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "d5ef3448_3a18b1d1",
       "revId": "55ee16c3b1f55f24f608816d5232f470df1ade03",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
@@ -52,6 +87,24 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "cd84f561_547b3092",
+        "filename": "kernel/device/ide.c",
+        "patchSetId": 3
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-09-28T09:13:43Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "1e3198c9_4417eee0",
+      "revId": "55ee16c3b1f55f24f608816d5232f470df1ade03",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "52e708c3_8f0c7442",
@@ -65,6 +118,24 @@
       "writtenOn": "2024-09-28T07:33:29Z",
       "side": 1,
       "message": "Is that safe?",
+      "revId": "55ee16c3b1f55f24f608816d5232f470df1ade03",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1cda83e4_25e84026",
+        "filename": "kernel/device/obj_disk.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-09-28T09:13:43Z",
+      "side": 1,
+      "message": "memory_storage is always of size STORAGE_DEVICE_SIZE, as in `struct memory_storage_holder`",
+      "parentUuid": "52e708c3_8f0c7442",
       "revId": "55ee16c3b1f55f24f608816d5232f470df1ade03",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
@@ -86,6 +157,24 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "4b148a6c_175df8d3",
+        "filename": "kernel/fs/vfs_fs.c",
+        "patchSetId": 3
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-09-28T09:13:43Z",
+      "side": 1,
+      "message": "It is checked for NULL, and not putting output parameter value if it is NULL.",
+      "parentUuid": "a01ec18e_36cc04b4",
+      "revId": "55ee16c3b1f55f24f608816d5232f470df1ade03",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "f0854332_be0cb849",
@@ -99,6 +188,24 @@
       "writtenOn": "2024-09-28T07:33:29Z",
       "side": 1,
       "message": "Is that done in other Posix-ish systems? Anyway it sounds correct",
+      "revId": "55ee16c3b1f55f24f608816d5232f470df1ade03",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "530bcaa7_84dd3b75",
+        "filename": "kernel/sysfile.c",
+        "patchSetId": 3
+      },
+      "lineNbr": 227,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-09-28T09:13:43Z",
+      "side": 1,
+      "message": "yes, the linux kernel performs the same logic,",
+      "parentUuid": "f0854332_be0cb849",
       "revId": "55ee16c3b1f55f24f608816d5232f470df1ade03",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
