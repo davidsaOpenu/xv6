@@ -4,50 +4,50 @@
 
 #include "common_mocks.h"
 #include "framework/test.h"
-#include "kernel/buf.h"
 #include "kernel/defs.h"
+#include "kernel/device/buf.h"
+#include "kernel/device/buf_cache.h"
 #include "param.h"
-
-#define TESTED_DEVICE (0)
-#define TESTED_DEVICE_2 (1)
-#define TESTED_DEVICE_3 (1)
 
 /* Verify buffers remain valid upon release. */
 TEST(buffer_validity) {
+  struct device tested_dev = {0};
   union buf_id id = {.blockno = 0};
   struct buf* buffer;
 
-  buffer = buf_cache_get(TESTED_DEVICE, &id, 0);
+  buffer = buf_cache_get(&tested_dev, &id, 0);
   buffer->flags |= B_VALID;
   buf_cache_release(buffer);
 
-  buffer = buf_cache_get(TESTED_DEVICE, &id, 0);
+  buffer = buf_cache_get(&tested_dev, &id, 0);
   EXPECT_TRUE(buffer->flags & B_VALID);
 }
 
 /* Verify used buffers not are allocated. */
 TEST(no_used_allocated) {
+  struct device tested_dev = {0};
   union buf_id id;
 
   /* Allocate all buffers and mark them dirty. */
   for (uint i = 0; i < NBUF; i++) {
     id.blockno = i;
-    buf_cache_get(TESTED_DEVICE, &id, 0);
+    buf_cache_get(&tested_dev, &id, 0);
   }
 
   /* Try to allocate one more buffer and expect to fail since all are dirty. */
-  EXPECT_PANIC(id.blockno = NBUF + 1; buf_cache_get(TESTED_DEVICE, &id, 0););
+  EXPECT_PANIC(id.blockno = NBUF + 1; buf_cache_get(&tested_dev, &id, 0););
 }
 
 /* Verify dirty buffers are not allocated. */
 TEST(no_dirty_allocated) {
+  struct device tested_dev = {0};
   union buf_id id;
   struct buf* buffers[NBUF];
 
   /* Allocate all buffers and mark them dirty. */
   for (uint i = 0; i < NBUF; i++) {
     id.blockno = i;
-    buffers[i] = buf_cache_get(TESTED_DEVICE, &id, 0);
+    buffers[i] = buf_cache_get(&tested_dev, &id, 0);
     buffers[i]->flags |= B_DIRTY;
   }
 
@@ -57,18 +57,20 @@ TEST(no_dirty_allocated) {
   }
 
   /* Try to allocate one more buffer and expect to fail since all are dirty. */
-  EXPECT_PANIC(id.blockno = NBUF + 1; buf_cache_get(TESTED_DEVICE, &id, 0););
+  EXPECT_PANIC(id.blockno = NBUF + 1; buf_cache_get(&tested_dev, &id, 0););
 }
 
 TEST(lru_mechanism) {
+  struct device tested_dev = {0};
+  struct device tested_dev2 = {0};
   uint seed = 0x1337;
   union buf_id id;
-  struct buf* buffers[NBUF];
+  struct buf* buffers[NBUF] = {0};
 
   /* Allocate all buffers. */
   for (uint i = 0; i < NBUF; i++) {
     id.blockno = i;
-    buffers[i] = buf_cache_get(TESTED_DEVICE, &id, 0);
+    buffers[i] = buf_cache_get(&tested_dev, &id, 0);
   }
 
   /* Mix the allocated buffers. */
@@ -90,12 +92,15 @@ TEST(lru_mechanism) {
   for (uint i = 0; i < NBUF; i++) {
     // Allocate different buffers (not same device)
     id.blockno = i;
-    struct buf* tmp = buf_cache_get(TESTED_DEVICE_2, &id, 0);
+    struct buf* tmp = buf_cache_get(&tested_dev2, &id, 0);
     EXPECT_TRUE(tmp == buffers[i]);
   }
 }
 
 TEST(allocation_hint) {
+  struct device tested_dev = {0};
+  struct device tested_dev2 = {0};
+  struct device tested_dev3 = {0};
   union buf_id id;
   struct buf* cached_buffers[NBUF / 2];
   struct buf* not_cached_buffers[NBUF / 2];
@@ -103,7 +108,7 @@ TEST(allocation_hint) {
   /* Allocate and then free buffers with default caching hint. */
   for (uint i = 0; i < ARRAY_LEN(cached_buffers); i++) {
     id.blockno = i;
-    cached_buffers[i] = buf_cache_get(TESTED_DEVICE, &id, 0);
+    cached_buffers[i] = buf_cache_get(&tested_dev, &id, 0);
   }
   for (uint i = 0; i < ARRAY_LEN(cached_buffers); i++) {
     buf_cache_release(cached_buffers[i]);
@@ -112,7 +117,8 @@ TEST(allocation_hint) {
   /* Allocate buffers with "no cache" hint. */
   for (uint i = 0; i < ARRAY_LEN(not_cached_buffers); i++) {
     id.blockno = i;
-    not_cached_buffers[i] = buf_cache_get(TESTED_DEVICE_2, &id, 0);
+    not_cached_buffers[i] =
+        buf_cache_get(&tested_dev2, &id, BUF_ALLOC_NO_CACHE);
   }
   for (uint i = 0; i < ARRAY_LEN(not_cached_buffers); i++) {
     buf_cache_release(not_cached_buffers[i]);
@@ -121,7 +127,7 @@ TEST(allocation_hint) {
   /* Allocate a new buffer and verify it is one of the "not cached" buffer,
    * even though they were released later. */
   id.blockno = 0;
-  struct buf* new_buf = buf_cache_get(TESTED_DEVICE_3, &id, 0);
+  struct buf* new_buf = buf_cache_get(&tested_dev3, &id, 0);
   uint is_not_cached_buf = 0;
   for (uint i = 0; i < ARRAY_LEN(not_cached_buffers); i++) {
     if (new_buf == not_cached_buffers[i]) {

@@ -1,6 +1,7 @@
 #include "procfs.h"
 
 #include "defs.h"
+#include "device/buf_cache.h"
 #include "device/device.h"
 #include "fcntl.h"
 #include "mount_ns.h"

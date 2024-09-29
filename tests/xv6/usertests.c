@@ -1728,7 +1728,7 @@ void printftest() {
       "string is null test %s\n"};
   const char *test_strings[] = {
       "hello world!?#~$&*()-=+\\][{}|/\n", "check integer 53 number\n",
-      "check pointer address DF94\n",      "check hexa number 0x35\n",
+      "check pointer address 10F94\n",     "check hexa number 0x35\n",
       "check double percent %\n",          "unknown type %z\n",
       "string is null test (null)\n"};
 
@@ -1938,6 +1938,197 @@ void set_fs_cache_state(int enable) {
   close(fd);
 }
 
+void fill_cache() {
+  char buffer[1024];
+
+  memset(buffer, 'c', sizeof buffer);
+
+  /* Make sure to write enough buffers in order to fill the whole cache. */
+  for (uint i = 0; i < 150; i++) {
+    int fd = open("tmp_big_file", O_WRONLY | O_CREATE);
+    if (-1 == fd) {
+      printf(stdout, "failed to open \"tmp_big_file\" in iteration %d\n", i);
+      exit(1);
+    }
+
+    for (uint j = 0; j < 10; j++) {
+      if (sizeof(buffer) != write(fd, buffer, sizeof(buffer))) {
+        printf(stdout,
+               "failed to write to \"tmp_big_file\" the %d buffer in iteration "
+               "%d\n",
+               j, i);
+        exit(1);
+      }
+    }
+
+    close(fd);
+
+    if (-1 == unlink("tmp_big_file")) {
+      printf(stdout, "failed to unlink \"tmp_big_file\" in iteration %d\n", i);
+      exit(1);
+    }
+  }
+}
+
+void run_file_operations() {
+  const uint num_of_files = 50;
+  char file_name_template[] = "some_file";
+  char file_name[128];
+  char buffer[2 * BSIZE];
+
+  memset(buffer, 'c', sizeof(buffer));
+
+  /* Create some files. */
+  for (uint i = 0; i < num_of_files; i++) {
+    strcpy(file_name, file_name_template);
+    file_name[sizeof(file_name_template) - 1] = '0' + i;
+    file_name[sizeof(file_name_template)] = '\0';
+    int fd = open(file_name, O_CREATE | O_RDWR);
+    if (-1 == fd) {
+      printf(stdout, "cache_performance_operations: failed to open file %d\n",
+             i);
+      exit(1);
+    }
+
+    if (sizeof(buffer) != write(fd, buffer, sizeof(buffer))) {
+      printf(stdout, "cache_performance_operations: failed to write file %d\n",
+             i);
+      exit(1);
+    }
+
+    close(fd);
+  }
+
+  /* Read the files in reversed order. */
+  for (int i = num_of_files - 1; i >= 0; i--) {
+    strcpy(file_name, file_name_template);
+    file_name[sizeof(file_name_template) - 1] = '0' + i;
+    file_name[sizeof(file_name_template)] = '\0';
+    int fd = open(file_name, O_CREATE | O_RDWR);
+    if (-1 == fd) {
+      printf(stdout, "cache_performance_operations: failed to open file %d\n",
+             i);
+      exit(1);
+    }
+
+    if (sizeof(buffer) != read(fd, buffer, sizeof(buffer))) {
+      printf(stdout, "cache_performance_operations: failed to read file %d\n",
+             i);
+      exit(1);
+    }
+
+    close(fd);
+  }
+
+  /* And read again. */
+  for (int i = num_of_files - 1; i >= 0; i--) {
+    strcpy(file_name, file_name_template);
+    file_name[sizeof(file_name_template) - 1] = '0' + i;
+    file_name[sizeof(file_name_template)] = '\0';
+    int fd = open(file_name, O_CREATE | O_RDWR);
+    if (-1 == fd) {
+      printf(stdout, "cache_performance_operations: failed to open file %d\n",
+             i);
+      exit(1);
+    }
+
+    if (sizeof(buffer) != read(fd, buffer, sizeof(buffer))) {
+      printf(stdout, "cache_performance_operations: failed to read file %d\n",
+             i);
+      exit(1);
+    }
+
+    close(fd);
+  }
+
+  /* Remove all created files. */
+  for (uint i = 0; i < num_of_files; i++) {
+    strcpy(file_name, file_name_template);
+    file_name[sizeof(file_name_template) - 1] = '0' + i;
+    file_name[sizeof(file_name_template)] = '\0';
+    if (-1 == unlink(file_name)) {
+      printf(stdout, "cache_performance_operations: failed to unlink file %d\n",
+             i);
+      exit(1);
+    }
+  }
+}
+
+void performance_test() {
+  int start, end;
+  int time_with_cache, time_without_cache;
+
+  // Step 1: Enable the cache
+  set_fs_cache_state(1);
+
+  // Step 2: Fill the cache with a fixed sequence of operations
+  fill_cache();
+
+  // Step 3: Measure performance with cache enabled
+  start = uptime();
+  run_file_operations();
+  end = uptime();
+  time_with_cache = end - start;
+  printf(stdout, "Execution time with cache enabled: %d ticks\n",
+         time_with_cache);
+
+  set_fs_cache_state(0);
+
+  // Step 5: Measure performance without cache
+  start = uptime();
+  run_file_operations();
+  end = uptime();
+  time_without_cache = end - start;
+  printf(stdout, "Execution time with cache disabled: %d ticks\n",
+         time_without_cache);
+
+  // Step 6: Check the result of the test
+  // Verify the performance boost is at least 3 times.
+  if (time_without_cache > (3 * time_with_cache)) {
+    printf(stdout, "performance_test - OK!\n");
+  } else {
+    printf(stdout, "performance_test - FAIL!\n");
+    exit(1);
+  }
+
+  set_fs_cache_state(1);
+}
+
+void objfs_performance_test() {
+  printf(stdout, "start of objfs_performance_test\n");
+
+  unlink("objfs_dir");
+  if (mkdir("objfs_dir") < 0) {
+    printf(stdout, "mkdir objfs_dir failed\n");
+    exit(1);
+  }
+  if (mount(0, "objfs_dir", "objfs") != 0) {
+    printf(stdout, "failed to mount objfs to /objfs_dir\n");
+    exit(1);
+  }
+  if (chdir("objfs_dir") < 0) {
+    printf(stdout, "chdir objfs_dir failed\n");
+    exit(1);
+  }
+
+  performance_test();
+
+  if (chdir("..") < 0) {
+    printf(stdout, "chdir ..failed\n");
+    exit(1);
+  }
+
+  printf(stdout, "end of objfs_performance_test\n");
+}
+
+void nativefs_performance_test() {
+  printf(stdout, "start of nativefs_performance_test\n");
+
+  performance_test();
+
+  printf(stdout, "end of objfs_performance_test\n");
+}
+
 void fs_tests(void) {
   // Run all tests with cache enabled.
   printf(stdout, "--- All fs tests with cache enabled ---\n");
@@ -1971,6 +2162,10 @@ void fs_tests(void) {
   objfs_all_tests();
   set_fs_cache_state(1);
   chdir("..");
+
+  // Performance tests
+  objfs_performance_test();
+  nativefs_performance_test();
 }
 
 int main(int argc, char *argv[]) {

@@ -5,7 +5,7 @@
 
 #define MAX_LOOP_DEVS_NUM (10)
 #define MAX_IDE_DEVS_NUM (1)  // currently only one ide device is supported
-#define MAX_OBJ_DEVS_NUM (2)
+#define MAX_OBJ_DEVS_NUM (3)
 
 #define NMAXDEVS (MAX_LOOP_DEVS_NUM + MAX_IDE_DEVS_NUM + MAX_OBJ_DEVS_NUM)
 

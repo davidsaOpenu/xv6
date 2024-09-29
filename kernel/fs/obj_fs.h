@@ -46,7 +46,7 @@ struct obj_dinode {
  */
 #define INODE_NAME_LENGTH (5 + sizeof(uint) + 1 + 1)
 
-void obj_iinit(void);
-void obj_fs_init(struct vfs_superblock*, struct device*);
+void obj_fs_init(void);
+void obj_fs_init_dev(struct vfs_superblock*, struct device*);
 
 #endif /* XV6_OBJ_FS_H */
