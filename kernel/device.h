@@ -16,7 +16,7 @@
 
 #define NLOOPDEVS (10)
 #define NIDEDEVS (2)
-#define NOBJDEVS (2)
+#define NOBJDEVS (3)
 
 struct device {
   struct superblock sb;

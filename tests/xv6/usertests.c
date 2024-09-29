@@ -13,6 +13,224 @@ char buf[8192];
 char name[3];
 char *echoargv[] = {"/echo", "ALL", "TESTS", "PASSED", 0};
 
+void enable_fs_cache(void) {
+  char proc_cache_state[2] = {0};
+
+  int fd = open("/proc/cache", O_RDWR);
+  if (-1 == fd) {
+    printf(stdout, "failed to open /proc/cache\n");
+    exit(1);
+  }
+
+  write(fd, "1\n", 2);
+  read(fd, proc_cache_state, sizeof(proc_cache_state));
+  if (0 != strncmp(proc_cache_state, "1\n", 2)) {
+    printf(stdout, "Failed to enable fs cache\n");
+    exit(1);
+  }
+
+  close(fd);
+}
+
+void disable_fs_cache(void) {
+  char proc_cache_state[2] = {0};
+
+  int fd = open("/proc/cache", O_RDWR);
+  if (-1 == fd) {
+    printf(stdout, "failed to open /proc/cache\n");
+    exit(1);
+  }
+
+  write(fd, "0\n", 2);
+  read(fd, proc_cache_state, sizeof(proc_cache_state));
+  if (0 != strncmp(proc_cache_state, "0\n", 2)) {
+    printf(stdout, "Failed to disable fs cache\n");
+    exit(1);
+  }
+
+  close(fd);
+}
+
+void fill_cache() {
+  int fd;
+
+  printf(stdout, "Filling cache with fixed sequence\n");
+
+  fd = open("filename", O_CREATE | O_RDWR);
+
+  if (fd < 0) {
+    printf(stdout, "Failed to create %s\n", "filename");
+    exit(1);
+  }
+
+  // Write data to the file.
+  if (write(fd, "hello", 5) != 5) {
+    printf(stdout, "Failed to write to %s\n", "filename");
+    exit(1);
+  }
+
+  close(fd);
+
+  fd = open("filename", O_RDWR);
+
+  if (fd < 0) {
+    printf(stdout, "Failed to create %s\n", "filename");
+    exit(1);
+  }
+
+  // Read back the data to populate the cache.
+  char buf[6];
+
+  if (read(fd, buf, 5) != 5) {
+    printf(stdout, "1Failed to read from %s\n", "filename");
+    exit(1);
+  }
+  buf[5] = '\0';  // Null-terminate the string for safe printing.
+  close(fd);
+}
+
+void run_file_operations() {
+  int fd;
+  char buf[100];
+
+  // Open the existing file (no need to create it, just open for reading and
+  // writing).
+  fd = open("filename", O_RDWR);
+  if (fd < 0) {
+    printf(stdout, "Failed to open %s\n", "filename");
+    exit(1);
+  }
+
+  // Read back the data to populate the cache.
+  char buf2[6];
+
+  if (read(fd, buf2, 5) != 5) {
+    printf(stdout, "1Failed to read from %s\n", "filename");
+    exit(1);
+  }
+  buf2[5] = '\0';  // Null-terminate the string for safe printing.
+  close(fd);
+
+  fd = open("filename", O_RDWR);
+  if (fd < 0) {
+    printf(stdout, "Failed to open %s\n", "filename");
+    exit(1);
+  }
+
+  // Write some data to the file.
+  for (int j = 0; j < 100; j++) {
+    buf[j] = 'a' + (j % 26);
+  }
+  if (write(fd, buf, sizeof(buf)) != sizeof(buf)) {
+    printf(stdout, "Failed to write to %s\n", "filename");
+    exit(1);
+  }
+
+  close(fd);
+
+  fd = open("filename", O_RDWR);
+  if (fd < 0) {
+    printf(stdout, "Failed to open %s\n", "filename");
+    exit(1);
+  }
+
+  // Read the data back to simulate file access.
+  if (read(fd, buf, sizeof(buf)) != sizeof(buf)) {
+    printf(stdout, "Failed to read from %s\n", "filename");
+    exit(1);
+  }
+
+  close(fd);
+
+  // Optionally: You can choose to delete the files afterward if necessary.
+  // if (unlink(filename) < 0) {
+  //     printf("Failed to delete %s\n", filename);
+  //     exit();
+  // }
+}
+
+void enable_cache() {
+  int cache_fd;
+
+  // Open procfs cache control file.
+  cache_fd = open("/proc/cache", O_RDWR);
+  if (cache_fd < 0) {
+    printf(stdout, "Failed to open /proc/cache\n");
+    exit(1);
+  }
+
+  // Step 1: Enable the cache
+  printf(stdout, "Enabling cache\n");
+
+  if (write(cache_fd, "1\n", 2) != 2) {
+    printf(stdout, "Failed to enable cache\n");
+    exit(1);
+  }
+  close(cache_fd);
+}
+
+void disable_cache() {
+  int cache_fd;
+  // Open procfs cache control file.
+  cache_fd = open("/proc/cache", O_RDWR);
+  if (cache_fd < 0) {
+    printf(stdout, "Failed to open /proc/cache\n");
+    exit(1);
+  }
+
+  // Step 4: Disable the cache
+  printf(stdout, "Disabling cache\n");
+  if (write(cache_fd, "0\n", 2) != 2) {
+    printf(stdout, "Failed to enable cache\n");
+    exit(1);
+  }
+
+  close(cache_fd);
+}
+
+void performance_test() {
+  int start, end;
+  int time_with_cache, time_without_cache;
+
+  // Step 1: Enable the cache
+  enable_fs_cache();
+
+  // Step 2: Fill the cache with a fixed sequence of operations
+  fill_cache();
+
+  // Step 3: Measure performance with cache enabled
+  start = uptime();
+  for (int i = 0; i < 100; i++) {
+    run_file_operations();  // Run the file operations to measure time
+  }
+  end = uptime();
+  time_with_cache = end - start;
+  printf(stdout, "Execution time with cache enabled: %d ticks\n",
+         time_with_cache);
+
+  disable_fs_cache();
+
+  // Step 5: Measure performance without cache
+  start = uptime();
+  for (int i = 0; i < 100; i++) {
+    run_file_operations();  // Run the same file operations
+  }
+  end = uptime();
+  time_without_cache = end - start;
+  printf(stdout, "Execution time with cache disabled: %d ticks\n",
+         time_without_cache);
+
+  // Step 6: Check the result of the test
+  if (time_without_cache > time_with_cache) {
+    printf(stdout, "performance_test - OK!\n");
+  } else {
+    printf(stdout, "performance_test - FAIL!\n");
+    exit(1);
+  }
+
+  enable_fs_cache();
+}
+
 // does chdir() call iput(p->cwd) in a transaction?
 void iputtest(const char *fs_type) {
   printf(stdout, "%s iput test\n", fs_type);
@@ -1872,6 +2090,7 @@ void nativefs_all_tests(void) {
     printf(stdout, "chdir .. failed\n");
     exit(1);
   }
+
   printf(stdout, "nativefs all tests ok\n");
 }
 
@@ -1911,42 +2130,39 @@ void objfs_all_tests(void) {
   printf(stdout, "objfs all tests ok\n");
 }
 
-void enable_fs_cache(void) {
-  char proc_cache_state[2] = {0};
+void objfs_performance_test() {
+  printf(stdout, "start of objfs_performance_test\n");
 
-  int fd = open("/proc/cache", O_RDWR);
-  if (-1 == fd) {
-    printf(stdout, "failed to open /proc/cache\n");
+  unlink("objfs_dir");
+  if (mkdir("objfs_dir") < 0) {
+    printf(stdout, "mkdir objfs_dir failed\n");
+    exit(1);
+  }
+  if (mount(0, "objfs_dir", "objfs") != 0) {
+    printf(stdout, "failed to mount objfs to /objfs_dir\n");
+    exit(1);
+  }
+  if (chdir("objfs_dir") < 0) {
+    printf(stdout, "chdir objfs_dir failed\n");
     exit(1);
   }
 
-  write(fd, "1\n", 2);
-  read(fd, proc_cache_state, sizeof(proc_cache_state));
-  if (0 != strncmp(proc_cache_state, "1\n", 2)) {
-    printf(stdout, "Failed to enable fs cache\n");
+  performance_test();
+
+  if (chdir("..") < 0) {
+    printf(stdout, "chdir ..failed\n");
     exit(1);
   }
 
-  close(fd);
+  printf(stdout, "end of objfs_performance_test\n");
 }
 
-void disable_fs_cache(void) {
-  char proc_cache_state[2] = {0};
+void nativefs_performance_test() {
+  printf(stdout, "start of nativefs_performance_test\n");
 
-  int fd = open("/proc/cache", O_RDWR);
-  if (-1 == fd) {
-    printf(stdout, "failed to open /proc/cache\n");
-    exit(1);
-  }
+  performance_test();
 
-  write(fd, "0\n", 2);
-  read(fd, proc_cache_state, sizeof(proc_cache_state));
-  if (0 != strncmp(proc_cache_state, "0\n", 2)) {
-    printf(stdout, "Failed to disable fs cache\n");
-    exit(1);
-  }
-
-  close(fd);
+  printf(stdout, "end of objfs_performance_test\n");
 }
 
 void fs_tests(void) {
@@ -1982,6 +2198,10 @@ void fs_tests(void) {
   objfs_all_tests();
   enable_fs_cache();
   chdir("..");
+
+  // Performance tests
+  objfs_performance_test();
+  nativefs_performance_test();
 }
 
 int main(int argc, char *argv[]) {
