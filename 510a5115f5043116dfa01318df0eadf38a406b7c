@@ -26,6 +26,29 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "2423abd8_7a335362",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-09-30T07:26:06Z",
+      "side": 1,
+      "message": "let\u0027s update the link to the card. This one looks broken",
+      "range": {
+        "startLine": 11,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 30
+      },
+      "revId": "510a5115f5043116dfa01318df0eadf38a406b7c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "403945be_ac29c00b",
         "filename": "kernel/defs.h",
         "patchSetId": 1
