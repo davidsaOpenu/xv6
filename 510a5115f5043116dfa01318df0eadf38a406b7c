@@ -140,6 +140,30 @@
       },
       "revId": "510a5115f5043116dfa01318df0eadf38a406b7c",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4b2bff75_1a39a5cd",
+        "filename": "kernel/defs.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 211,
+      "author": {
+        "id": 1037966
+      },
+      "writtenOn": "2024-09-30T17:50:22Z",
+      "side": 1,
+      "message": "*declaration",
+      "parentUuid": "cc7c91b7_ea00751f",
+      "range": {
+        "startLine": 211,
+        "startChar": 0,
+        "endLine": 211,
+        "endChar": 18
+      },
+      "revId": "510a5115f5043116dfa01318df0eadf38a406b7c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
