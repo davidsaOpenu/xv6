@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "81f01ca0_6b666481",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-09-30T07:24:51Z",
+      "side": 1,
+      "message": "lets avoid naming them \"unit tests\" (e.g. they are using malloc). Calling hem hosts tests sounds perfect",
+      "range": {
+        "startLine": 8,
+        "startChar": 10,
+        "endLine": 8,
+        "endChar": 14
+      },
+      "revId": "510a5115f5043116dfa01318df0eadf38a406b7c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "403945be_ac29c00b",
+        "filename": "kernel/defs.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 211,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-09-30T07:24:51Z",
+      "side": 1,
+      "message": "why this condition is required?",
+      "range": {
+        "startLine": 211,
+        "startChar": 0,
+        "endLine": 211,
+        "endChar": 18
+      },
+      "revId": "510a5115f5043116dfa01318df0eadf38a406b7c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
