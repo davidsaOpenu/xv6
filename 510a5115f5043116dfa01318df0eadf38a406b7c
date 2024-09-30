@@ -26,6 +26,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "1e6e324f_40a09d8d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1037966
+      },
+      "writtenOn": "2024-09-30T17:48:54Z",
+      "side": 1,
+      "message": "Fixed.",
+      "parentUuid": "81f01ca0_6b666481",
+      "range": {
+        "startLine": 8,
+        "startChar": 10,
+        "endLine": 8,
+        "endChar": 14
+      },
+      "revId": "510a5115f5043116dfa01318df0eadf38a406b7c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "2423abd8_7a335362",
         "filename": "/COMMIT_MSG",
         "patchSetId": 1
@@ -49,6 +73,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "aa1ea562_8e595938",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1037966
+      },
+      "writtenOn": "2024-09-30T17:48:54Z",
+      "side": 1,
+      "message": "Fixed.",
+      "parentUuid": "2423abd8_7a335362",
+      "range": {
+        "startLine": 11,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 30
+      },
+      "revId": "510a5115f5043116dfa01318df0eadf38a406b7c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "403945be_ac29c00b",
         "filename": "kernel/defs.h",
         "patchSetId": 1
@@ -60,6 +108,30 @@
       "writtenOn": "2024-09-30T07:24:51Z",
       "side": 1,
       "message": "why this condition is required?",
+      "range": {
+        "startLine": 211,
+        "startChar": 0,
+        "endLine": 211,
+        "endChar": 18
+      },
+      "revId": "510a5115f5043116dfa01318df0eadf38a406b7c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cc7c91b7_ea00751f",
+        "filename": "kernel/defs.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 211,
+      "author": {
+        "id": 1037966
+      },
+      "writtenOn": "2024-09-30T17:48:54Z",
+      "side": 1,
+      "message": "Since in the host tests framework, we use some libc header file that contain (among other required functions) the `kill()` syscall definition, which is different from XV6 kill() kernel function.",
+      "parentUuid": "403945be_ac29c00b",
       "range": {
         "startLine": 211,
         "startChar": 0,
