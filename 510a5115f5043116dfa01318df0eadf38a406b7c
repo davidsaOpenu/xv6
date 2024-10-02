@@ -48,6 +48,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "898d3236_2b2d90bd",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-02T05:11:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1e6e324f_40a09d8d",
+      "range": {
+        "startLine": 8,
+        "startChar": 10,
+        "endLine": 8,
+        "endChar": 14
+      },
+      "revId": "510a5115f5043116dfa01318df0eadf38a406b7c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "2423abd8_7a335362",
@@ -85,6 +109,30 @@
       "side": 1,
       "message": "Fixed.",
       "parentUuid": "2423abd8_7a335362",
+      "range": {
+        "startLine": 11,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 30
+      },
+      "revId": "510a5115f5043116dfa01318df0eadf38a406b7c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c6ec6cda_b73618d1",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-02T05:11:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "aa1ea562_8e595938",
       "range": {
         "startLine": 11,
         "startChar": 0,
@@ -156,6 +204,30 @@
       "side": 1,
       "message": "*declaration",
       "parentUuid": "cc7c91b7_ea00751f",
+      "range": {
+        "startLine": 211,
+        "startChar": 0,
+        "endLine": 211,
+        "endChar": 18
+      },
+      "revId": "510a5115f5043116dfa01318df0eadf38a406b7c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d3394200_2c62c833",
+        "filename": "kernel/defs.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 211,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-02T05:11:04Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "4b2bff75_1a39a5cd",
       "range": {
         "startLine": 211,
         "startChar": 0,
