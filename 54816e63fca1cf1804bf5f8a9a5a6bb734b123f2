@@ -82,6 +82,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "12a11330_ee67fef4",
+        "filename": "tests/xv6/usertests.c",
+        "patchSetId": 6
+      },
+      "lineNbr": 1950,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-02T05:11:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7c894fd8_7dd2ac3a",
+      "range": {
+        "startLine": 1914,
+        "startChar": 0,
+        "endLine": 1950,
+        "endChar": 1
+      },
+      "revId": "54816e63fca1cf1804bf5f8a9a5a6bb734b123f2",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c4300bc4_bbe704b9",
@@ -113,6 +137,24 @@
       "side": 1,
       "message": "This will be done in \u0027https://gerrithub.io/c/davidsaOpenu/xv6/+/1201955\u0027. In that story we will measure the difference of a specific sequence of file operations, and not the whole file system tests because:\n1. The existing file system tests include other operations such as prints, whose running time might vary in each run.\n2. The cache performance is affected by the by the specific operations sequence, and in the future more file system tests might be added,which potentially could result in reduced cache performance",
       "parentUuid": "c4300bc4_bbe704b9",
+      "revId": "54816e63fca1cf1804bf5f8a9a5a6bb734b123f2",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8bee0f6b_b66c8ab3",
+        "filename": "tests/xv6/usertests.c",
+        "patchSetId": 6
+      },
+      "lineNbr": 1985,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-02T05:11:59Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "d4fda699_1c8eb915",
       "revId": "54816e63fca1cf1804bf5f8a9a5a6bb734b123f2",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
