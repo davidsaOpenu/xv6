@@ -43,6 +43,9 @@ static void wakeup1(void *chan);
 
 void pinit(void) { initlock(&ptable.lock, "ptable"); }
 
+void ptable_acquire(void) { acquire(&ptable.lock); }
+void ptable_release(void) { release(&ptable.lock); }
+
 // Must be called with interrupts disabled
 int cpuid() { return mycpu() - cpus; }
 
@@ -335,8 +338,6 @@ void kill_proc(struct proc *p, struct proc *reaper) {
   p->killed = 1;
   if (p->state == SLEEPING) p->state = RUNNABLE;
   p->parent = reaper;
-  cgroup_erase(p->cgroup, p);
-  update_protect_mem(p->cgroup, p->sz, 0);
 }
 
 /*Kill all the processes inside the namespace of a given process, called parent
@@ -435,7 +436,6 @@ void exit(int status) {
 
   // Remove the process cgroup.
   cgroup_erase(curproc->cgroup, curproc);
-  update_protect_mem(curproc->cgroup, curproc->sz, 0);
 
   // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE;
@@ -506,6 +506,8 @@ void scheduler(void) {
   // Initialize the cpu account.
   cpu_account_initialize(&cpu);
 
+  cpu.cpu_id = c->apicid;
+
   for (;;) {
     // The amount of processes that have been scheduled in this run.
     unsigned int scheduled = 0;
@@ -521,6 +523,11 @@ void scheduler(void) {
 
     // Loop over process table looking for process to run.
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+      // If process is unused, continue.
+      if (p->state == UNUSED) {
+        continue;
+      }
+
       // Update proc information.
       cpu_account_schedule_proc_update(&cpu, p);
 
@@ -756,17 +763,13 @@ void proc_unlock() { release(&ptable.lock); }
 int cgroup_move_proc(struct cgroup *cgroup, int pid) {
   struct proc *p;
 
-  acquire(&ptable.lock);
-
   for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
     if (proc_pid(p) == pid)
       if (p->state == SLEEPING || p->state == RUNNABLE || p->state == RUNNING)
         if (unsafe_cgroup_insert(cgroup, p) == RESULT_SUCCESS) {
-          release(&ptable.lock);
           return 0;
         }
   }
-  release(&ptable.lock);
   return -1;
 }
 
