@@ -24,11 +24,11 @@ RUN apt-get update && \
 
 # Download and extract Cppcheck
 WORKDIR /opt
-RUN curl -LO https://github.com/danmar/cppcheck/archive/2.11.tar.gz && \
-    tar -xf 2.11.tar.gz
+RUN curl -LO https://github.com/danmar/cppcheck/archive/refs/tags/2.15.0.tar.gz && \
+    tar -xf 2.15.tar.gz
 
 # Build and install Cppcheck
-WORKDIR /opt/cppcheck-2.11
+WORKDIR /opt/cppcheck-2.15
 RUN make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck HAVE_RULES=yes \
       CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function" \
       install

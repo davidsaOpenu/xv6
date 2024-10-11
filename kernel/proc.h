@@ -78,10 +78,12 @@ struct proc {
   unsigned int cpu_time;           // Process cpu time.
   unsigned int cpu_period_time;    // Cpu time in microseconds in the last
                                    // accounting frame.
-  unsigned int
-      cpu_percent;  // Cpu usage percentage in the last accounting frame.
+  unsigned int cpu_percent;  // Cpu usage percentage from toal cpus time in the
+                             // last accounting frame.
   unsigned int cpu_account_frame;  // The cpu account frame.
 };
+void ptable_acquire(void);
+void ptable_release(void);
 
 /**
  * Returns the pid of the given proc, using the current
@@ -98,6 +100,11 @@ void proc_lock();
  * Unlocks the process table.
  */
 void proc_unlock();
+
+/**
+ * Return the process id inside the given namespace, else returns zero
+ */
+int get_pid_for_ns(struct proc *proc, struct pid_ns *pid_ns);
 
 /**
  * @brief Getter for a cgroup associated with this process
