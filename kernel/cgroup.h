@@ -130,16 +130,33 @@ struct cgroup {
    * current_page).*/
   unsigned int protected_mem;
 
+  /* All references to a cgroup cpu time include all processes in the cgroup
+   * (including processes in sub cgroups)
+   * How much cpu time the cgroup has ever used */
   unsigned long long cpu_time;
+  /* How much cpu time the cgroup used in the current period frame */
   unsigned int cpu_period_time;
+  /* What is the percent of cpu time the cgroup used in the current
+   * period frame */
   unsigned int cpu_percent;
+  /* The period to calculate cpu limiting by (cpu.max.period) */
   unsigned int cpu_account_period;
+  /* How much cpu can the cgroup use in a single
+   * period frame (cpu.max.max) */
   unsigned int cpu_time_limit;
+  /* The "perion frame" number. Increases by one when a new frame starts */
   unsigned int cpu_account_frame;
+  /* The total number of perionds the cgroup used */
   unsigned int cpu_nr_periods;
+  /* The total number of times the cgroup was throttled */
   unsigned int cpu_nr_throttled;
+  /* The total number of unisecods the cgroup was throttled */
   unsigned int cpu_throttled_usec;
+  /* Has the cgroup been throttled in this period */
   char cpu_is_throttled_period;
+  /* Prioritize the cgroup cpu time in relation to other cgroups
+   * and processes (cpu.weight.weight) */
+  unsigned int cpu_weight;
 
   /* Used IO devices in a current cgroup (For example, attached tty). Updated on
    * io.stat read */
@@ -242,6 +259,26 @@ result_code protect_memory(struct cgroup* src, struct cgroup* dst,
 /* TODO: add documentation */
 int calc_dec_dst_protect_pg(struct cgroup* cgroup, int pg);
 int calc_inc_src_protect_pg(struct cgroup* cgroup, int pg);
+
+/**
+ * This function calculate the sum of weights of a given cgroup's children
+ * cgroups and active processes. This funcion is unsafe which means it does not
+ * acquire cgroup table lock. Receives cgroup pointer parameter "cgroup".
+ * "cgroup" is pointer to the cgroup of which we sum the children weights.
+ * Return value is the sum of weights of the cgroup's children.
+ */
+int unsafe_get_sum_children_weights(struct cgroup* cgroup);
+
+/**
+ * This function sets the cpu weight of the cgroup.
+ * Receives cgroup pointer parameter "cgroup" and integer "weight".
+ * Sets the cpu weight of the cgroup cpu controller to be "weight".
+ * Returns:
+ * - RESULT_SUCCESS_OPERATION upon successes.
+ * - RESULT_SUCCESS if no action taken.
+ * - RESULT_ERROR upon failure.
+ */
+result_code set_cpu_weight(struct cgroup* cgp, unsigned int weight);
 
 /**
  * These functions enable the cpu controller of a cgroup.

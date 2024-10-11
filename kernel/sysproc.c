@@ -101,13 +101,27 @@ int sys_ioctl(void) {
   int request = -1;
   int command;
 
-  int ret;
+  int ret, result;
   struct vfs_file *f;
   struct vfs_inode *ip;
 
   if (argfd(0, &fd, &f) < 0 || argint(1, &request) < 0 ||
       argint(2, &command) < 0)
     return -1;
+
+  if (request == IOCTL_GET_PROCESS_CPU_PERCENT) {
+    proc_lock();
+    result = myproc()->cpu_percent;
+    proc_unlock();
+    return result;
+  }
+
+  if (request == IOCTL_GET_PROCESS_CPU_TIME) {
+    proc_lock();
+    result = myproc()->cpu_time;
+    proc_unlock();
+    return result;
+  }
 
   if (!(command & DEV_CONNECT) && !(command & DEV_DISCONNECT) &&
       !(command & DEV_DETACH) && !(command & DEV_ATTACH)) {
@@ -117,7 +131,7 @@ int sys_ioctl(void) {
   ip = f->ip;
 
   /*
-  Do not accept when minor == 0 because this mostly the main device
+  Do not accept when minor < 0 because this mostly the main device
   or a controller device which does not accept ioctls
   Better implementation would be to test in the driver itself if it
   allows working on "main" devices when minor == 0
@@ -143,19 +157,7 @@ int sys_ioctl(void) {
     return -1;
   }
 
-  int result;
   switch (request) {
-    case IOCTL_GET_PROCESS_CPU_PERCENT:
-      proc_lock();
-      result = myproc()->cpu_percent;
-      proc_unlock();
-      return result;
-    case IOCTL_GET_PROCESS_CPU_TIME:
-      proc_lock();
-      result = myproc()->cpu_time;
-      proc_unlock();
-      return result;
-
     case TTYSETS:
       if ((command & DEV_DISCONNECT)) {
         tty_disconnect(ip);
