@@ -104,6 +104,7 @@ int ioctl_connect_disconnect_test() {
 
   if ((tty_fd = open(tty_name, O_RDWR)) < 0) {
     printf(stderr, "failed to open %s\n", tty_name);
+    goto fail;
   }
 
   // pre condition, verify tty is not connected

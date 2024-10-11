@@ -317,7 +317,7 @@ static int unsafe_cg_open_file(char* filename, struct cgroup* cgp, int omode) {
 
     case CPU_WEIGHT:
       if (cgp == cgroup_root()) return -1;
-      f->cpu.weight.weight = 0;
+      f->cpu.weight.weight = cgp->cpu_weight;
       break;
 
     case CPU_MAX:
@@ -980,6 +980,7 @@ int unsafe_cg_read(cg_file_type type, struct vfs_file* f, char* addr, int n) {
 
 static int write_file_cg_procs(struct vfs_file* f, char* addr, int n) {
   buf[n] = 0;
+  // fix this
   strncpy(buf, addr, n);
   int pid = atoi(buf);
   if (pid <= 0 || cgroup_move_proc(f->cgp, pid) == -1) return -1;
@@ -1113,6 +1114,20 @@ static int write_file_cpu_max(struct vfs_file* f, char* addr, int n) {
   // Update max fields.
   f->cgp->cpu_time_limit = max;
   f->cpu.max.max = max;
+
+  return n;
+}
+
+static int write_file_cpu_weight(struct vfs_file* f, char* addr, int n) {
+  int weight = atoi(addr);
+  if (weight == -1) return -1;
+
+  // Update cpu weight field if the paramter is within allowed values
+  int test = set_cpu_weight(f->cgp, weight);
+  if (test == 0 || test == -1) {
+    return -1;
+  }
+  f->cpu.weight.weight = weight;
 
   return n;
 }
@@ -1268,6 +1283,8 @@ int unsafe_cg_write(struct vfs_file* f, char* addr, int n) {
     r = write_file_max_depth(f, addr, n);
   } else if (filename_const == CPU_MAX && f->cgp->cpu_controller_enabled) {
     r = write_file_cpu_max(f, addr, n);
+  } else if (filename_const == CPU_WEIGHT && f->cgp->cpu_controller_enabled) {
+    r = write_file_cpu_weight(f, addr, n);
   } else if (filename_const == PID_MAX && f->cgp->pid_controller_enabled) {
     r = write_file_pid_max(f, addr, n);
   } else if (filename_const == SET_CPU && f->cgp->set_controller_enabled) {
