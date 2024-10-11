@@ -13,7 +13,7 @@
 #include "x86.h"
 
 struct cpu cpus[NCPU];
-int ncpu;
+unsigned int ncpu;
 uchar ioapicid;
 
 static uchar sum(uchar *addr, int len) {

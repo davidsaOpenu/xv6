@@ -7,7 +7,7 @@
 #define MAX_DES_DEF 64
 #define MAX_DEP_DEF 64
 #define MAX_CGROUP_FILE_NAME_LENGTH 64
-#define CGROUP_ACCOUNT_PERIOD_100MS (100 * 1000)
+#define CGROUP_ACCOUNT_PERIOD_100MS (1 * 100 * 1000)
 
 struct {
   struct spinlock lock;
@@ -62,9 +62,8 @@ static void unsafe_cgroup_erase(struct cgroup* cgroup, struct proc* proc) {
        ++i) {
     // If process was found, remove it from the cgroup.
     if (proc == cgroup->proc[i]) {
-      proc->cgroup = cgroup_root();
+      proc->cgroup = 0;
       cgroup->proc[i] = 0;
-
       // Update current number of processes in cgroup subtree for all
       // ancestors.
       while (cgroup != 0) {
@@ -333,6 +332,7 @@ void cgroup_initialize(struct cgroup* cgroup, char* path,
   cgroup->cpu_time = 0;
   cgroup->cpu_period_time = 0;
   cgroup->cpu_time_limit = ~0;
+  cgroup->cpu_weight = DEFAULT_CGROUP_CPU_WEIGHT;
   cgroup->cpu_account_period = CGROUP_ACCOUNT_PERIOD_100MS;
   cgroup->cpu_nr_periods = 0;
   cgroup->cpu_nr_throttled = 0;
@@ -466,6 +466,45 @@ void cgroup_erase(struct cgroup* cgroup, struct proc* proc) {
   release(&cgtable.lock);
 }
 
+int unsafe_get_sum_children_weights(struct cgroup* cgroup) {
+  int total_weight = 0;
+  int num_active_children_procces = 0;
+
+  for (int i = 0; i < sizeof(cgroup->proc) / sizeof(cgroup->proc[0]); i++) {
+    if (cgroup->proc[i] != 0 && (cgroup->proc[i]->state == RUNNABLE ||
+                                 cgroup->proc[i]->state == RUNNING)) {
+      num_active_children_procces++;
+    }
+  }
+
+  for (int i = 1; i < sizeof(cgtable.cgroups) / sizeof(cgtable.cgroups[0]);
+       i++) {
+    // The weight of an unpopulated cgroup is insignificant
+    if (cgtable.cgroups[i].parent == cgroup && cgtable.cgroups[i].populated) {
+      total_weight += cgtable.cgroups[i].cpu_weight;
+    }
+  }
+
+  // each procces is treated as if it was hosted in a separate cgroup with the
+  // default weight
+  total_weight += num_active_children_procces * DEFAULT_CGROUP_CPU_WEIGHT;
+
+  return total_weight;
+}
+
+result_code set_cpu_weight(struct cgroup* cgp, unsigned int weight) {
+  // If no cgroup found, return error.
+  if (cgp == 0) return RESULT_ERROR;
+
+  // Set the weight if it is within allowed parameters.
+  if (weight >= MIN_CGROUP_CPU_WEIGHT && weight <= MAX_CGROUP_CPU_WEIGHT) {
+    cgp->cpu_weight = weight;
+    return RESULT_SUCCESS_OPERATION;
+  }
+
+  return RESULT_SUCCESS;
+}
+
 result_code unsafe_enable_cpu_controller(struct cgroup* cgroup) {
   // If cgroup has processes in it, controllers can't be enabled.
   if (!cgroup || cgroup->populated == 1) {
@@ -482,6 +521,7 @@ result_code unsafe_enable_cpu_controller(struct cgroup* cgroup) {
 
     // Set cpu controller to enabled.
     cgroup->cpu_controller_enabled = 1;
+    cgroup->cpu_weight = DEFAULT_CGROUP_CPU_WEIGHT;
     // Set cpu controller to avalible in all child cgroups.
     for (int i = 1; i < sizeof(cgtable.cgroups) / sizeof(cgtable.cgroups[0]);
          i++)
@@ -601,9 +641,11 @@ void decrement_nr_dying_descendants(struct cgroup* cgroup) {
 }
 
 int cg_open(cg_file_type type, char* filename, struct cgroup* cgp, int omode) {
+  // proc_lock();
   acquire(&cgtable.lock);
   int res = unsafe_cg_open(type, filename, cgp, omode);
   release(&cgtable.lock);
+  // proc_unlock();
   return res;
 }
 
@@ -624,23 +666,29 @@ int cg_sys_open(char* path, int omode) {
 }
 
 int cg_read(cg_file_type type, struct vfs_file* f, char* addr, int n) {
+  // proc_lock();
   acquire(&cgtable.lock);
   int res = unsafe_cg_read(type, f, addr, n);
   release(&cgtable.lock);
+  // proc_unlock();
   return res;
 }
 
 int cg_write(struct vfs_file* f, char* addr, int n) {
+  // proc_lock();
   acquire(&cgtable.lock);
   int res = unsafe_cg_write(f, addr, n);
   release(&cgtable.lock);
+  // proc_unlock();
   return res;
 }
 
 int cg_close(struct vfs_file* file) {
+  // proc_lock();
   acquire(&cgtable.lock);
   int res = unsafe_cg_close(file);
   release(&cgtable.lock);
+  // proc_unlock();
   return res;
 }
 

@@ -1,13 +1,21 @@
 #include "cpu_account.h"
 
+#include "spinlock.h"
 #include "steady_clock.h"
+
+static struct spinlock curr_frame_total_process_and_cpu_time_lock;
+// static unsigned int curr_frame_total_process_and_cpu_time = 1;
 
 void cpu_account_initialize(struct cpu_account* cpu) {
   cpu->cgroup = 0;
   cpu->cpu_account_frame = 0;
-  cpu->cpu_account_period = 1 * 100 * 1000;  // 100ms
+  cpu->cpu_account_period = DEFAULT_CPU_ACCOUNT_PERIOD_100MS;  // 100ms
   cpu->now = 0;
   cpu->process_cpu_time = 0;
+  cpu->curr_frame_total_process_cpu_time = 1;
+  if (!curr_frame_total_process_and_cpu_time_lock.name)
+    initlock(&curr_frame_total_process_and_cpu_time_lock,
+             "curr_frame_total_process_and_cpu_time_lock");
 }
 
 void cpu_account_schedule_start(struct cpu_account* cpu) {
@@ -17,12 +25,10 @@ void cpu_account_schedule_start(struct cpu_account* cpu) {
 void cpu_account_schedule_proc_update(struct cpu_account* cpu, struct proc* p) {
   // If cpu accounting frame has passed, update CPU accounting.
   if (cpu->cpu_account_frame > p->cpu_account_frame) {
-    unsigned int current_cpu_time = p->cpu_period_time > cpu->cpu_account_period
-                                        ? cpu->cpu_account_period
-                                        : p->cpu_period_time;
-    p->cpu_percent = current_cpu_time * 100 / cpu->cpu_account_period;
+    p->cpu_percent = p->cpu_period_time * 100 / cpu->cpu_account_period;
     p->cpu_account_frame = cpu->cpu_account_frame;
-    p->cpu_period_time -= current_cpu_time;
+    p->cpu_period_time -= p->cpu_period_time;
+    p->per_cpu_period_time[cpu->cpu_id] -= p->per_cpu_period_time[cpu->cpu_id];
   }
 }
 
@@ -34,6 +40,12 @@ int cpu_account_schedule_process_decision(struct cpu_account* cpu,
   // Whether to schedule or not.
   char schedule = 1;
 
+  unsigned int expected_cpu_percent = 100, real_cpu_percent;
+  int total_generation_weight;
+  // each procces is treated as if it was hosted in a separate cgroup with
+  // the default weight
+  int my_weight = DEFAULT_CGROUP_CPU_WEIGHT;
+
   // Set the current cgroup.
   struct cgroup* cgroup = p->cgroup;
   cpu->cgroup = cgroup;
@@ -41,6 +53,8 @@ int cpu_account_schedule_process_decision(struct cpu_account* cpu,
   // Lock cgroup table.
   cgroup_lock();
 
+  // Update the cpu cgroup values of all the cgroup ansestors of this process
+  // and throttle the process if needed
   while (cgroup) {
     // The cgroup cpu account frame.
     cgroup_cpu_account_frame = cpu->now / cgroup->cpu_account_period;
@@ -79,10 +93,28 @@ int cpu_account_schedule_process_decision(struct cpu_account* cpu,
       continue;
     }
 
+    if (schedule) {
+      total_generation_weight = unsafe_get_sum_children_weights(cgroup);
+      expected_cpu_percent =
+          expected_cpu_percent * my_weight / total_generation_weight;
+
+      my_weight = cgroup->cpu_weight;
+    }
+
     // Advance to parent and continue.
     cgroup = cgroup->parent;
   }
 
+  if (p->cgroup->cpu_controller_enabled && schedule) {
+    // acquire(&curr_frame_total_process_and_cpu_time_lock);
+    real_cpu_percent = p->per_cpu_period_time[cpu->cpu_id] * 100 /
+                       cpu->curr_frame_total_process_cpu_time;
+    if (expected_cpu_percent < real_cpu_percent) {
+      // Current cpu percent has passed the expected percent from its weight
+      schedule = 0;
+    }
+    // release(&curr_frame_total_process_and_cpu_time_lock);
+  }
   // Unlock the cgroup lock and return the result.
   cgroup_unlock();
   return schedule;
@@ -100,14 +132,22 @@ void cpu_account_after_process_schedule(struct cpu_account* cpu,
 
   // Update now.
   cpu->now = steady_clock_now();
+  // acquire(&curr_frame_total_process_and_cpu_time_lock);
+  if (cpu->now / cpu->cpu_account_period > cpu->cpu_account_frame) {
+    // New frame
+    cpu->curr_frame_total_process_cpu_time = 1;
+  }
+  cpu->cpu_account_frame = cpu->now / cpu->cpu_account_period;
 
-  // Update process cpu time.
+  // Update "per cpu" cpu time.
   cpu->process_cpu_time = cpu->now - cpu->process_cpu_time;
+  cpu->curr_frame_total_process_cpu_time += cpu->process_cpu_time;
+  // release(&curr_frame_total_process_and_cpu_time_lock);
 
   // Update process cpu time.
   p->cpu_time += cpu->process_cpu_time;
   p->cpu_period_time += cpu->process_cpu_time;
-
+  p->per_cpu_period_time[cpu->cpu_id] += cpu->process_cpu_time;
   // Lock the cgroup lock.
   cgroup_lock();
 
@@ -136,4 +176,13 @@ void cpu_account_schedule_finish(struct cpu_account* cpu) {}
 
 void cpu_account_before_hlt(struct cpu_account* cpu) {}
 
-void cpu_account_after_hlt(struct cpu_account* cpu) {}
+void cpu_account_after_hlt(struct cpu_account* cpu) {
+  // Update now.
+  cpu->now = steady_clock_now();
+  if (cpu->now / cpu->cpu_account_period > cpu->cpu_account_frame) {
+    // acquire(&curr_frame_total_process_and_cpu_time_lock);
+    cpu->curr_frame_total_process_cpu_time = 1;
+    // release(&curr_frame_total_process_and_cpu_time_lock);
+  }
+  cpu->cpu_account_frame = cpu->now / cpu->cpu_account_period;
+}
