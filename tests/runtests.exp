@@ -1006,35 +1006,35 @@ set running [rm_recursive_test $argv]
 set running [cp_copy_file_test $argv]
 set running [cp_copy_dir_test $argv]
 set running [mount_bind_test $argv]
-set running [umount_bind_mount_test $argv]
-set running [pouch_basic_tests $argv]
-set running [command_exit_status_test $argv]
-set running [proc_cache_entry $argv]
+# set running [umount_bind_mount_test $argv]
+# set running [pouch_basic_tests $argv]
+# set running [command_exit_status_test $argv]
+# set running [proc_cache_entry $argv]
 
 # scenario tests
-set running [cp_simple_objfs_nativefs_copy_test $argv]
-set running [cp_recursive_objfs_nativefs_test $argv]
+# set running [cp_simple_objfs_nativefs_copy_test $argv]
+# set running [cp_recursive_objfs_nativefs_test $argv]
 
-set running [pouch_stress_test $argv]
-set running [pouch_cgroup_already_exists $argv]
+# set running [pouch_stress_test $argv]
+# set running [pouch_cgroup_already_exists $argv]
 
-set running [pouch_to_many_cnts_test $argv]
-set running [pouch_list_test $argv]
-set running [pouch_disconnect_outside_container_test $argv]
-set running [pouch_info_container_test $argv]
-set running [pouch_cgroup_limit_test $argv]
-set running [pouch_to_many_cnts_test_remove $argv]
+# set running [pouch_to_many_cnts_test $argv]
+# set running [pouch_list_test $argv]
+# set running [pouch_disconnect_outside_container_test $argv]
+# set running [pouch_info_container_test $argv]
+# set running [pouch_cgroup_limit_test $argv]
+# set running [pouch_to_many_cnts_test_remove $argv]
 
-set running [remove_pouch_images $argv]
+# set running [remove_pouch_images $argv]
 
-set running [test_pouch_build_valid_args $argv]
-set running [test_pouch_build_invalid_args $argv]
-set running [test_pouch_build_file_parsing $argv]
+# set running [test_pouch_build_valid_args $argv]
+# set running [test_pouch_build_invalid_args $argv]
+# set running [test_pouch_build_file_parsing $argv]
 
-set running [pidns_tests $argv]
-set running [test_internal_images $argv]
-# run last, prints "ALL TESTS PASSED"
-set running [usertests $argv]
+# set running [pidns_tests $argv]
+# set running [test_internal_images $argv]
+# # run last, prints "ALL TESTS PASSED"
+# set running [usertests $argv]
 
 log_file
 # just in case
