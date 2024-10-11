@@ -53,7 +53,7 @@ ERROR_CODE=20
 
 # suppress finding standard include headers, scan only custom header files.
 cppcheck --error-exitcode=${ERROR_CODE} \
-    --inline-suppr --suppress=missingIncludeSystem \
+    --inline-suppr --disable=include-what-you-use\
     --enable=portability,information,performance,warning --inconclusive \
     --suppress=missingInclude \
     -DSTORAGE_DEVICE_SIZE=1 "-I$(pwd)" \

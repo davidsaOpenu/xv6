@@ -70,12 +70,12 @@ RUN if [ "$BUILD_LINTING_TOOLS" = "true" ]; then \
 # Download and extract Cppcheck
 WORKDIR /opt
 RUN if [ "$BUILD_LINTING_TOOLS" = "true" ]; then \
-    curl -LO https://github.com/danmar/cppcheck/archive/2.11.tar.gz && \
-    tar -xf 2.11.tar.gz; \
+    curl -LO https://github.com/danmar/cppcheck/archive/refs/tags/2.15.0.tar.gz && \
+    tar -xf 2.15.0.tar.gz; \
     fi
 
 # Build and install Cppcheck
-WORKDIR /opt/cppcheck-2.11
+WORKDIR /opt/cppcheck-2.15.0
 RUN if [ "$BUILD_LINTING_TOOLS" = "true" ]; then \
     make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck HAVE_RULES=yes \
     CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function" \
