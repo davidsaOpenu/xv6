@@ -53,11 +53,11 @@ ERROR_CODE=20
 
 # suppress finding standard include headers, scan only custom header files.
 cppcheck --error-exitcode=${ERROR_CODE} \
-    --inline-suppr --suppress=missingIncludeSystem \
+    --inline-suppr \
     --enable=portability,information,performance,warning --inconclusive \
     --suppress=missingInclude \
     -DSTORAGE_DEVICE_SIZE=1 "-I$(pwd)" \
-    --xml --xml-version=2 . 2> cppcheck.xml || \
+    --xml --xml-version=2 . || \
     { echo "${RED}Failed: please check cppcheck.xml for details.${NC}"; \
     exit 1; }
 # Gerrit pluging creates htmlreports automatically from cppcheck.
