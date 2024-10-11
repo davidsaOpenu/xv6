@@ -228,7 +228,10 @@ int sys_unlink(void) {
     // umount on the unlinked file
     if (ip->mnt != NULL) {
       XV6_ASSERT(ip->type == T_DIR);
-      umount(ip->mnt);
+      if (0 != umount(ip->mnt)) {
+        end_op();
+        return -1;
+      }
     }
   }
   if (delete_cgroup_res == RESULT_ERROR_OPERATION) {

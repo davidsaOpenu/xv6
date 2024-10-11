@@ -4,11 +4,14 @@
 #include "cgroup.h"
 
 struct cpu_account {
-  unsigned int now;
-  unsigned int cpu_account_period;
-  unsigned int cpu_account_frame;
-  unsigned int process_cpu_time;
-  struct cgroup* cgroup;
+  unsigned int now;                 // steady clock now in microseconds
+  unsigned int cpu_account_period;  // The period to calculate cpu limiting by
+  unsigned int cpu_account_frame;   // The "period frame" number. Increases by
+                                    // one when a new frame starts
+  unsigned int
+      process_cpu_time;   // cpu's current assigned process used cpu time
+  unsigned int cpu_id;    // cpu apicid id number
+  struct cgroup* cgroup;  // cpu's current assigned process cgroup
 };
 
 /**
