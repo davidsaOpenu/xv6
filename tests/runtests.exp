@@ -168,7 +168,7 @@ proc rm_recursive_test {argv} {
 
     set depth 10
     set initial_path "/d1"
-    set path "/"
+    set path ""
     for {set i 1} {$i <= $depth} {incr i} {
         append path "/d${i}"
         send "mkdir $path\n"
@@ -183,6 +183,7 @@ proc rm_recursive_test {argv} {
 
     send "cat $path/file.txt\n"
     expect "helloworld"
+    assert_on_exit_status
 
     send "rm -r $initial_path\n"
     assert_on_exit_status
@@ -206,17 +207,16 @@ proc cp_copy_file_test {argv} {
 
     #target dir doesn't exist
     send "echo test > f1\n"
-    sleep 0.5
+    
     send "cp f1 d1/f1\n"
     expect "can't create d1/f1, make sure the entire path exists"
 
     #test single file
-    sleep 0.5
+    
     send "cp f1 f2\n"
     sleep 0.5
     send "cat f2\n"
     expect "test"
-    sleep 0.5
 
     #clean
     send "rm -r f1 f2\n"
@@ -228,42 +228,41 @@ proc cp_copy_dir_test {argv} {
 
     #one file in dir
     send "mkdir d1\n"
-    sleep 0.5
+    assert_on_exit_status
     send "echo test > d1/f1\n"
-    sleep 0.5
+    assert_on_exit_status
     send "mkdir d2\n"
-    sleep 0.5
+    assert_on_exit_status
     send "cp d1 d2\n"
-    sleep 0.5
+    assert_on_exit_status
     send "cat d2/f1\n"
     expect "test"
-    sleep 0.5
 
     #recursive dir test
     send "mkdir d3\n"
-    sleep 0.5
+    assert_on_exit_status
     send "mkdir d3/d4\n"
-    sleep 0.5
+    assert_on_exit_status
     send "echo test > d3/d4/f1\n"
-    sleep 0.5
+    assert_on_exit_status
     send "mkdir t1\n"
-    sleep 0.5
+    assert_on_exit_status
     send "cp d3 t1\n"
-    sleep 0.5
+    assert_on_exit_status
     send "cat t1/d4/f1\n"
     expect "test"
-    sleep 0.5
+    assert_on_exit_status
 
     #dir in root dir, extra slash
     send "mkdir /a /b\n"
-    sleep 0.5
+    assert_on_exit_status
     send "echo test > /a/c\n"
-    sleep 0.5
+    assert_on_exit_status
     send "cp /a /b/\n"
-    sleep 0.5
+    assert_on_exit_status
     send "cat /b/c\n"
-    sleep 0.5
     expect "test"
+    assert_on_exit_status
 
     #clean
     send "rm -r d1 d2 d3 t1 a b\n"
@@ -405,63 +404,60 @@ proc mount_bind_test {argv} {
 
     send "mkdir bind_tests\n"
     send "cd bind_tests\n"
-    sleep 0.5
+    assert_on_exit_status
 
     #one file in dir
     send "mkdir d1 d2\n"
-    sleep 0.5
+    assert_on_exit_status
     send "echo test > d2/somefile\n"
-    sleep 0.5
+    assert_on_exit_status
     send "mount -t bind d1 d2\n"
-    sleep 0.5
+    assert_on_exit_status
     send "cat d1/somefile\n"
     expect "test"
-    sleep 0.5
+    assert_on_exit_status
     send "umount d1\n"
-    sleep 0.5
+    assert_on_exit_status
 
     #rm file in dir
     send "mkdir d3 d4\n"
-    sleep 0.5
+    assert_on_exit_status
     send "echo test > d4/somefile\n"
-    sleep 0.5
+    assert_on_exit_status
     send "mount -t bind d3 d4\n"
-    sleep 0.5
+    assert_on_exit_status
     send "rm d3/somefile\n"
-    sleep 0.5
+    assert_on_exit_status
     send "cat d4/somefile\n"
     expect "cat: cannot open d4/somefile"
-    sleep 0.5
     send "umount d3\n"
-    sleep 0.5
+    assert_on_exit_status
 
     #mount root dir
     send "mkdir d5\n"
-    sleep 0.5
+    assert_on_exit_status
     send "mount -t bind / d5\n"
-    sleep 0.5
     expect "Can't mount root directory"
     send "mount -t bind d5 /\n"
-    sleep 0.5
+    assert_on_exit_status
     send "echo test > d5/somefile\n"
-    sleep 0.5
+    assert_on_exit_status
     send "cat /somefile\n"
     expect "test"
-    sleep 0.5
+    assert_on_exit_status
     send "umount d5\n"
-    sleep 0.5
+    assert_on_exit_status
 
     #mount file
     send "mkdir d6\n"
-    sleep 0.5
+    assert_on_exit_status
     send "echo test > somefile\n"
-    sleep 0.5
+    assert_on_exit_status
     send "mount -t bind somefile d6\n"
     expect "mount point is not a directory"
-    sleep 0.5
 
     send "cd ..\n"
-    sleep 0.5
+    assert_on_exit_status
 
     #clean
     send "rm -r bind_tests\n"
@@ -987,9 +983,11 @@ if {[lindex $result 2] == 0} {
 spawn bash -c "make -n qemu-nox | grep qemu"
 expect eof
 set qemu_command $expect_out(buffer)
+# spawn bash -c "make clean; sleep 2; make -n qemu-gdb"
 
 # TODO: use the resut of dry run as an agument fot spawn ($expect_out(buffer) is not working for some reason)
 # actual run
+# spawn qemu-system-i386 -nographic -drive file=fs.img,index=1,media=disk,format=raw -drive file=xv6.img,index=0,media=disk,format=raw -smp cpus=2,cores=1 -m 512 -nographic -S -gdb tcp::26000
 spawn qemu-system-i386 -nographic -drive file=fs.img,index=1,media=disk,format=raw -drive file=xv6.img,index=0,media=disk,format=raw -smp cpus=2,cores=1 -m 512
 expect "$ "
 
