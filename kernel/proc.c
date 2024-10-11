@@ -52,7 +52,7 @@ static void hlt() { asm("hlt"); }
 // Must be called with interrupts disabled to avoid the caller being
 // rescheduled between reading lapicid and running through the loop.
 struct cpu *mycpu(void) {
-  int apicid, i;
+  unsigned int apicid, i;
 
   if (readeflags() & FL_IF) panic("mycpu called with interrupts enabled\n");
 
@@ -129,6 +129,7 @@ found:
   p->cpu_time = 0;
   p->cpu_period_time = 0;
   p->cpu_percent = 0;
+  for (int i = 0; i < NCPU; i++) p->per_cpu_period_time[i] = 0;
 
   return p;
 }
@@ -335,8 +336,6 @@ void kill_proc(struct proc *p, struct proc *reaper) {
   p->killed = 1;
   if (p->state == SLEEPING) p->state = RUNNABLE;
   p->parent = reaper;
-  cgroup_erase(p->cgroup, p);
-  update_protect_mem(p->cgroup, p->sz, 0);
 }
 
 /*Kill all the processes inside the namespace of a given process, called parent
@@ -435,7 +434,6 @@ void exit(int status) {
 
   // Remove the process cgroup.
   cgroup_erase(curproc->cgroup, curproc);
-  update_protect_mem(curproc->cgroup, curproc->sz, 0);
 
   // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE;
@@ -506,6 +504,8 @@ void scheduler(void) {
   // Initialize the cpu account.
   cpu_account_initialize(&cpu);
 
+  cpu.cpu_id = c->apicid;
+
   for (;;) {
     // The amount of processes that have been scheduled in this run.
     unsigned int scheduled = 0;
@@ -521,6 +521,11 @@ void scheduler(void) {
 
     // Loop over process table looking for process to run.
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+      // If process is unused, continue.
+      if (p->state == UNUSED) {
+        continue;
+      }
+
       // Update proc information.
       cpu_account_schedule_proc_update(&cpu, p);
 
@@ -756,17 +761,13 @@ void proc_unlock() { release(&ptable.lock); }
 int cgroup_move_proc(struct cgroup *cgroup, int pid) {
   struct proc *p;
 
-  acquire(&ptable.lock);
-
   for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
     if (proc_pid(p) == pid)
       if (p->state == SLEEPING || p->state == RUNNABLE || p->state == RUNNING)
         if (unsafe_cgroup_insert(cgroup, p) == RESULT_SUCCESS) {
-          release(&ptable.lock);
           return 0;
         }
   }
-  release(&ptable.lock);
   return -1;
 }
 
