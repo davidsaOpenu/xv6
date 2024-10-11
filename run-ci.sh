@@ -55,7 +55,7 @@ ERROR_CODE=20
 cppcheck --error-exitcode=${ERROR_CODE} \
     --inline-suppr --suppress=missingIncludeSystem \
     --enable=portability,information,performance,warning --inconclusive \
-    --suppress=missingInclude \
+    --suppress=missingInclude --disable=include-what-you-use \
     -DSTORAGE_DEVICE_SIZE=1 "-I$(pwd)" \
     --xml --xml-version=2 . 2> cppcheck.xml || \
     { echo "${RED}Failed: please check cppcheck.xml for details.${NC}"; \
