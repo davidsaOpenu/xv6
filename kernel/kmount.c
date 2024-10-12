@@ -27,6 +27,26 @@ struct mount_list *getactivemounts(struct mount_ns *ns) {
   return ns->active_mounts;
 }
 
+static struct mount_list *allocmntlist(void) {
+  acquire(&mount_holder.mnt_list_lock);
+  int i;
+  // Find empty mount struct
+  for (i = 0; i < NMOUNT && mount_holder.mnt_list[i].mnt.ref != 0; i++) {
+  }
+
+  if (i == NMOUNT) {
+    // error - no available mount memory.
+    panic("out of mount_list objects");
+  }
+
+  struct mount_list *newmountentry = &mount_holder.mnt_list[i];
+  newmountentry->mnt.ref = 1;
+
+  release(&mount_holder.mnt_list_lock);
+
+  return newmountentry;
+}
+
 // Parent mount (if it exists) must already be ref-incremented.
 static int addmountinternal(struct mount_list *mnt_list, struct device *dev,
                             struct vfs_inode *mountpoint, struct mount *parent,
@@ -56,6 +76,7 @@ static int addmountinternal(struct mount_list *mnt_list, struct device *dev,
       default:
         return -1;
     }
+    XV6_ASSERT(vfs_sb->ops != NULL);
   }
 
   // add to linked list
@@ -64,33 +85,20 @@ static int addmountinternal(struct mount_list *mnt_list, struct device *dev,
   return 0;
 }
 
-struct mount *getinitialrootmount(void) {
-  return &mount_holder.mnt_list[0].mnt;
-}
-
-struct vfs_inode *initprocessroot(struct mount **mnt) {
-  struct mount *m = getinitialrootmount();
-  if (mnt != NULL) {
-    *mnt = m;
-  }
-  // This is called during first process creation (in kernel mode, no context)
-  // but fsinit is called in first usermode process context (kernel mode).
-  // this causes *sb to be uninitialized and causes a banic once calling iget!
-  struct vfs_inode *inode = m->sb->ops->iget(m->sb, ROOTINO);
-  return inode;
-}
-
 struct mount *getrootmount(void) { return myproc()->nsproxy->mount_ns->root; }
 
 void mntinit(void) {
   initlock(&mount_holder.mnt_list_lock, "mount_list");
 
-  if (addmountinternal(&mount_holder.mnt_list[0], get_ide_device(ROOTDEV), NULL,
-                       NULL, NULL, get_root_mount_ns())) {
+  struct mount_list *root_mount = allocmntlist();
+
+  if (addmountinternal(root_mount, get_ide_device(ROOTDEV), NULL, NULL, NULL,
+                       get_root_mount_ns())) {
     panic("failed to initialize root mount");
   }  // fs start later in init
-  mount_holder.mnt_list[0].mnt.ref = 1;
-  get_root_mount_ns()->root = getinitialrootmount();
+
+  // allocate root mount
+  get_root_mount_ns()->root = &root_mount->mnt;
 }
 
 struct mount *mntdup(struct mount *mnt) {
@@ -101,29 +109,10 @@ struct mount *mntdup(struct mount *mnt) {
 }
 
 void mntput(struct mount *mnt) {
+  XV6_ASSERT(mnt != NULL && mnt->ref > 0);
   acquire(&mount_holder.mnt_list_lock);
   mnt->ref--;
   release(&mount_holder.mnt_list_lock);
-}
-
-static struct mount_list *allocmntlist(void) {
-  acquire(&mount_holder.mnt_list_lock);
-  int i;
-  // Find empty mount struct
-  for (i = 0; i < NMOUNT && mount_holder.mnt_list[i].mnt.ref != 0; i++) {
-  }
-
-  if (i == NMOUNT) {
-    // error - no available mount memory.
-    panic("out of mount_list objects");
-  }
-
-  struct mount_list *newmountentry = &mount_holder.mnt_list[i];
-  newmountentry->mnt.ref = 1;
-
-  release(&mount_holder.mnt_list_lock);
-
-  return newmountentry;
 }
 
 // mountpoint and bind_dir must be locked.
@@ -167,10 +156,12 @@ int mount(struct vfs_inode *mountpoint, struct device *target_dev,
     mntput(parent);
     return -1;
   }
-  mountpoint->mnt = newmount;
+
   release(&myproc()->nsproxy->mount_ns->lock);
+
   if (!newmount->isbind && newmount->sb->ops->start != NULL) {
     newmount->sb->ops->start(newmount->sb);
+    XV6_ASSERT(newmount->sb->root_ip != NULL);
   }
   return 0;
 }
@@ -194,17 +185,16 @@ int umount(struct mount *mnt) {
     return -1;
   }
 
-  if (current->mnt.parent == 0) {
-    // error - can't unmount root filesystem
-    release(&myproc()->nsproxy->mount_ns->lock);
-    cprintf("current->mnt.parent == 0\n");
-    return -1;
-  }
+  const bool is_root_mount = current->mnt.parent == NULL;
+  // sanity -- root mount has no attached mountpoint.
+  XV6_ASSERT(!is_root_mount || current->mnt.mountpoint == NULL);
 
   acquire(&mount_holder.mnt_list_lock);
 
   // Base ref is 1, +1 for the mount being acquired before entering this method.
   if (current->mnt.ref > 2) {
+    cprintf("current->mnt(%d).refs=%d>1\n", &current->mnt,
+            current->mnt.ref - 1);
     // error - can't unmount as there are references.
     release(&mount_holder.mnt_list_lock);
     release(&myproc()->nsproxy->mount_ns->lock);
@@ -216,13 +206,14 @@ int umount(struct mount *mnt) {
   release(&myproc()->nsproxy->mount_ns->lock);
 
   struct vfs_inode *oldmountpoint = current->mnt.mountpoint;
-
   struct vfs_inode *oldbind = current->mnt.isbind ? current->mnt.bind : NULL;
   struct vfs_superblock *sb = !current->mnt.isbind ? current->mnt.sb : NULL;
 
   current->mnt.bind = NULL;
   current->mnt.mountpoint = NULL;
-  current->mnt.parent->ref--;
+  if (!is_root_mount) {
+    current->mnt.parent->ref--;
+  }
   current->mnt.ref = 0;
   current->next = NULL;
 
@@ -232,9 +223,10 @@ int umount(struct mount *mnt) {
     oldbind->i_op->iput(oldbind);
   }
 
-  oldmountpoint->i_op->ilock(oldmountpoint);
-  oldmountpoint->mnt = NULL;
-  oldmountpoint->i_op->iunlockput(oldmountpoint);
+  if (!is_root_mount) {
+    XV6_ASSERT(oldmountpoint != NULL);
+    oldmountpoint->i_op->iput(oldmountpoint);
+  }
 
   if (sb) {
     sbput(sb);
@@ -264,27 +256,34 @@ struct mount *mntlookup(struct vfs_inode *mountpoint, struct mount *parent) {
 void umountall(struct mount_list *mounts) {
   int umount_ret = -1;
 
-  while (mounts != 0) {
+  while (mounts != NULL) {
     struct mount_list *next = mounts->next;
-    if (mounts->mnt.parent == 0) {
-      // No need to unmount root -
-      mounts->mnt.ref = 0;
-    } else {
+    if (mounts->mnt.parent != NULL) {
       begin_op();
       umount_ret = umount(&mounts->mnt);
       end_op();
-      if (0 != umount_ret) {
+      if (umount_ret) {
         panic("failed to umount upon namespace close");
       }
+    } else {
+      XV6_ASSERT(myproc()->nsproxy->mount_ns->root == &mounts->mnt);
     }
     mounts = next;
+  }
+
+  // umount root.
+  begin_op();
+  umount_ret = umount(myproc()->nsproxy->mount_ns->root);
+  end_op();
+  if (umount_ret) {
+    panic("failed to umount upon namespace close");
   }
 }
 
 static struct mount_list *shallowcopyactivemounts(struct mount **newcwdmount) {
-  struct mount_list *head = 0;
+  struct mount_list *head = NULL;
   struct mount_list *entry = myproc()->nsproxy->mount_ns->active_mounts;
-  struct mount_list *prev = 0;
+  struct mount_list *prev = NULL;
   while (entry != 0) {
     struct mount_list *newentry = allocmntlist();
     if (head == 0) {
@@ -318,31 +317,58 @@ static struct mount_list *shallowcopyactivemounts(struct mount **newcwdmount) {
     prev = newentry;
     entry = entry->next;
   }
-
+  if (prev != NULL) {
+    prev->next = NULL;
+  }
   return head;
 }
 
-static void fixparents(struct mount_list *newentry) {
-  struct mount_list *entry = myproc()->nsproxy->mount_ns->active_mounts;
+static inline void print_mount_full_info(const struct mount *const m) {
+  cprintf(
+      "mount: %p, parent: %p, mountpoint: %p, ref: %d, isbind: %d sb: %p bind "
+      "%p\n",
+      m, m->parent, m->mountpoint, m->ref, m->isbind, m->sb, m->bind);
+}
 
-  while (entry != 0) {
-    if (entry->mnt.parent != 0) {
-      struct mount_list *finder = myproc()->nsproxy->mount_ns->active_mounts;
-      struct mount_list *newfinder = newentry;
-      while (finder != 0 && entry->mnt.parent != &finder->mnt) {
-        finder = finder->next;
-        newfinder = newfinder->next;
+static void fixparents(struct mount_list *const new_active_mounts) {
+  struct mount_list *new_current = new_active_mounts;
+  const struct mount_list *old_current =
+      myproc()->nsproxy->mount_ns->active_mounts;
+
+  while (old_current != 0) {
+    if (old_current->mnt.parent != 0) {
+      struct mount_list *old_found_parent =
+          myproc()->nsproxy->mount_ns->active_mounts;
+      struct mount_list *new_found_parent = new_active_mounts;
+      while (old_found_parent != 0 &&
+             old_current->mnt.parent != &old_found_parent->mnt) {
+        old_found_parent = old_found_parent->next;
+        new_found_parent = new_found_parent->next;
       }
 
-      if (finder == 0) {
-        panic("invalid mount tree structure");
+      XV6_ASSERT(old_found_parent != 0 && new_found_parent != 0);
+      XV6_ASSERT(old_found_parent->mnt.isbind == new_found_parent->mnt.isbind);
+      // same assertion as below for parents.
+      if (old_found_parent->mnt.isbind) {
+        XV6_ASSERT(old_found_parent->mnt.bind == old_found_parent->mnt.bind)
+      } else {
+        XV6_ASSERT(old_found_parent->mnt.sb == old_found_parent->mnt.sb)
       }
-
-      newentry->mnt.parent = mntdup(&newfinder->mnt);
+      XV6_ASSERT(new_current->mnt.parent == NULL);
+      new_current->mnt.parent = mntdup(&new_found_parent->mnt);
     }
 
-    newentry = newentry->next;
-    entry = entry->next;
+    XV6_ASSERT(old_current->mnt.isbind == new_current->mnt.isbind);
+    if (old_current->mnt.isbind) {
+      XV6_ASSERT(old_current->mnt.bind == new_current->mnt.bind &&
+                 old_current->mnt.bind != 0);
+    } else {
+      XV6_ASSERT(old_current->mnt.sb == new_current->mnt.sb &&
+                 old_current->mnt.sb != 0);
+    }
+
+    new_current = new_current->next;
+    old_current = old_current->next;
   }
 }
 
@@ -375,4 +401,70 @@ struct mount *getroot(struct mount_list *newentry) {
   }
 
   return 0;
+}
+
+// get the root inode of the provided mount, and increment its ref count
+struct vfs_inode *get_mount_root_ip(struct mount *m) {
+  struct vfs_inode *next;
+  if (m->isbind) {
+    XV6_ASSERT(m->bind != 0);
+    next = m->bind;
+  } else {
+    XV6_ASSERT(m->sb != 0);
+    next = m->sb->root_ip;
+  }
+  return next->i_op->idup(next);
+}
+
+int pivot_root(struct vfs_inode *new_root, struct mount *new_root_mount,
+               struct vfs_inode *put_old_root_inode,
+               struct mount *put_old_root_inode_mnt) {
+  int status = -1;
+  // Check that new_root_mount is not the root of the current mount.
+  if (new_root_mount == getrootmount()) {
+    cprintf("new_root_mount == getrootmount()\n");
+    return -1;
+  }
+
+  // Check that new_root is the root of the new mount.
+  struct vfs_inode *entry = get_mount_root_ip(new_root_mount);
+  bool is_matching = entry == new_root;
+  entry->i_op->iput(entry);
+  if (!is_matching) {
+    cprintf("entry != new_root_inode\n");
+    return -1;
+  }
+
+  if (!vfs_is_child_of(new_root, new_root_mount, put_old_root_inode,
+                       put_old_root_inode_mnt)) {
+    cprintf("new_root is not a child of put_old_root_inode\n");
+    return -1;
+  }
+
+  acquire(&mount_holder.mnt_list_lock);
+
+  struct mount *old_root = getrootmount();
+  old_root->parent = new_root_mount;
+  new_root_mount->ref++;
+  myproc()->nsproxy->mount_ns->root = new_root_mount;
+  set_mount_ns_root(myproc()->nsproxy->mount_ns, new_root_mount);
+
+  if (new_root_mount->parent != NULL) {
+    new_root_mount->parent->ref--;
+    new_root_mount->parent = NULL;
+  }
+
+  if (new_root_mount->mountpoint != NULL) {
+    new_root_mount->mountpoint->i_op->iput(new_root_mount->mountpoint);
+    new_root_mount->mountpoint = NULL;
+  }
+
+  // Finally, attach old root to it's new mountpoint.
+  old_root->mountpoint = put_old_root_inode;
+  put_old_root_inode->i_op->idup(put_old_root_inode);
+
+  status = 0;
+
+  release(&mount_holder.mnt_list_lock);
+  return status;
 }

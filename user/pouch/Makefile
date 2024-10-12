@@ -1,7 +1,7 @@
 
 include ../../common.mk
 
-_pouch: pouch.o image.o container.o configs.o build.o $(ULIB)
+_pouch: pouch.o image.o container.o configs.o build.o util.o $(ULIB)
 	$(LD) $(USER_LD_FLAGS) $^ -o $@
 	$(call dump_objs,$@)
 

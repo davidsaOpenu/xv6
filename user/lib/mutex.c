@@ -74,6 +74,11 @@ enum mutex_e mutex_init(mutex_t *mutex_var) {
 
 /* Locks a mutex if unlocked, sleep otherwise - res might indicates an error. */
 enum mutex_e mutex_lock(mutex_t *mutex_var) {
+  // "Deadlock" detection
+#ifdef MUTEX_DETECT_DEADLOCK
+  int spins = 0;
+#endif
+
   int res = MUTEX_FAILURE;
 
   if (NULL == mutex_var) return MUTEX_INVALID_PARAMETER;
@@ -83,6 +88,12 @@ enum mutex_e mutex_lock(mutex_t *mutex_var) {
     MUTEX_LOG_DEBUG("Mutes %s is locked....\n", mutex_var->buffer);
     // Sleep to make it less busy
     sleep(MUTEX_RETRY_MS);
+#ifdef MUTEX_DETECT_DEADLOCK
+    if (++spins > MUTEX_DETECT_DEADLOCK_MAX_SPINS) {
+      printf(stderr, "Mutex %s lock failed - deadlock detected\n");
+      return MUTEX_FAILURE;
+    }
+#endif
   }
 
   MUTEX_LOG_DEBUG("Mutes %s is %d unlocked....\n", mutex_var->buffer, res);
@@ -103,4 +114,11 @@ enum mutex_e mutex_unlock(mutex_t *mutex_var) {
     return MUTEX_FAILURE;
   }
   return MUTEX_SUCCESS;
+}
+
+/* Lock+Unlock */
+enum mutex_e mutex_wait(mutex_t *mutex_var) {
+  enum mutex_e res = mutex_lock(mutex_var);
+  if (res != MUTEX_SUCCESS) return res;
+  return mutex_unlock(mutex_var);
 }

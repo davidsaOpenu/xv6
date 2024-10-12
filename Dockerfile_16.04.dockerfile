@@ -115,7 +115,7 @@ RUN  if [ "$BUILD_LINTING_TOOLS" = "true" ]; then \
 ENV XV6_VENV=/xv6-venv
 RUN python3 -m venv $XV6_VENV
 ENV PATH=$XV6_VENV/bin:$PATH
-RUN pip install cpplint bashate && \
+RUN pip install cpplint==1.6.1 bashate==2.1.1 && \
     chmod -R 777 $XV6_VENV
 
 # Create a non-root user with the same username,uid,gid
