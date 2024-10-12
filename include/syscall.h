@@ -31,5 +31,6 @@
 #define SYS_getppid 27
 #define SYS_getcpu 28
 #define SYS_kmemtest 29
+#define SYS_pivot_root 30
 
 #endif /* XV6_SYSCALL_H */

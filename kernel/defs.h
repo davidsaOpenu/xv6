@@ -65,6 +65,8 @@ struct vfs_inode* vfs_namei(char*);
 struct vfs_inode* vfs_nameimount(char*, struct mount**);
 struct vfs_inode* vfs_nameiparent(char*, char*);
 struct vfs_inode* vfs_nameiparentmount(char*, char*, struct mount**);
+bool vfs_is_child_of(struct vfs_inode* parent, struct mount* parentmnt,
+                     struct vfs_inode* child, struct mount* childmnt);
 int vfs_namecmp(const char*, const char*);
 int vfs_namencmp(const char* s, const char* t, int length);
 struct vfs_superblock* sballoc();
@@ -89,8 +91,9 @@ struct mount* mntlookup(struct vfs_inode*, struct mount*);
 void umountall(struct mount_list*);
 struct mount_list* copyactivemounts(void);
 struct mount* getroot(struct mount_list*);
-struct mount* getinitialrootmount(void);
-struct vfs_inode* initprocessroot(struct mount**);
+struct vfs_inode* get_mount_root_ip(struct mount*);
+int pivot_root(struct vfs_inode*, struct mount*, struct vfs_inode*,
+               struct mount*);
 
 // ioapic.c
 void ioapicenable(int irq, int cpu);
@@ -145,6 +148,7 @@ void mount_nsput(struct mount_ns*);
 struct mount_ns* mount_nsdup(struct mount_ns*);
 struct mount_ns* get_root_mount_ns(void);
 struct mount_ns* copymount_ns(void);
+void set_mount_ns_root(struct mount_ns* ns, struct mount* root);
 
 // mp.c
 extern int ismp;
@@ -152,7 +156,7 @@ void mpinit(void);
 
 // namespace.c
 void namespaceinit(void);
-struct nsproxy* emptynsproxy(void);
+struct nsproxy* initnsproxy(void);
 struct nsproxy* namespacedup(struct nsproxy*);
 void namespaceput(struct nsproxy*);
 int unshare(int nstype);

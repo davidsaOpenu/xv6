@@ -75,3 +75,9 @@ struct mount_ns* get_root_mount_ns() {
   struct mount_ns* ns = &mountnstable.mount_ns[0];
   return ns;
 }
+
+void set_mount_ns_root(struct mount_ns* ns, struct mount* root) {
+  acquire(&ns->lock);
+  ns->root = root;
+  release(&ns->lock);
+}
