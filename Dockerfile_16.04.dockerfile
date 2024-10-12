@@ -46,12 +46,12 @@ RUN if [ "$BUILD_LINTING_TOOLS" = "true" ]; then \
     fi
 # libvirt-clients causes an error when installing on Ubuntu 16.04
 
-# Download and build Python 3.6 from source - 3.6 or higher is required for cmake but Ubuntu 16.04 only has 3.5. Solution was to install from source.
+# Install python3.8
 WORKDIR /opt
 RUN if [ "$BUILD_LINTING_TOOLS" = "true" ]; then \
-    curl -LO https://www.python.org/ftp/python/3.6.13/Python-3.6.13.tgz && \
-    tar -xf Python-3.6.13.tgz && \
-    cd Python-3.6.13 && \
+    curl -LO https://www.python.org/ftp/python/3.8.10/Python-3.8.10.tgz && \
+    tar -xf Python-3.8.10.tgz && \
+    cd Python-3.8.10 && \
     ./configure --enable-optimizations && \
     make -j$(nproc) && \
     make install; \
@@ -115,7 +115,7 @@ RUN  if [ "$BUILD_LINTING_TOOLS" = "true" ]; then \
 ENV XV6_VENV=/xv6-venv
 RUN python3 -m venv $XV6_VENV
 ENV PATH=$XV6_VENV/bin:$PATH
-RUN pip install cpplint bashate && \
+RUN pip install cpplint~=2.0.0 bashate==2.1.1 && \
     chmod -R 777 $XV6_VENV
 
 # Create a non-root user with the same username,uid,gid

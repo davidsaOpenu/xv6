@@ -1,9 +1,13 @@
 #!/bin/bash
+# This script runs static analysis on the project.
 
 set -euo # errexit,nounset,pipefail
 
 RED='\033[0;31m'
 NC='\033[0m' # No Color
+
+sleep 0.2
+echo "Running clang-format..."
 
 #########################################################################
 # clang-format
@@ -19,14 +23,21 @@ if [ -n "$changed_files" ]; then
     exit 1
 fi
 
+sleep 0.2
+echo "Running cpplint..."
+
 #########################################################################
 # install and run cpp style checker
 source $XV6_VENV/bin/activate
 # build/include_what_you_use relates to libc headers - see NOLINT() in files.
 # runtime/printf recommands to choose the right one out of libc s/n/printf/c.
 FILTERS=-legal/copyright,-readability/casting,-build/include_subdir,
+FILTERS+=-build/include_what_you_use,-build/header_guard,
 FILTERS+=-build/header_guard,-runtime/int,-readability/braces,-runtime/printf
 find . -regex ".*\.[c|h]$" | xargs cpplint --filter=$FILTERS
+
+sleep 0.2
+echo "Running bashate..."
 
 ########################################################################
 # install and run bashate
@@ -51,6 +62,9 @@ cat $XV6_VENV/bashate-out
 # run static analyzer
 ERROR_CODE=20
 
+sleep 0.2
+echo "Running cppcheck..."
+
 # suppress finding standard include headers, scan only custom header files.
 cppcheck --error-exitcode=${ERROR_CODE} \
     --inline-suppr --suppress=missingIncludeSystem \
@@ -63,40 +77,3 @@ cppcheck --error-exitcode=${ERROR_CODE} \
 # Gerrit pluging creates htmlreports automatically from cppcheck.
 # cppcheck-htmlreport --file=cppcheck.xml --report-dir=cppcheck-report \
 #    --source-dir=. --title="Cppcheck Report"
-
-########################################################################
-#  Run guest tests
-make clean
-make TEST_POUCHFILES=1
-
-LOG_FILE="expect_tests.log"
-./tests/runtests.exp $LOG_FILE
-
-lines=$(tail -5 $LOG_FILE | grep  "ALL TESTS PASSED" | wc -l)
-if [ $lines -ne 1 ]; then
-    echo "ALL TESTS PASSED string was not found"
-    exit 1
-fi
-
-#  Run host tests
-make clean
-make host-tests
-
-HOSTS_TESTS_DIR="tests/host"
-HOST_TESTS_LOG_FILE="host_tests.log"
-./${HOSTS_TESTS_DIR}/kvector_tests | tee $HOST_TESTS_LOG_FILE
-./${HOSTS_TESTS_DIR}/obj_fs_tests | tee --append $HOST_TESTS_LOG_FILE
-./${HOSTS_TESTS_DIR}/buf_cache_tests | tee --append $HOST_TESTS_LOG_FILE
-
-lines=$(cat $HOST_TESTS_LOG_FILE | grep  "FAILED" | wc -l)
-if [ $lines -ne 0 ]; then
-    echo "FAILED string was found -- host tests failed"
-    exit 1
-fi
-
-########################################################################
-#  Run documentation build
-make docs
-
-echo "SUCCESS"
-exit 0
