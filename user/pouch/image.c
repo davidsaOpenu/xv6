@@ -14,7 +14,7 @@ pouch_status pouch_images_print() {
   struct dirent de;
   struct stat st;
 
-  if ((fd = open(IMAGE_DIR, 0)) < 0) {
+  if ((fd = open(IMAGE_DIR, O_RDONLY)) < 0) {
     printf(stderr,
            "Cannot access the images dir, make sure the path %s exists\n",
            IMAGE_DIR);

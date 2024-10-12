@@ -19,6 +19,9 @@
 #include "types.h"
 #include "x86.h"
 
+#define CONSOLE_LINE_LENGTH (80)
+#define CONSOLE_VIEWABLE_NUM_OF_LINE (24)
+
 static ushort *crt = (ushort *)P2V(0xb8000);  // CGA memory
 static int panicked = 0;
 
@@ -134,18 +137,24 @@ static void cgaputc(int c) {
   pos |= inb(CRTPORT + 1);
 
   if (c == '\n')
-    pos += 80 - pos % 80;
+    pos += CONSOLE_LINE_LENGTH - pos % CONSOLE_LINE_LENGTH;
   else if (c == BACKSPACE) {
     if (pos > 0) --pos;
   } else
     crt[pos++] = (c & 0xff) | 0x0700;  // black on white
 
-  if (pos < 0 || pos > 25 * 80) panic("pos under/overflow");
+  if (pos < 0 || pos > (CONSOLE_VIEWABLE_NUM_OF_LINE + 1) * CONSOLE_LINE_LENGTH)
+    panic("pos under/overflow");
 
-  if ((pos / 80) >= 24) {  // Scroll up.
-    memmove(crt, crt + 80, sizeof(crt[0]) * 23 * 80);
-    pos -= 80;
-    memset(crt + pos, 0, sizeof(crt[0]) * (24 * 80 - pos));
+  if ((pos / CONSOLE_LINE_LENGTH) >=
+      CONSOLE_VIEWABLE_NUM_OF_LINE) {  // Scroll up.
+    memmove(crt, crt + CONSOLE_LINE_LENGTH,
+            sizeof(crt[0]) * (CONSOLE_VIEWABLE_NUM_OF_LINE - 1) *
+                CONSOLE_LINE_LENGTH);
+    pos -= CONSOLE_LINE_LENGTH;
+    memset(crt + pos, 0,
+           sizeof(crt[0]) *
+               (CONSOLE_VIEWABLE_NUM_OF_LINE * CONSOLE_LINE_LENGTH - pos));
   }
 
   update_pos(pos);
@@ -153,7 +162,8 @@ static void cgaputc(int c) {
 
 void consoleclear(void) {
   int pos = 0;
-  memset(crt, 0, sizeof(crt[0]) * (24 * 80));
+  memset(crt, 0,
+         sizeof(crt[0]) * (CONSOLE_VIEWABLE_NUM_OF_LINE * CONSOLE_LINE_LENGTH));
   update_pos(pos);
 }
 
