@@ -1,3 +1,6 @@
+#ifndef XV6_USER_POUCH_BUILD_H
+#define XV6_USER_POUCH_BUILD_H
+
 #include "pouch.h"
 
 #define POUCHFILE_IMPORT_TOKEN "IMPORT"
@@ -23,3 +26,5 @@ struct pouchfile {
  * Builds a pouch image from a given file name to a specified tag.
  */
 pouch_status pouch_image_build(const char* file_name, const char* tag);
+
+#endif  // XV6_USER_POUCH_BUILD_H

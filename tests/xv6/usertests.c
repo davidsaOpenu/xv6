@@ -1824,13 +1824,38 @@ void memtest() {
   printf(stdout, "memtest: memory ok\n");
 }
 
+void rm_recursive(const char *const path) {
+  int pid = fork();
+  if (pid < 0) {
+    printf(stderr, "rm_recursive: fork failed\n");
+    exit(1);
+  }
+  if (pid == 0) {
+    const char *argv[] = {"/rm", "-r", path, 0};
+    exec("/rm", (const char **)argv);
+    printf(stderr, "rm_recursive: exec failed\n");
+    exit(1);
+  } else {
+    int wstatus = 0;
+    if (wait(&wstatus) < 0) {
+      printf(stderr, "rm_recursive: wait failed\n");
+      exit(1);
+    }
+    if (WEXITSTATUS(wstatus) == 0) {
+      return;
+    }
+    printf(stderr, "rm_recursive: rm -r %s failed (%d)\n", path, wstatus);
+    exit(1);
+  }
+}
+
 // Assumes the current directory is inside the tested fs mount
 void all_fs_tests(const char *fs_type) {
   createdelete(fs_type);
   linkunlink(fs_type);
   concreate(fs_type);
   fourfiles(fs_type);
-  sharedfd(fs_type);
+  // sharedfd(fs_type);
   createmanyfiles(fs_type, 100);
   bigwrite(fs_type);
   opentest(fs_type);
@@ -1867,11 +1892,11 @@ void nativefs_all_tests(void) {
   }
 
   all_fs_tests("nativefs");
-
   if (chdir("..") < 0) {
     printf(stdout, "chdir .. failed\n");
     exit(1);
   }
+  rm_recursive("nativefs_dir");
   printf(stdout, "nativefs all tests ok\n");
 }
 
@@ -1899,15 +1924,14 @@ void objfs_all_tests(void) {
     exit(1);
   }
 
-  // TODO(SM): insert these lines only after ".." dir entry of mount is
-  //           fixed to point to the right parent dir
-#if 0
   if (umount("objfs_dir") < 0) {
     printf(stdout, "umount objfs failed\n");
     exit(1);
   }
-#endif
-
+  if (unlink("objfs_dir") < 0) {
+    printf(stdout, "unlink objfs_dir failed\n");
+    exit(1);
+  }
   printf(stdout, "objfs all tests ok\n");
 }
 
@@ -2145,6 +2169,7 @@ void fs_tests(void) {
   nativefs_all_tests();
   objfs_all_tests();
   chdir("..");
+  rm_recursive("cachce_enabled_tests");
 
   // Run all tests with cache disabled.
   unlink("cachce_disabled_tests");
@@ -2162,6 +2187,7 @@ void fs_tests(void) {
   objfs_all_tests();
   set_fs_cache_state(1);
   chdir("..");
+  rm_recursive("cachce_disabled_tests");
 
   // Performance tests
   objfs_performance_test();

@@ -14,10 +14,10 @@
 int init_tests() {
   int i;
   int tty_fd;
-  char tty[] = "/ttyX";
+  char tty[] = DEV_DIR "ttyX";
 
   for (i = 0; i < 3; i++) {
-    tty[4] = '0' + i;
+    tty[sizeof(tty) - 2] = '0' + i;
     if ((tty_fd = open(tty, O_RDWR)) < 0) {
       printf(stderr, "failed to open %s\n", tty);
       return -1;
@@ -37,7 +37,7 @@ int init_tests() {
 */
 int ioctl_attach_detach_test() {
   int tty_fd;
-  char* tty_name = "tty0";
+  const char tty_name[] = DEV_DIR "tty0";
 
   if ((tty_fd = open(tty_name, O_RDWR)) < 0) {
     printf(stderr, "failed to open %s\n", tty_name);
@@ -100,7 +100,7 @@ fail:
 */
 int ioctl_connect_disconnect_test() {
   int tty_fd;
-  char* tty_name = "tty0";
+  const char tty_name[] = DEV_DIR "tty0";
 
   if ((tty_fd = open(tty_name, O_RDWR)) < 0) {
     printf(stderr, "failed to open %s\n", tty_name);
@@ -188,7 +188,7 @@ int ioctl_console_test() {
 */
 int ioctl_wrong_device_test() {
   int tty_fd;
-  char* tty_name = "tty_test";
+  const char tty_name[] = "tty_test";
 
   if (mknod(tty_name, 1, 5) < 0) {
     printf(stderr, "failed to create test device %s\n", tty_name);

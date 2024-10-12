@@ -60,6 +60,16 @@ int sys_umount(void) {
       return -1;
     }
 
+    // Make sure we are umounting a mountpoint, not just any dir.
+    struct vfs_inode *mount_root_dir = get_mount_root_ip(mnt);
+    if (mount_root_dir != mount_dir) {
+      mount_root_dir->i_op->iput(mount_root_dir);
+      cprintf("directory is not a mountpoint.\n");
+      end_op();
+      return -1;
+    }
+
+    mount_root_dir->i_op->iput(mount_root_dir);
     mount_dir->i_op->iput(mount_dir);
 
     int res = umount(mnt);
@@ -316,5 +326,63 @@ int handle_nativefs_mounts() {
 exit:
   end_op();
 
+  return res;
+}
+
+int sys_pivot_root(void) {
+  char *new_root = NULL;
+  char *put_old = NULL;
+  struct vfs_inode *new_root_inode = NULL, *put_old_root_inode = NULL;
+  struct mount *new_root_mount = NULL, *put_old_root_inode_mount = NULL;
+  int res = -1;
+
+  if (argstr(0, &new_root) < 0) {
+    cprintf("badargs - new root\n");
+    return 1;
+  }
+
+  if (argstr(1, &put_old) < 0) {
+    cprintf("badargs - old root\n");
+    return 1;
+  }
+
+  new_root_inode = vfs_nameimount(new_root, &new_root_mount);
+  if (new_root_inode == NULL) {
+    cprintf("Failed to get new root dir inode\n");
+    goto end;
+  }
+
+  if (new_root_inode->type != T_DIR) {
+    cprintf("new root mount path is not a mountpoint\n");
+    goto end;
+  }
+
+  put_old_root_inode = vfs_nameimount(put_old, &put_old_root_inode_mount);
+  if (put_old_root_inode == NULL) {
+    cprintf("Failed to get old root dir inode\n");
+    goto end;
+  }
+
+  if (put_old_root_inode->type != T_DIR) {
+    cprintf("old root mount path is not a dir\n");
+    goto end;
+  }
+
+  res = pivot_root(new_root_inode, new_root_mount, put_old_root_inode,
+                   put_old_root_inode_mount);
+
+end:
+  if (new_root_inode != NULL) {
+    new_root_inode->i_op->iput(new_root_inode);
+  }
+  if (put_old_root_inode != NULL) {
+    put_old_root_inode->i_op->iput(put_old_root_inode);
+  }
+  if (put_old_root_inode_mount != NULL) {
+    mntput(put_old_root_inode_mount);
+  }
+  if (new_root_mount != NULL) {
+    mntput(new_root_mount);
+  }
   return res;
 }

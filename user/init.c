@@ -56,9 +56,10 @@ int main(void) {
   dup(0);  // stdout
   dup(0);  // stderr
 
-  mknod("tty0", 1, 1);
-  mknod("tty1", 1, 2);
-  mknod("tty2", 1, 3);
+  mkdir(DEV_DIR);
+  mknod(DEV_DIR "tty0", 1, 1);
+  mknod(DEV_DIR "tty1", 1, 2);
+  mknod(DEV_DIR "tty2", 1, 3);
 
   if (init_image_dir() != 0) {
     printf(stdout, "init: init image_dir failed\n");

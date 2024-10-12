@@ -12,6 +12,7 @@ struct rtcdate;
 #define stderr (2)
 
 #define IMAGE_DIR "/images/"
+#define DEV_DIR "/dev/"
 
 // system calls
 int fork(void);
@@ -24,7 +25,7 @@ int close(int);
 int kill(int);
 int exec(const char*, const char**);
 int open(const char*, int);
-int mknod(char*, short, short);
+int mknod(const char*, short, short);
 int unlink(const char*);
 int fstat(int fd, struct stat*);
 int link(char*, char*);
@@ -44,6 +45,7 @@ int kmemtest(void);
 int mount(const char*, const char*, const char*);
 int umount(const char*);
 int unshare(int);
+int pivot_root(const char*, const char*);
 
 // ulib.c
 int stat(const char*, struct stat*);
