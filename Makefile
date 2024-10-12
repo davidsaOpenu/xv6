@@ -73,12 +73,18 @@ kernel/%:
 user/%:
 	$(MAKE) -C user $*
 
+user: $(UPROGS_ABS)
+
 tests/xv6/%:
 	$(MAKE) -C tests xv6/$*
 
 # Docker build & skopeo copy, create OCI images.
 # Docker daemon must be running and available from this context.
-images/img_internal_fs_%: images/build/img_internal_fs_%.Dockerfile
+# It also requires some user programs, since build is not implemented yet in xv6.
+images/img_internal_fs_%: images/build/img_internal_fs_%.Dockerfile $(UPROGS_ABS)
+	mkdir -p images/build/user
+	cp $(UPROGS_ABS) images/build/user
+	strip images/build/user/*
 	docker build -t xv6_internal_fs_$* -f images/build/img_internal_fs_$*.Dockerfile images/build
 	mkdir -p images/img_internal_fs_$*
 	docker run --rm --mount type=bind,source="$(CURDIR)",target=/home/$(shell whoami)/xv6 \
@@ -86,6 +92,7 @@ images/img_internal_fs_%: images/build/img_internal_fs_%.Dockerfile
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		quay.io/skopeo/stable:latest \
 		copy docker-daemon:xv6_internal_fs_$*:latest oci:images/img_internal_fs_$*
+	rm -rf images/build/user
 
 # This is a dummy target to rebuild the OCI images for the internal fs.
 # You should run this target if you have made changes to the internal fs build.
@@ -111,7 +118,7 @@ clean: windows_debugging_clean
 	rm -f $(INTERNAL_DEV) mkfs xv6.img xv6memfs.img fs.img
 
 clean_oci:
-	rm -rf images/img_internal_fs_*
+	rm -rf images/img_internal_fs_* images/extracted images/metadata
 	docker rmi -f $(shell docker images -q -f "reference=xv6_internal_fs_*") > /dev/null 2>&1 || true
 
 runoff:

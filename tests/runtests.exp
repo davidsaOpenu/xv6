@@ -546,16 +546,16 @@ proc pouch_disconnect_test {argv} {
 # @argv - file name for logging
 proc pouch_destroy_test {argv} {
     #assuming container is already created
-    send "ls c1\n"
+    send "ls pconf/c1\n"
     log_file -noappend [lindex $argv 0]
     expect -re {c1\s+2\s+[0-9]+\s+[0-9]+}
 
     set running [destroy_container $argv "1" "Pouch: c1 destroyed"]
 
-    send "ls c1\n"
+    send "ls pconf/c1\n"
     log_file -noappend [lindex $argv 0]
     expect {
-       "ls: cannot open c1"
+       "ls: cannot open pconf/c1"
     }
 
 }
@@ -674,9 +674,8 @@ proc pouch_cgroup_already_exists {argv} {
     send "mkdir /cgroup/c5\n"
     log_file -noappend [lindex $argv 0]
     assert_on_exit_status
-
+    
     set running [start_container $argv "5" "cgroup already exists" "img_a" 1]
-    log_file -noappend [lindex $argv 0]
 }
 
 
@@ -693,14 +692,14 @@ proc pouch_disconnect_outside_container_test {argv} {
     send "pouch disconnect c6\n"
     log_file -noappend [lindex $argv 0]
     expect {
-       "Error: Invalid command disconnect for outside container."
+       "Error: command disconnect not allowed in outside container."
     }
     assert_on_exit_status 1
 
     send "pouch disconnect\n"
     log_file -noappend [lindex $argv 0]
     expect {
-       "Error: Invalid command disconnect for outside container."
+       "Error: command disconnect not allowed in outside container."
     }
     assert_on_exit_status 1
 }
@@ -726,7 +725,7 @@ proc pouch_info_container_test {argv} {
     sleep 2
     send "pouch info c6\n"
     log_file -noappend [lindex $argv 0]
-    expect "There is no container: c6 in a started stage"
+    expect "Pouch: c6 container not found"
 }
 
 
