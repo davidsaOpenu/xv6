@@ -6,6 +6,7 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "mount.h"
+#include "mount_ns.h"
 #include "namespace.h"
 #include "param.h"
 #include "pid_ns.h"
@@ -158,9 +159,13 @@ void userinit(void) {
   p->tf->eip = 0;  // beginning of initcode.S
 
   safestrcpy(p->name, "initcode", sizeof(p->name));
-  p->cwd = initprocessroot(&p->cwdmount);
+  p->nsproxy = initnsproxy();
+
+  struct mount *root_mount = getroot(p->nsproxy->mount_ns->active_mounts);
+  struct vfs_inode *root_ip = get_mount_root_ip(root_mount);
+  p->cwd = root_ip->i_op->idup(root_ip);
   safestrcpy(p->cwdp, "/", sizeof(p->cwdp));
-  p->nsproxy = emptynsproxy();
+  p->cwdmount = mntdup(root_mount);
 
   p->ns_pid = pid_ns_next_pid(p->nsproxy->pid_ns);
 
@@ -386,9 +391,9 @@ void exit(int status) {
 
   begin_op();
   curproc->cwd->i_op->iput(curproc->cwd);
+  mntput(curproc->cwdmount);
   end_op();
 
-  mntput(curproc->cwdmount);
   curproc->cwdmount = 0;
   *curproc->cwdp = 0;
   curproc->cwd = 0;
@@ -635,7 +640,9 @@ void forkret(void) {
     // of a regular process (e.g., they call sleep), and thus cannot
     // be run from main().
     first = 0;
-    struct vfs_superblock *sb = getinitialrootmount()->sb;
+    struct mount *m = getrootmount();
+    XV6_ASSERT(!m->isbind);
+    struct vfs_superblock *sb = m->sb;
     if (sb->ops->start) {
       sb->ops->start(sb);
     }

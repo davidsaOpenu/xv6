@@ -97,6 +97,7 @@ extern int sys_ioctl(void);
 extern int sys_getppid(void);
 extern int sys_getcpu(void);
 extern int sys_kmemtest(void);
+extern int sys_pivot_root(void);
 
 static int (*syscalls[])(void) = {
     [SYS_fork] sys_fork,         [SYS_exit] sys_exit,
@@ -113,7 +114,7 @@ static int (*syscalls[])(void) = {
     [SYS_umount] sys_umount,     [SYS_unshare] sys_unshare,
     [SYS_usleep] sys_usleep,     [SYS_ioctl] sys_ioctl,
     [SYS_getppid] sys_getppid,   [SYS_getcpu] sys_getcpu,
-    [SYS_kmemtest] sys_kmemtest,
+    [SYS_kmemtest] sys_kmemtest, [SYS_pivot_root] sys_pivot_root,
 };
 
 void syscall(void) {

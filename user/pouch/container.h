@@ -1,3 +1,7 @@
+#ifndef XV6_USER_POUCH_CONTAINER_H
+#define XV6_USER_POUCH_CONTAINER_H
+
+#include "param.h"
 #include "pouch.h"
 #include "types.h"
 
@@ -5,6 +9,17 @@
  *   Container name maximum size
  */
 #define CNTNAMESIZE (100)
+
+enum container_mount_type { IMAGE_ROOT_FS = 1, BIND_MOUNT, LIST_END };
+
+/**
+ * Defines a mount to be used in a container.
+ */
+struct container_mounts_def {
+  const char* src;
+  const char* dest;
+  enum container_mount_type type;
+};
 
 /**
  * Returns true if the current process is running in a container.
@@ -69,3 +84,5 @@ pouch_status pouch_container_limit(const char* const container_name,
  *   @output: none
  */
 pouch_status pouch_containers_print_all();
+
+#endif  // XV6_USER_POUCH_CONTAINER_H

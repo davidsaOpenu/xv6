@@ -1,3 +1,6 @@
+#ifndef XV6_USER_POUCH_IMAGE_H
+#define XV6_USER_POUCH_IMAGE_H
+
 #include "pouch.h"
 
 #define IMG_NAME_SIZE (100)
@@ -23,3 +26,5 @@ pouch_status pouch_image_exists(const char* const image_name);
  *   @output: image_path
  */
 pouch_status pouch_image_get_path(const char* image_name, char* image_path);
+
+#endif  // XV6_USER_POUCH_IMAGE_H
