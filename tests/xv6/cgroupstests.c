@@ -7,6 +7,7 @@
 #include "types.h"
 #include "user/lib/mutex.h"
 #include "user/lib/user.h"
+#include "wstatus.h"
 
 #define GIVE_TURN(my_lock, other_lock)                   \
   do {                                                   \
@@ -451,9 +452,10 @@ int test_enable_and_disable_controller(int controller_type) {
 }
 
 TEST(test_enable_and_disable_all_controllers) {
-  for (int i = CPU_CNT; i < CPU_CNT + CONTROLLER_COUNT; i++) {
-    ASSERT_TRUE(test_enable_and_disable_controller(i));
-  }
+  ASSERT_TRUE(test_enable_and_disable_controller(CPU_CNT));
+  ASSERT_TRUE(test_enable_and_disable_controller(PID_CNT));
+  ASSERT_TRUE(test_enable_and_disable_controller(SET_CNT));
+  ASSERT_TRUE(test_enable_and_disable_controller(MEM_CNT));
 }
 
 TEST(test_limiting_cpu_max_and_period) {
@@ -671,45 +673,26 @@ TEST(test_no_run) {
   // Fork here since the process should not be running after we move it inside
   // the cgroup.
   int pid = fork();
-  int pidToMove = 0;
   int sum = 0;
   int wstatus;
 
   if (pid == 0) {
     // Child
-
-    pidToMove = getpid();
-
-    // Save the pid of child in temp file.
-    temp_write(pidToMove);
-
     // Go to sleep for long period of time.
     sleep(20);
 
     // At this point, the child process should already be inside the cgroup.
     // Therefore, the following operations should not be executed right away.
-    for (int i = 0; i < 10; i++) {
-      sum += 1;
-    }
-
-    // Save sum into temp file.
-    temp_write(sum);
+    temp_write(10);
     exit(0);
   } else {
-    // Father
-
-    sleep(5);
-    // Read the child pid from temp file.
-    pidToMove = temp_read(0);
     // Update the temp file for further reading, since next sum will be read
     // from it.
-    ASSERT_TRUE(temp_write(0));
-
     // Move the child process to "/cgroup/test1" cgroup.
-    ASSERT_TRUE(move_proc(TEST_1_CGROUP_PROCS, pidToMove));
+    ASSERT_TRUE(move_proc(TEST_1_CGROUP_PROCS, pid));
 
     // Check that the process we moved is really in "/cgroup/test1" cgroup.
-    ASSERT_TRUE(is_pid_in_group(TEST_1_CGROUP_PROCS, pidToMove));
+    ASSERT_TRUE(is_pid_in_group(TEST_1_CGROUP_PROCS, pid));
 
     // Go to sleep to ensure the child process had a chance to be scheduled.
     sleep(10);
@@ -719,15 +702,14 @@ TEST(test_no_run) {
     ASSERT_UINT_EQ(sum, 0);
 
     // Return the child to root cgroup.
-    ASSERT_TRUE(move_proc(ROOT_CGROUP_PROCS, pidToMove));
+    ASSERT_TRUE(move_proc(ROOT_CGROUP_PROCS, pid));
 
     // Check that the child we returned is really in root cgroup.
-    ASSERT_TRUE(is_pid_in_group(ROOT_CGROUP_PROCS, pidToMove));
+    ASSERT_TRUE(is_pid_in_group(ROOT_CGROUP_PROCS, pid));
 
     // Wait for child to exit.
     wait(&wstatus);
     ASSERT_TRUE(wstatus);
-
     // Verify that child did execute the procudure.
     sum = temp_read(0);
     ASSERT_UINT_EQ(sum, 10);
@@ -1305,24 +1287,21 @@ TEST(test_cpu_stat) {
   // Fork here since the process should not be running after we move it inside
   // the cgroup.
   int pid = fork();
-  int pidToMove = 0;
   int sum = 0;
   int wstatus;
 
   if (pid == 0) {
     // Child
 
-    pidToMove = getpid();
+    // Move the child process to "/cgroup/test1" cgroup.
+    ASSERT_TRUE(move_proc(TEST_1_CGROUP_PROCS, getpid()));
 
-    // Save the pid of child in temp file.
-    temp_write(pidToMove);
-
-    // Go to sleep for long period of time.
-    sleep(10);
+    // Check that the process we moved is really in "/cgroup/test1" cgroup.
+    ASSERT_TRUE(is_pid_in_group(TEST_1_CGROUP_PROCS, getpid()));
 
     // At this point, the child process should already be inside the cgroup.
     // By running the loop we ensure CPU usage which should be reflected in
-    // cpu.stst
+    // cpu.stat
     for (int i = 0; i < 10; i++) {
       sum += 1;
     }
@@ -1330,61 +1309,37 @@ TEST(test_cpu_stat) {
     // Save sum into temp file.
     temp_write(sum);
 
-    // Go to sleep to ensure we cen return the child to root cgroup
-    sleep(25);
-    exit(0);
-  } else {
-    // Father
-
-    sleep(5);
-
-    // Read the child pid from temp file.
-    pidToMove = temp_read(0);
-
-    // Update the temp file for further reading, since next sum will be read
-    // from it.
-    ASSERT_TRUE(temp_write(0));
-
-    // Move the child process to "/cgroup/test1" cgroup.
-    ASSERT_TRUE(move_proc(TEST_1_CGROUP_PROCS, pidToMove));
-
-    // Check that the process we moved is really in "/cgroup/test1" cgroup.
-    ASSERT_TRUE(is_pid_in_group(TEST_1_CGROUP_PROCS, pidToMove));
-
-    // Go to sleep to ensure the child process had a chance to be scheduled.
-    sleep(15);
-
-    // Verify that the child process have ran
-    sum = temp_read(0);
-    ASSERT_UINT_EQ(sum, 10);
-
     // Return the child to root cgroup.
-    ASSERT_TRUE(move_proc(ROOT_CGROUP_PROCS, pidToMove));
+    ASSERT_TRUE(move_proc(ROOT_CGROUP_PROCS, getpid()));
 
     // Check that the child we returned is really in root cgroup.
-    ASSERT_TRUE(is_pid_in_group(ROOT_CGROUP_PROCS, pidToMove));
+    ASSERT_TRUE(is_pid_in_group(ROOT_CGROUP_PROCS, getpid()));
 
-    // read cpu.stat into a seconde buffer
-    strcpy(buf2, read_file(TEST_1_CPU_STAT, 0));
-
-    // Verify that the cpu time has changed because of the child's runing
-    ASSERT_TRUE(strcmp(buf1, buf2));
-
-    sleep(10);
-
-    // read cpu.stat into a third buffer
-    strcpy(buf3, read_file(TEST_1_CPU_STAT, 0));
-
-    // Verify that the cpu time has no changed since the child removed
-    ASSERT_FALSE(strcmp(buf2, buf3));
-
-    // Wait for child to exit.
-    wait(&wstatus);
-    ASSERT_TRUE(wstatus);
-
-    // Remove the temp file.
-    ASSERT_TRUE(temp_delete());
+    exit(0);
   }
+  // Father
+  // Wait for child to exit.
+  wait(&wstatus);
+  ASSERT_TRUE(wstatus);
+
+  // Verify that the child process have ran
+  sum = temp_read(0);
+  ASSERT_UINT_EQ(sum, 10);
+
+  // read cpu.stat into a second buffer
+  strcpy(buf2, read_file(TEST_1_CPU_STAT, 0));
+
+  // Verify that the cpu time has changed because of the child's running
+  ASSERT_TRUE(strcmp(buf1, buf2));
+
+  // read cpu.stat into a third buffer
+  strcpy(buf3, read_file(TEST_1_CPU_STAT, 0));
+
+  // Verify that the cpu time has no changed since the child removed
+  ASSERT_FALSE(strcmp(buf2, buf3));
+
+  // Remove the temp file.
+  ASSERT_TRUE(temp_delete());
 }
 
 TEST(test_mem_stat) {
@@ -1431,7 +1386,8 @@ TEST(test_mem_stat) {
 
     /**** 3 ****/
     char str[256];
-    memset(str, 'a', 256);
+    memset(str, 'a', sizeof(str) - 1);
+    str[sizeof(str) - 1] = '\0';
 
     // Write to a new file 2 times.
     int fd;
@@ -1654,6 +1610,9 @@ int reset_nested_memory_controllers(char* top_nested_cgroup_path,
   char min_value[2] = {'0', 0};
   int* nested_cgroup_procs_pids;
   int i = 0;
+  int wstatus;
+  int waited_pid;
+  int unlink_res;
 
   top_nested_cgroup_path_length = strlen(top_nested_cgroup_path);
 
@@ -1680,17 +1639,19 @@ int reset_nested_memory_controllers(char* top_nested_cgroup_path,
     nested_cgroup_procs_pids = get_cgroup_pids(temp_path_g);
     if (nested_cgroup_procs_pids != 0) {
       while (nested_cgroup_procs_pids[i] != 0) {
-        kill(nested_cgroup_procs_pids[i]);
         // wait for the child process to exit so it won't be zombie
-        wait(0);
+        waited_pid = wait(&wstatus);
+        while (waited_pid >= 0 && waited_pid != nested_cgroup_procs_pids[i]) {
+          waited_pid = wait(&wstatus);
+        }
         i++;
       }
       i = 0;
       free(nested_cgroup_procs_pids);
     }
 
-    // delete nested cgroup
-    if (unlink(top_nested_cgroup_path) < 0) {
+    if ((unlink_res = unlink(top_nested_cgroup_path)) < 0) {
+      printf(1, "unlink failed: %s (%d)\n", top_nested_cgroup_path, unlink_res);
       return 0;
     }
     top_nested_cgroup_path_length -= sizeof(TESTED_NESTED_CGROUP_CHILD);
