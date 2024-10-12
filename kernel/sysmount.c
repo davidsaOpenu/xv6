@@ -41,7 +41,11 @@ int sys_mount(void) {
 }
 
 int sys_umount(void) {
-  char *mount_path;
+  char *mount_path = NULL;
+  struct vfs_inode *mount_dir = NULL;
+  struct mount *mnt = NULL;
+  int res = -1;
+
   if (argstr(0, &mount_path) < 0) {
     cprintf("badargs\n");
     return -1;
@@ -50,35 +54,45 @@ int sys_umount(void) {
   begin_op();
 
   int delete_cgroup_res = cgroup_delete(mount_path, "umount");
+  if (delete_cgroup_res != RESULT_ERROR_ARGUMENT) {
+    cprintf("failed to delete cgroup %s\n", mount_path);
+    res = delete_cgroup_res;
+    goto end;
+  }
 
-  if (delete_cgroup_res == RESULT_ERROR_ARGUMENT) {
-    struct vfs_inode *mount_dir;
-    struct mount *mnt;
+  if ((mount_dir = vfs_nameimount(mount_path, &mnt)) == 0) {
+    cprintf("bad mount_path\n");
+    res = -1;
+    goto end;
+  }
 
-    if ((mount_dir = vfs_nameimount(mount_path, &mnt)) == 0) {
-      end_op();
-      return -1;
-    }
+  // Make sure we are umounting a mountpoint, not just any dir.
+  struct vfs_inode *mount_root_dir = get_mount_root_ip(mnt);
+  bool is_mountpoint = (mount_root_dir == mount_dir);
+  mount_root_dir->i_op->iput(mount_root_dir);
+  if (!is_mountpoint) {
+    cprintf("%s is not a mountpoint\n", mount_path);
+    res = -1;
+    goto end;
+  }
 
+  mount_dir->i_op->iput(mount_dir);
+  mount_dir = NULL;
+
+  res = umount(mnt);
+  if (res == 0) { 
+    mnt = NULL; // if umount succeeded, mount is already destroyed anyway.
+  }
+
+end:
+  if (mnt != NULL){
+    mntput(mnt);
+  }
+  if (mount_dir != NULL) {
     mount_dir->i_op->iput(mount_dir);
-
-    int res = umount(mnt);
-    if (res != 0) {
-      mntput(mnt);
-    }
-
-    end_op();
-    return res;
   }
-
-  if (delete_cgroup_res == RESULT_ERROR_ARGUMENT) {
-    end_op();
-    cprintf("cannot unmount cgroup\n");
-    return -1;
-  }
-
   end_op();
-  return delete_cgroup_res;
+  return res;
 }
 
 int handle_objfs_mounts() {
@@ -316,5 +330,63 @@ int handle_nativefs_mounts() {
 exit:
   end_op();
 
+  return res;
+}
+
+int sys_pivot_root(void) {
+  char *new_root = NULL;
+  char *put_old = NULL;
+  struct vfs_inode *new_root_inode = NULL, *put_old_root_inode = NULL;
+  struct mount *new_root_mount = NULL, *put_old_root_inode_mount = NULL;
+  int res = -1;
+
+  if (argstr(0, &new_root) < 0) {
+    cprintf("badargs - new root\n");
+    return 1;
+  }
+
+  if (argstr(1, &put_old) < 0) {
+    cprintf("badargs - old root\n");
+    return 1;
+  }
+
+  new_root_inode = vfs_nameimount(new_root, &new_root_mount);
+  if (new_root_inode == NULL) {
+    cprintf("Failed to get new root dir inode\n");
+    goto end;
+  }
+
+  if (new_root_inode->type != T_DIR) {
+    cprintf("new root mount path is not a mountpoint\n");
+    goto end;
+  }
+
+  put_old_root_inode = vfs_nameimount(put_old, &put_old_root_inode_mount);
+  if (put_old_root_inode == NULL) {
+    cprintf("Failed to get old root dir inode\n");
+    goto end;
+  }
+
+  if (put_old_root_inode->type != T_DIR) {
+    cprintf("old root mount path is not a dir\n");
+    goto end;
+  }
+
+  res = pivot_root(new_root_inode, new_root_mount, put_old_root_inode,
+                   put_old_root_inode_mount);
+
+end:
+  if (new_root_inode != NULL) {
+    new_root_inode->i_op->iput(new_root_inode);
+  }
+  if (put_old_root_inode != NULL) {
+    put_old_root_inode->i_op->iput(put_old_root_inode);
+  }
+  if (put_old_root_inode_mount != NULL) {
+    mntput(put_old_root_inode_mount);
+  }
+  if (new_root_mount != NULL) {
+    mntput(new_root_mount);
+  }
   return res;
 }

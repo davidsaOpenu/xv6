@@ -3,6 +3,9 @@
 #define MUTEX_SIZE (sizeof(MUTEX_PREFIX) + MAX_INT_ASCII_DIGITS + 1)
 
 // #define MUTEX_DEBUG
+#define MUTEX_DETECT_DEADLOCK
+
+#define MUTEX_DETECT_DEADLOCK_MAX_SPINS (1000)
 
 #define MUTEX_RETRY_MS (10)
 
@@ -60,3 +63,8 @@ enum mutex_e mutex_lock(mutex_t *mutex_var);
  * @return MUTEX_SUCCESS if the mutex was unlocked, MUTEX_FAILURE otherwise.
  */
 enum mutex_e mutex_unlock(mutex_t *mutex_var);
+
+/**
+ * Wait on a mutex and unlocks it right away.
+ */
+enum mutex_e mutex_wait(mutex_t *mutex_var);
