@@ -20,6 +20,24 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "62ed4e4d_8ca9dcb9",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-10-16T10:37:13Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "21173933_50e97a02",
+      "revId": "c13881f21e51975641c72056e3ed2e03e6d0853a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "1925328d_c3c63935",
         "filename": "/PATCHSET_LEVEL",
         "patchSetId": 3
@@ -31,6 +49,23 @@
       "writtenOn": "2024-10-16T05:20:37Z",
       "side": 1,
       "message": "thanks for working on this. Looks great. We can add more tests later. Just a couple of notes besides that.",
+      "revId": "c13881f21e51975641c72056e3ed2e03e6d0853a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "79e06ed9_93ac6de3",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-10-16T10:37:13Z",
+      "side": 1,
+      "message": "About to issue a patch with 2 bug fixes and added tests.\nsee reply to the comments below.\nThanks.",
       "revId": "c13881f21e51975641c72056e3ed2e03e6d0853a",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
@@ -58,6 +93,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "2a2fc1c1_ba9438d1",
+        "filename": "tests/xv6/mounttest.c",
+        "patchSetId": 3
+      },
+      "lineNbr": 736,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-10-16T10:37:13Z",
+      "side": 1,
+      "message": "invalid put_old--Added: not under new root, not existing.\ninvalid new_root--Added: not existing, not a mount point.\npivot \u0027stress\u0027 -- back and forth was added (x10 times pivot to new and old mount)\nadded assertion to make sure mount tests exit clean.",
+      "parentUuid": "783ce000_ba4ea046",
+      "range": {
+        "startLine": 735,
+        "startChar": 0,
+        "endLine": 736,
+        "endChar": 53
+      },
+      "revId": "c13881f21e51975641c72056e3ed2e03e6d0853a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "79d2eda4_e0c4b036",
@@ -71,6 +130,30 @@
       "writtenOn": "2024-10-16T05:20:37Z",
       "side": 1,
       "message": "leftover or regression?",
+      "range": {
+        "startLine": 1858,
+        "startChar": 0,
+        "endLine": 1858,
+        "endChar": 23
+      },
+      "revId": "c13881f21e51975641c72056e3ed2e03e6d0853a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6c96183e_394b354b",
+        "filename": "tests/xv6/usertests.c",
+        "patchSetId": 3
+      },
+      "lineNbr": 1858,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-10-16T10:37:13Z",
+      "side": 1,
+      "message": "Mistake.",
+      "parentUuid": "79d2eda4_e0c4b036",
       "range": {
         "startLine": 1858,
         "startChar": 0,
