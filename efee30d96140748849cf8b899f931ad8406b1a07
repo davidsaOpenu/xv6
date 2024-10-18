@@ -16,6 +16,23 @@
       "message": "Recheck",
       "revId": "efee30d96140748849cf8b899f931ad8406b1a07",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d31a16ae_7fede055",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-18T04:55:09Z",
+      "side": 1,
+      "message": "thanks for working on this change.\n\n \nLets make clearer headings to explicitly separate \"Functional Specification\" and \"Technical Specification\" sections and place under source/TechinicalSpecificaion source/FunctionalSpecification to make it easier to navigate and identify the high-level functions versus the low-level details. E.g.:\n\n- Functional Specification (What the system does):\n--Unified FS Cache System (Overview and high-level description)\n---Explains how the unified cache handles both nativefs and objfs.\n---Describes the behavior of the system, such as splitting objects into multiple buffers and the approach for caching.\n\n\n\n- Technical Specification (How the system works):\n--Solution Details (Technical implementation)\n---Breaks down the architectural design, including how the unified buffer cache ---module integrates with both nativefs and objfs.\n---Explains how objects are split into buffers, how objfs identifies buffers, and the caching decisions made during read/write operations.\n---Detailed behavior of the MRU list and buffer handling.\n--API (Technical specification of the interface)\n---Defines the data structures \n---Lists external functions for buffer allocation, cache initialization, and managing object storage operations.\n---Pseudo-code provides algorithmic insights into how the buffer cache and object cache modules work.",
+      "revId": "efee30d96140748849cf8b899f931ad8406b1a07",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
