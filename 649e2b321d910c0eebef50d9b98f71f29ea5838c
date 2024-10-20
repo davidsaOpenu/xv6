@@ -1,0 +1,142 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "964680e9_eb75bfd8",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 7
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-20T05:12:29Z",
+      "side": 1,
+      "message": "should be reset_nested_memory_controllers maybe? no change in test_nested_cgroup_memory_recalculation.",
+      "range": {
+        "startLine": 11,
+        "startChar": 3,
+        "endLine": 11,
+        "endChar": 42
+      },
+      "revId": "649e2b321d910c0eebef50d9b98f71f29ea5838c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "68bb8b4a_ca4a8c8f",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 7
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-20T05:12:29Z",
+      "side": 1,
+      "message": "in which cases?",
+      "range": {
+        "startLine": 14,
+        "startChar": 48,
+        "endLine": 14,
+        "endChar": 61
+      },
+      "revId": "649e2b321d910c0eebef50d9b98f71f29ea5838c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a68a24ef_7ef9dc33",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 7
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-20T05:12:29Z",
+      "side": 1,
+      "message": "better to use \"refactored\"",
+      "range": {
+        "startLine": 19,
+        "startChar": 32,
+        "endLine": 19,
+        "endChar": 45
+      },
+      "revId": "649e2b321d910c0eebef50d9b98f71f29ea5838c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5a193be3_e3b4d7aa",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 7
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-20T05:12:29Z",
+      "side": 1,
+      "message": "which \"race conditions\"? The test is stable. Do you have a change in the code that eliminates race conditions in the tests that was not submitting with this patch set?",
+      "range": {
+        "startLine": 20,
+        "startChar": 4,
+        "endLine": 20,
+        "endChar": 19
+      },
+      "revId": "649e2b321d910c0eebef50d9b98f71f29ea5838c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f3b0390a_1c7a9acd",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 7
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-20T05:12:29Z",
+      "side": 1,
+      "message": "fixed a typo that caused only one (out of four) test to be executed",
+      "range": {
+        "startLine": 21,
+        "startChar": 45,
+        "endLine": 22,
+        "endChar": 12
+      },
+      "revId": "649e2b321d910c0eebef50d9b98f71f29ea5838c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a2de317a_4f7c0556",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 7
+      },
+      "lineNbr": 682,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-20T05:12:29Z",
+      "side": 1,
+      "message": "using same approach as in \"test_cpu_stat\" (child moves itself to another group) eliminates all sleeps in this method.",
+      "range": {
+        "startLine": 682,
+        "startChar": 3,
+        "endLine": 682,
+        "endChar": 14
+      },
+      "revId": "649e2b321d910c0eebef50d9b98f71f29ea5838c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}

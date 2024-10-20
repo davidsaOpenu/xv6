@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6b0f8308_3f331696",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 7
+      },
+      "lineNbr": 454,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-20T05:12:29Z",
+      "side": 0,
+      "message": "better to fix with \"i \u003c\u003d MEM_CNT\"",
+      "range": {
+        "startLine": 454,
+        "startChar": 26,
+        "endLine": 454,
+        "endChar": 35
+      },
+      "revId": "5cc589960cd39bd85940f67a85c6d4a1a2cf84f7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
