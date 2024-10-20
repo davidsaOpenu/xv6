@@ -1,11 +1,13 @@
+// Pouch image management functions.
+
 #include "image.h"
 
 #include "fcntl.h"
 #include "fsdefs.h"
-#include "lib/user.h"
 #include "param.h"
 #include "pouch.h"
 #include "stat.h"
+#include "util.h"
 
 pouch_status pouch_images_print() {
   char full_path[MAX_PATH_LENGTH], *p;
@@ -61,7 +63,7 @@ pouch_status pouch_images_print() {
   }
 
   if (!printed_first) {
-    printf(stdout, "No images available\n");
+    printf(stdout, "No images available.\n");
   }
 
   close(fd);
@@ -79,6 +81,73 @@ pouch_status pouch_image_exists(const char* const image_name) {
   // Check if the image exists
   if (stat(image_path, &st) < 0) {
     status = ERROR_IMAGE_NOT_FOUND_CODE;
+    goto end;
+  }
+
+end:
+  return status;
+}
+
+pouch_status pouch_image_copy(const char* const source_image_name,
+                              const char* const target_image_name) {
+  char source_image_path[MAX_PATH_LENGTH], target_image_path[MAX_PATH_LENGTH];
+  pouch_status status = SUCCESS_CODE;
+
+  if (pouch_image_exists(source_image_name) != SUCCESS_CODE) {
+    printf(stderr, "Source image %s does not exist.\n", source_image_name);
+    status = ERROR_IMAGE_NOT_FOUND_CODE;
+    goto end;
+  }
+
+  if (pouch_image_exists(target_image_name) == SUCCESS_CODE) {
+    printf(stderr, "Target image %s already exists.\n", target_image_name);
+    status = ERROR_IMAGE_ALREADY_EXISTS_CODE;
+    goto end;
+  }
+
+  if ((status = pouch_image_get_path(source_image_name, source_image_path)) !=
+      SUCCESS_CODE) {
+    printf(stderr, "Failed to get path for source image %s.\n",
+           source_image_name);
+    goto end;
+  }
+
+  if ((status = pouch_image_get_path(target_image_name, target_image_path)) !=
+      SUCCESS_CODE) {
+    printf(stderr, "Failed to get path for target image %s\n",
+           target_image_name);
+    goto end;
+  }
+
+  if (cp(source_image_path, target_image_path) < 0) {
+    status = ERROR_IMAGE_COPY_CODE;
+    printf(stderr, "Failed to copy image %s to %s.\n", source_image_name,
+           target_image_name);
+    goto end;
+  }
+
+end:
+  return status;
+}
+
+pouch_status pouch_image_rm(const char* const image_name) {
+  char image_path[MAX_PATH_LENGTH];
+  pouch_status status = SUCCESS_CODE;
+
+  if (pouch_image_exists(image_name) != SUCCESS_CODE) {
+    printf(stderr, "Image %s does not exist\n", image_name);
+    status = ERROR_IMAGE_NOT_FOUND_CODE;
+    goto end;
+  }
+
+  if ((status = pouch_image_get_path(image_name, image_path)) != SUCCESS_CODE) {
+    printf(stderr, "Failed to get path for image %s\n", image_name);
+    goto end;
+  }
+
+  if (unlink(image_path) < 0) {
+    status = ERROR_IMAGE_REMOVE_CODE;
+    printf(stderr, "Failed to remove image %s\n", image_name);
     goto end;
   }
 

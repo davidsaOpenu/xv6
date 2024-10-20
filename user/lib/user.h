@@ -67,8 +67,10 @@ void free(void*);
 int atoi(const char*);
 int itoa(char*, int);
 char* strcat(char* dest, const char* source);
+char* strdup(const char* s);
 
 bool isspace(char c);
+bool isalnum(char c);
 
 int attach_tty(int tty_fd);
 int detach_tty(int tty_fd);
@@ -78,5 +80,13 @@ int disconnect_tty(int tty_fd);
 int is_connected_tty(int tty_fd);
 
 bool fmtname(const char* const path, char* const out_name, const int out_size);
+
+int system(const char* command);
+
+#define ASSERT(x)                                                 \
+  if (!(x)) {                                                     \
+    printf(stderr, "%s:%d: assert failed\n", __FILE__, __LINE__); \
+    exit(0);                                                      \
+  }
 
 #endif /* XV6_USER_H */

@@ -20,6 +20,14 @@ int main(int argc, char *argv[]) {
   char new_line = 1;
   int result = 0;
 
+  if (argc == 1) {
+    result = write(1, "\n", 1);
+    if (-1 == result) {
+      exit(1);
+    }
+    exit(0);
+  }
+
   if (argc > 1 && !strcmp("-n", argv[1])) {
     ++i;
     new_line = 0;

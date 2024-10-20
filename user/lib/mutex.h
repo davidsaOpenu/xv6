@@ -1,3 +1,6 @@
+#ifndef USER_LIB_MUTEX_H
+#define USER_LIB_MUTEX_H
+
 #define MUTEX_PREFIX "/.mutex/"
 #define MAX_INT_ASCII_DIGITS (10)
 #define MUTEX_SIZE (sizeof(MUTEX_PREFIX) + MAX_INT_ASCII_DIGITS + 1)
@@ -68,3 +71,5 @@ enum mutex_e mutex_unlock(mutex_t *mutex_var);
  * Wait on a mutex and unlocks it right away.
  */
 enum mutex_e mutex_wait(mutex_t *mutex_var);
+
+#endif  // USER_LIB_MUTEX_H
