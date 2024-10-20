@@ -83,6 +83,7 @@ static uint balloc(struct vfs_superblock *vfs_sb) {
     }
     buf_cache_release(bp);
   }
+  cprintf("balloc: out of blocks for device %d\n", sbp->dev->id);
   panic("balloc: out of blocks");
 }
 
@@ -633,6 +634,7 @@ void native_iinit() {
 void native_fs_init(struct vfs_superblock *vfs_sb, struct device *dev) {
   struct native_superblock_private *sbp =
       (struct native_superblock_private *)kalloc();
+  deviceget(dev);
   sbp->dev = dev;
 
   vfs_sb->private = sbp;
@@ -658,6 +660,7 @@ static void fsdestroy(struct vfs_superblock *vfs_sb) {
     }
     release(&icache.lock);
   }
+  deviceput(sbp->dev);
   kfree((char *)sbp);
 }
 

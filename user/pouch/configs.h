@@ -3,8 +3,6 @@
  */
 #ifndef XV6_USER_POUCH_CONFIGS_H
 #define XV6_USER_POUCH_CONFIGS_H
-#include "container.h"
-#include "lib/user.h"
 #include "pouch.h"
 
 #define CONFIG_KEY_TTYNUM "TTYNUM:"
@@ -18,7 +16,7 @@
 
 typedef struct container_config {
   char container_name[CNTNAMESIZE];
-  int tty_num;
+  int tty_num;  // -1 if not attached (not daemon)
   int pid;
   char image_name[CNTNAMESIZE];
 } container_config;

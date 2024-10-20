@@ -99,6 +99,8 @@ USER_CFLAGS = $(CFLAGS) -fno-builtin -I$(realpath $(COMMON_MAKEFILE_DIR)/user)
 HOST_CFLAGS = -static -m32 -MD -std=gnu99 -Wall -Werror -Wno-builtin-declaration-mismatch -DHOST_TESTS
 HOST_CFLAGS += $(INCLUDE_COMMON) -I$(realpath $(COMMON_MAKEFILE_DIR)/tests)
 
+# Local ubuntu major version -- usually 16 or 22. When running on a non-Ubuntu system, this should be empty.
+LOCAL_UBUNTU_VERSION=$(shell cat /etc/lsb-release 2>/dev/null | sed -E "s/(DISTRIB_RELEASE=([0-9]{2})\.[0-9]{,2}\s*)/\2/;t;d")
 -include *.d
 
 # This function dumps objects and symbols to .asm and .sym files if DUMP_OBJ_AND_SYMS is set to 1,
