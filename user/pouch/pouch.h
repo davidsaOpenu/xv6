@@ -5,7 +5,14 @@
 #ifndef XV6_USER_POUCH_POUCH_H
 #define XV6_USER_POUCH_POUCH_H
 
+#include "lib/user.h"
+
 #define POUCH_CGROUPS_DIR "/cgroup"
+
+/*
+ *   Container name maximum size
+ */
+#define CNTNAMESIZE (100)
 
 /**
  * Pouch CLI exit codes.
@@ -84,6 +91,9 @@ typedef enum POUCH_INTERNAL_STATUS_CODES {
   MOUNT_IMAGE_ROOT_FS_FAILED_ERROR_CODE = -40,
   MOUNT_BIND_FAILED_ERROR_CODE = -41,
   MOUNT_CLEANUP_FAILED_ERROR_CODE = -42,
+  ERROR_IMAGE_COPY_CODE = -43,
+  ERROR_IMAGE_ALREADY_EXISTS_CODE = -44,
+  ERROR_IMAGE_REMOVE_CODE = -45,
 } pouch_status;
 
 /**

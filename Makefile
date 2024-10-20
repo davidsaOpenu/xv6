@@ -56,7 +56,7 @@ TEST_ASSETS=
 
 # Add test pouchfiles to the list of test assets, if the TEST_POUCHFILES env is set to 1
 ifeq ($(TEST_POUCHFILES), 1)
-	TEST_ASSETS += $(wildcard tests/pouchfiles/*)
+	TEST_ASSETS = $(wildcard tests/pouchfiles/*)
 endif
 
 INTERNAL_DEV=\
@@ -78,29 +78,34 @@ user: $(UPROGS_ABS)
 tests/xv6/%:
 	$(MAKE) -C tests xv6/$*
 
+# if OCI_IMAGES_PREFIX is not set, set it to "latest":
+OCI_IMAGES_PREFIX ?= latest
+
 # Docker build & skopeo copy, create OCI images.
 # Docker daemon must be running and available from this context.
 # It also requires some user programs, since build is not implemented yet in xv6.
-images/img_internal_fs_%: images/build/img_internal_fs_%.Dockerfile $(UPROGS_ABS)
+images/img_internal_fs_%/index.json: images/build/img_internal_fs_%.Dockerfile $(UPROGS_ABS)
 	mkdir -p images/build/user
 	cp $(UPROGS_ABS) images/build/user
 	strip images/build/user/*
-	docker build -t xv6_internal_fs_$* -f images/build/img_internal_fs_$*.Dockerfile images/build
+# The prefix $(OCI_IMAGES_PREFIX) is used to avoid conflicts when building images for different Ubuntu versions on the same machine.
+# This can happen in the current CI model (same daemon, different jobs), and cause a race issue.
+	docker build -t xv6_internal_fs_$*:$(OCI_IMAGES_PREFIX) -f images/build/img_internal_fs_$*.Dockerfile images/build
 	mkdir -p images/img_internal_fs_$*
 	docker run --rm --mount type=bind,source="$(CURDIR)",target=/home/$(shell whoami)/xv6 \
 		-w /home/$(shell whoami)/xv6 \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		quay.io/skopeo/stable:latest \
-		copy docker-daemon:xv6_internal_fs_$*:latest oci:images/img_internal_fs_$*
+		copy docker-daemon:xv6_internal_fs_$*:$(OCI_IMAGES_PREFIX) oci:images/img_internal_fs_$*
 	rm -rf images/build/user
 
 # This is a dummy target to rebuild the OCI images for the internal fs.
 # You should run this target if you have made changes to the internal fs build.
-OCI_IMAGES = $(patsubst %, images/img_%, $(INTERNAL_DEV))
+OCI_IMAGES = $(patsubst %, images/img_%/index.json, $(INTERNAL_DEV))
 build-oci: $(OCI_IMAGES)
 
 # internal_fs_%_img is a direcotry with the relevant OCI image to use for the internal fs build.
-internal_fs_%: mkfs
+internal_fs_%: mkfs images/img_internal_fs_%
 	mkdir -p $(CURDIR)/images/metadata
 	./images/oci_image_extractor.sh $(CURDIR)/images/extracted/$@ $(CURDIR)/images/img_$@
 	echo $@ >> $(CURDIR)/images/metadata/all_images
@@ -119,7 +124,7 @@ clean: windows_debugging_clean
 
 clean_oci:
 	rm -rf images/img_internal_fs_* images/extracted images/metadata
-	docker rmi -f $(shell docker images -q -f "reference=xv6_internal_fs_*") > /dev/null 2>&1 || true
+	docker rmi -f $(shell docker images -q -f "reference=xv6_internal_fs_*:$(OCI_IMAGES_PREFIX)") > /dev/null 2>&1 || true
 
 runoff:
 	$(MAKE) -C scripts runoff
