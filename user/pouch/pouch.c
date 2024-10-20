@@ -1,15 +1,14 @@
 #include "pouch.h"
 
 #include "build.h"
-#include "configs.h"
 #include "container.h"
 #include "fcntl.h"
 #include "fsdefs.h"
 #include "image.h"
 #include "lib/mutex.h"
-#include "lib/user.h"
 #include "ns_types.h"
 #include "param.h"
+#include "start.h"
 #include "stat.h"
 #include "util.h"
 
@@ -127,6 +126,13 @@ static pouch_status pouch_cli_check_container_name(
            CNTNAMESIZE, strlen(container_name));
     return ERROR_CODE;
   }
+  // Make sure it's alphanumeric
+  for (int i = 0; i < strlen(container_name); ++i) {
+    if (!isalnum(container_name[i])) {
+      printf(stderr, "Error: Container name must be alphanumeric.\n");
+      return ERROR_CODE;
+    }
+  }
   return SUCCESS_CODE;
 }
 
@@ -215,7 +221,7 @@ static pouch_status pouch_cli_do_start(const p_cmd cmd, const int argc,
   if ((status = pouch_cli_check_image_name(argv[1])) != SUCCESS_CODE) {
     return status;
   }
-  return pouch_container_start(argv[0], argv[1]);
+  return pouch_do_container_start(argv[0], argv[1]);
 }
 
 static pouch_status pouch_cli_do_container_operation(const p_cmd cmd,
@@ -233,7 +239,7 @@ static pouch_status pouch_cli_do_container_operation(const p_cmd cmd,
     case P_CMD_CONNECT:
       return pouch_container_connect(argv[0]);
     case P_CMD_DESTROY:
-      return pouch_container_stop(argv[0]);
+      return pouch_do_container_stop(argv[0]);
     case P_CMD_INFO_OUTSIDE:
       return pouch_container_print_info(argv[0]);
     default:
@@ -296,7 +302,7 @@ static pouch_status pouch_cli_do_build(const p_cmd cmd, const int argc,
       SUCCESS_CODE) {
     return status;
   }
-  return pouch_image_build(file_name, tag);
+  return pouch_build(file_name, tag);
 }
 
 static pouch_status pouch_cli_do_help(const p_cmd cmd, const int argc,

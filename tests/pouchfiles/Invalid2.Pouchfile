@@ -1,3 +1,4 @@
 IMPORT
 
-RUN ls
+RUN importMissingArg
+COPY a

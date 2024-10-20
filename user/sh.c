@@ -298,10 +298,65 @@ int runinternal(struct cmd **pcmd) {
   }
 }
 
-int main(void) {
-  static char buf[100];
-  int fd, retval;
+static int do_cmd(char *cmd) {
+  int retval;
   struct cmd *pcmd;
+  // if all command is spaces, just skip it
+  for (int i = 0; i < strlen(cmd); i++) {
+    if (!isspace(cmd[i])) {
+      break;
+    }
+    if (i == strlen(cmd) - 1) {
+      return 0;
+    }
+  }
+  pcmd = parsecmd(cmd);
+  retval = runinternal(&pcmd);
+  if (retval == 0) {
+    last_cmd_retval_no_error();
+    return retval;
+  } else if (retval == -2) {
+    return retval;
+  }
+
+  if (fork1() == 0) runcmd(pcmd);
+  wait(&last_cmd_retval);
+  last_cmd_retval_update_wait_exit_status();
+  return last_cmd_retval;
+}
+
+int main(int argc, char *argv[]) {
+  static char buf[256];
+  int fd;
+
+  // Command line argument (non-interactive mode -- "-c" option)
+  if (argc > 1) {
+    if (strcmp(argv[1], "-c") == 0) {
+      if (argc < 3) {
+        printf(stderr, "sh: -c: option requires an argument command to run!\n");
+        exit(1);
+      }
+      // join argv[2..n] to buf:
+      for (int i = 2; i < argc; i++) {
+        if (strlen(buf) + strlen(argv[i]) + 1 >= sizeof(buf)) {
+          printf(stderr, "sh: -c: command too long\n");
+          exit(1);
+        }
+        strcat(buf, argv[i]);
+        if (i < argc - 1) {
+          strcat(buf, " ");
+        }
+      }
+      // ... and run it
+      int status = do_cmd(buf);
+      exit(status);
+    } else if (strcmp(argv[1], "-h") == 0) {
+      printf(stdout, "Usage: sh [-c command]\n");
+      exit(0);
+    }
+    printf(stderr, "Invalid arguments %s\n", argv[1]);
+    exit(1);
+  }
 
   // Ensure that three file descriptors are open.
   while ((fd = open("console", O_RDWR)) >= 0) {
@@ -313,18 +368,7 @@ int main(void) {
 
   // Read and run input commands.
   while (getcmd(buf, sizeof(buf)) >= 0) {
-    pcmd = parsecmd(buf);
-    retval = runinternal(&pcmd);
-    if (retval == 0) {
-      last_cmd_retval_no_error();
-      continue;
-    } else if (retval == -2) {
-      continue;
-    }
-
-    if (fork1() == 0) runcmd(pcmd);
-    wait(&last_cmd_retval);
-    last_cmd_retval_update_wait_exit_status();
+    do_cmd(buf);
   }
   exit(0);
 }

@@ -16,6 +16,11 @@ DIGEST_OF_MANIFEST=$(jq --raw-output '.manifests[] |
     select(.mediaType == "application/vnd.oci.image.manifest.v1+json") |
     .digest' index.json)
 
+if [ -z $DIGEST_OF_MANIFEST ]; then
+    echo "No manifest found!"
+    exit 1
+fi
+
 MANIFEST_DIGEST_VAL=$(echo ${DIGEST_OF_MANIFEST}| cut -d':' -f2)
 BLOBS_DIR="blobs/$(echo ${DIGEST_OF_MANIFEST}| cut -d':' -f1)"
 
@@ -23,6 +28,11 @@ echo "manifest.json is at $BLOBS_DIR/$MANIFEST_DIGEST_VAL"
 cd $BLOBS_DIR
 LAYERS_DIGESTS=$(jq --raw-output '.layers[] | .digest' $MANIFEST_DIGEST_VAL)
 LAYERS=$(echo $LAYERS_DIGESTS | cut -d':' -f2)
+
+if [ -z $LAYERS ]; then
+    echo "No layers found!"
+    exit 1
+fi
 echo "Layers are: $LAYERS"
 
 echo "Extracting layers to $OUTPUT_DIR"

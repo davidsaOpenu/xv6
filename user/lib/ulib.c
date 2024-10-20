@@ -2,6 +2,7 @@
 #include "stat.h"
 #include "types.h"
 #include "user.h"
+#include "wstatus.h"
 #include "x86.h"
 
 char *strcpy(char *s, const char *t) {
@@ -138,9 +139,16 @@ char *strstr(char *src, char *needle) {
 }
 
 char *strtok_r(char *str, char *const delim, char **saveptr) {
+  // use saveptr if not a new string.
   if (str == NULL) {
     if (saveptr == NULL) return NULL;
     str = *saveptr;
+  }
+
+  // No more tokens.
+  if (*str == '\0') {
+    if (saveptr != NULL) *saveptr = str;
+    return NULL;
   }
 
   for (; *str; ++str) {
@@ -157,9 +165,9 @@ char *strtok_r(char *str, char *const delim, char **saveptr) {
     }
   }
   char *to_return = str;
-  for (; *str; ++str) {
+  for (;; ++str) {
     for (char *currd = delim; *currd; ++currd) {
-      if (*str == *currd) {
+      if (*str == *currd || *str == '\0') {
         *str = '\0';
         if (saveptr != NULL) *saveptr = str + 1;
         return to_return;
@@ -172,6 +180,11 @@ char *strtok_r(char *str, char *const delim, char **saveptr) {
 bool isspace(char c) {
   return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f' ||
          c == '\v';
+}
+
+bool isalnum(char c) {
+  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+         (c >= '0' && c <= '9');
 }
 
 bool fmtname(const char *const path, char *const out_name, const int out_size) {
@@ -195,4 +208,39 @@ bool fmtname(const char *const path, char *const out_name, const int out_size) {
   out_name[out_size - 1] = '\0';
 
   return true;
+}
+
+char *strdup(const char *s) {
+  char *new_s = (char *)malloc(strlen(s) + 1);
+  if (new_s == NULL) {
+    return NULL;
+  }
+  strcpy(new_s, s);
+  return new_s;
+}
+
+int system(const char *command) {
+  // Do the same as rm_recursive, but with the given command.
+  int pid = fork();
+  if (pid < 0) {
+    printf(stderr, "system: fork failed\n");
+    return -1;
+  }
+  if (pid == 0) {
+    // sh -c command:
+    const char *argv[4] = {0};
+    argv[0] = "/sh";
+    argv[1] = "-c";
+    argv[2] = command;
+    exec(argv[0], argv);
+    printf(stderr, "system: exec failed\n");
+    exit(1);
+  } else {
+    int wstatus = 0;
+    if (wait(&wstatus) < 0) {
+      printf(stderr, "system: wait failed\n");
+      return -1;
+    }
+    return WEXITSTATUS(wstatus);
+  }
 }

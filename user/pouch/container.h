@@ -1,14 +1,10 @@
 #ifndef XV6_USER_POUCH_CONTAINER_H
 #define XV6_USER_POUCH_CONTAINER_H
 
+#include "configs.h"
 #include "param.h"
 #include "pouch.h"
 #include "types.h"
-
-/*
- *   Container name maximum size
- */
-#define CNTNAMESIZE (100)
 
 enum container_mount_type { IMAGE_ROOT_FS = 1, BIND_MOUNT, LIST_END };
 
@@ -22,25 +18,54 @@ struct container_mounts_def {
 };
 
 /**
+ * Defines properties to start a container.
+ */
+struct container_start_config {
+  char image_name[MAX_PATH_LENGTH];
+  char container_name[CNTNAMESIZE];
+
+  /** Specifies the type of container to be started. */
+  bool daemonize;
+
+  /** Specifies mounts to apply when starting the container. */
+  const struct container_mounts_def* mounts;
+
+  /** Called in the context of the container's child process after it has
+   * started. */
+  pouch_status (*child_func)(const struct container_start_config* config);
+
+  /**
+   * Data to be used by different users of the container start,
+   * to be passed from the caller to child and parent functions.
+   */
+  void* private_data;
+
+  /** The mount point of the container image.
+   * This is filled in by the container start function.
+   */
+  char image_mount_point[MAX_PATH_LENGTH];
+};
+
+/**
  * Returns true if the current process is running in a container.
  */
 bool pouch_container_is_attached();
 
 /*
- *   Pouch fork:
- *   - Starting new container and execute shell inside, waiting for container to
+ *   Pouch start (internal):
+ *   - Starting new container by the given start configuration.
  * exit
- *   @input: container_name,root_dir
+ *   @input: config
  */
-pouch_status pouch_container_start(const char* const container_name,
-                                   const char* const image_name);
+pouch_status _pouch_container_start(struct container_start_config* config);
 
 /*
- *   Pouch stop:
- *   - Stopping container
- *   @input: container_name - container name to stop
+ *   Pouch stop (internal):
+ *   - Stopping container internally.
+ *  pouch global lock must be held before calling this function.
+ *   @input: container_config - container configuration to stop
  */
-pouch_status pouch_container_stop(const char* const container_name);
+pouch_status _pouch_container_stop(const container_config* const conf);
 
 /*
  *  Pouch connect:
