@@ -81,7 +81,7 @@ enum mutex_e mutex_lock(mutex_t *mutex_var) {
 
   int res = MUTEX_FAILURE;
 
-  if (NULL == mutex_var) return MUTEX_INVALID_PARAMETER;
+  ASSERT(NULL != mutex_var);
 
   // pathname already exists and O_CREAT and O_EXCL were used
   while ((res = open(mutex_var->buffer, O_CREATE | O_EXCL)) == EEXIST) {
@@ -107,7 +107,7 @@ enum mutex_e mutex_lock(mutex_t *mutex_var) {
 
 /* Unlocks a mutex - returns according to unlink return values */
 enum mutex_e mutex_unlock(mutex_t *mutex_var) {
-  if (NULL == mutex_var) return MUTEX_INVALID_PARAMETER;
+  ASSERT(NULL != mutex_var);
 
   if (unlink(mutex_var->buffer) < 0) {
     MUTEX_LOG_DEBUG("Mutex unlock failed\n");
@@ -118,6 +118,7 @@ enum mutex_e mutex_unlock(mutex_t *mutex_var) {
 
 /* Lock+Unlock */
 enum mutex_e mutex_wait(mutex_t *mutex_var) {
+  ASSERT(NULL != mutex_var);
   enum mutex_e res = mutex_lock(mutex_var);
   if (res != MUTEX_SUCCESS) return res;
   return mutex_unlock(mutex_var);

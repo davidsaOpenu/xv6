@@ -1580,17 +1580,25 @@ void bsstest(void) {
 void bigargtest(void) {
   int pid, fd;
 
-  unlink("bigarg-ok");
-  pid = fork();
-  if (pid == 0) {
-    static char *args[MAXARG];
-    int i;
-    for (i = 0; i < MAXARG - 1; i++)
-      args[i] =
+  static const char long_arg[] = 
           "bigargs test: failed\n                                              "
           "                                                                    "
           "                                                                    "
+          "                                                                    "
+          "                                                                    "
+          "                                                                    "
+          "                                                                    "
+          "                                                                    "
           "                 ";
+  ASSERT(sizeof(long_arg) * MAXARG > USTACKSIZE);
+  
+  unlink("bigarg-ok");
+  pid = fork();
+  if (pid == 0) {
+    static const char *args[MAXARG];
+    int i;
+    for (i = 0; i < MAXARG - 1; i++)
+      args[i] = long_arg;
     args[MAXARG - 1] = 0;
     printf(stdout, "bigarg test\n");
     exec("/echo", (const char **)args);
@@ -1825,26 +1833,12 @@ void memtest() {
 }
 
 void rm_recursive(const char *const path) {
-  int pid = fork();
-  if (pid < 0) {
-    printf(stderr, "rm_recursive: fork failed\n");
-    exit(1);
-  }
-  if (pid == 0) {
-    const char *argv[] = {"/rm", "-r", path, 0};
-    exec("/rm", (const char **)argv);
-    printf(stderr, "rm_recursive: exec failed\n");
-    exit(1);
-  } else {
-    int wstatus = 0;
-    if (wait(&wstatus) < 0) {
-      printf(stderr, "rm_recursive: wait failed\n");
-      exit(1);
-    }
-    if (WEXITSTATUS(wstatus) == 0) {
-      return;
-    }
-    printf(stderr, "rm_recursive: rm -r %s failed (%d)\n", path, wstatus);
+  const char argv[] = "/rm -r ";
+  char cmd[MAX_PATH_LENGTH + sizeof(argv) + 1];
+  strcpy(cmd, argv);
+  strcat(cmd, path);
+  if (system(cmd) != 0) {
+    printf(stderr, "rm_recursive: failed to remove %s\n", path);
     exit(1);
   }
 }

@@ -19,7 +19,7 @@ proc assert_no_pouch_images { argv } {
     log_file -noappend [lindex $argv 0]
 
     send "pouch images\n"
-    expect "No images available"
+    expect "No images available."
     expect "$ "
 }
 
@@ -90,6 +90,8 @@ proc disconnect_container {argv} {
     expect {
        "Console connected"
     }
+    send "\n"
+    assert_on_exit_status
 }
 
 # - wrapper for pouch destroy command
@@ -753,7 +755,6 @@ proc usertests {argv} {
 # - xv6 cgroup tests
 # @argv - file name for logging
 proc cgroupstests {argv} {
-    set timeout 20
     #clean expect buffer
     expect *
 
@@ -761,7 +762,8 @@ proc cgroupstests {argv} {
     assert_on_exit_status
     send "cd cgroup_tests_dir\n"
     assert_on_exit_status
-
+    
+    # The tests take some time to run
     send "cgroupstests\n"
     log_file -noappend [lindex $argv 0]
     assert_on_exit_status
@@ -793,10 +795,7 @@ proc cgroup_io_states_test {argv} {
     send "cat /cgroup/ctemp/io.stat\n"
     expect "1:1 rbytes=78 wbytes=64 rios=78 wios=7"
 
-    send "pouch disconnect\n"
-    expect {
-       "Console connected"
-    }
+    set running [disconnect_container $argv]
     set running [destroy_container $argv "temp" "Pouch: ctemp destroyed"]
     
     set running [start_container $argv "test" "Pouch: ctest starting" "img_a"]
@@ -832,6 +831,7 @@ proc mounttest {argv} {
     send "mounttest\n"
     log_file -noappend [lindex $argv 0]
     expect "mounttest tests passed successfully"
+    assert_on_exit_status
     set timeout 3
 }
 
@@ -885,16 +885,36 @@ proc test_pouch_build_invalid_args {argv} {
     assert_on_exit_status 1
 }
 
+proc pouch_make_sure_image_exists {argv image_name} {
+    send "ls /images/$image_name\n"
+    assert_on_exit_status
+}
+
 # - pouch build image command line test, valid arguments
 # @argv - file name for logging
 proc test_pouch_build_valid_args {argv} {
     send "echo IMPORT abc > Pouchfile\n"
+    assert_on_exit_status
 
     send "pouch build\n"
     expect "Building pouch image from \"Pouchfile\" to tag \"default\"..."
-    expect "Built image to tag \"default\"."
+    expect -re {Source image (.+) does not exist.}
+    set missing_image $expect_out(1,string)
+    assert_on_exit_status 1
 
+    # copy internal_fs_a to the missing image above.
+    send "cp internal_fs_a images/$missing_image\n"
     assert_on_exit_status
+
+    # Try again, should succeed now.
+    send "pouch build\n"
+    expect "Building pouch image from \"Pouchfile\" to tag \"default\"..."
+    expect "Built image to tag \"default\"."
+    assert_on_exit_status
+
+    # Make sure image exists.
+    pouch_make_sure_image_exists $argv "default"
+
     log_file -noappend [lindex $argv 0]
 
     send "pouch build --tag hello\n"
@@ -903,48 +923,110 @@ proc test_pouch_build_valid_args {argv} {
     assert_on_exit_status
     log_file -noappend [lindex $argv 0]
 
-    send "echo IMPORT abc > MyFile\n"
+    pouch_make_sure_image_exists $argv "hello"
+
+    send "echo IMPORT $missing_image > MyFile\n"
+    send "pouch build --file MyFile\n"
+    expect "Building pouch image from \"MyFile\" to tag \"default\"..."
+    expect "Target image default already exists."
+    assert_on_exit_status 1
+    log_file -noappend [lindex $argv 0]
+
+    # remove default and try again
+    send "rm images/default\n"
+    assert_on_exit_status
     send "pouch build --file MyFile\n"
     expect "Building pouch image from \"MyFile\" to tag \"default\"..."
     expect "Built image to tag \"default\"."
     assert_on_exit_status
     log_file -noappend [lindex $argv 0]
 
-    send "echo IMPORT abc > MyPouchFile\n"
+    pouch_make_sure_image_exists $argv "default"
+
+    send "echo IMPORT $missing_image > MyPouchFile\n"
     send "pouch build --file MyPouchFile --tag myimagetag\n"
     expect "Building pouch image from \"MyPouchFile\" to tag \"myimagetag\"..."
     expect "Built image to tag \"myimagetag\"."
     assert_on_exit_status
     log_file -noappend [lindex $argv 0]
 
-    send "echo IMPORT abc > My22PouchFile\n"
+    pouch_make_sure_image_exists $argv "myimagetag"
+
+    send "echo IMPORT $missing_image > My22PouchFile\n"
     send "pouch build --tag my3imagetag --file My22PouchFile\n"
     expect "Built image to tag \"my3imagetag\"."
     assert_on_exit_status
     log_file -noappend [lindex $argv 0]
+
+    pouch_make_sure_image_exists $argv "my3imagetag"
+
+    # clean all images built
+    set all_images_to_remove [list default hello myimagetag my3imagetag $missing_image]
+    foreach image_name $all_images_to_remove {
+        send "rm images/$image_name\n"
+        assert_on_exit_status
+    }
+    # make sure no images are left
+    send "pouch images\n"
+    expect "No images available."
+    assert_on_exit_status
 }
 
 proc test_pouch_build_file_parsing {argv} {
-    # iterate over Valid1.Pouchfile, Valid2.Pouchfile, build and assert_on_exit_status
-    set valid_pouchfiles [list Valid1.Pouchfile Valid2.Pouchfile]
+    # some builds take time.
+    set timeout 100
+
+    # iterate over Valid1.Pouchfile, Pouchfile, build and assert_on_exit_status
+    set valid_pouchfiles [list Valid1.Pouchfile Valid2.Pouchfile Valid3.Pouchfile \
+        Valid4.Pouchfile]
     foreach elem $valid_pouchfiles {
-        send "pouch build --file $elem\n"
+        # set $tag to the prefix before *.Pouchfile: 
+        set tag [string range $elem 0 [expr [string first "." $elem] - 1]]
+        send "pouch build --file $elem --tag $tag\n"
+        expect "Built image to tag \"$tag\"."
+        assert_on_exit_status
+        # make sure image added to repo
+        pouch_make_sure_image_exists $argv "$tag"
+
+        # and now, start a container with it, connect, disconnect and destroy
+        set running [start_container $argv "$tag" "Pouch: c$tag starting" "$tag"]
+        set running [connect_container $argv "$tag"]
+        send "ls\n"
+        assert_on_exit_status
+        # Make sure valid added a file to the container named $tag with Marker-$tag
+        send "cat $tag\n"
+        expect "Marker-$tag"
+        assert_on_exit_status
+        set running [disconnect_container $argv]
+        set running [destroy_container $argv "$tag" "Pouch: c$tag destroyed"]
+
+        # remove the image
+        send "rm images/$tag\n"
         assert_on_exit_status
     }
-
-    set valid_syntax_pouchfiles [list ValidSyntax1.Pouchfile ValidSyntax2.Pouchfile]
+    
+    # Should fail quickly (after image copy)
+    set timeout 15
+    set valid_syntax_pouchfiles [list ValidSyntax1.Pouchfile ValidSyntax2.Pouchfile ValidSyntax3.Pouchfile \
+        ValidSyntax4.Pouchfile ValidSyntax5.Pouchfile ValidSyntax6.Pouchfile]
     foreach elem $valid_syntax_pouchfiles {
         send "pouch build --file $elem\n"
         # This would need to be modified once build is implemnted properly.
-        assert_on_exit_status
+        expect "Error executing build from Pouchfile $elem"
+        assert_on_exit_status 1
     }
 
+    # Should fail immediately -- revert timeout
+    set timeout 3
     set invalid_syntax_pouchfiles [list \
         Invalid1.Pouchfile Invalid2.Pouchfile Invalid3.Pouchfile \
         Invalid4.Pouchfile Invalid5.Pouchfile Invalid6.Pouchfile \
-        Invalid7.Pouchfile Invalid8.Pouchfile Invalid9.Pouchfile]
+        Invalid7.Pouchfile Invalid8.Pouchfile Invalid9.Pouchfile \
+        Invalid10.Pouchfile Invalid11.Pouchfile Invalid12.Pouchfile \
+        Invalid13.Pouchfile]
     foreach elem $invalid_syntax_pouchfiles {
         send "pouch build --file $elem\n"
+        expect "Error parsing Pouchfile $elem"
         assert_on_exit_status 1
     }
 }
@@ -963,24 +1045,37 @@ proc test_internal_images {argv} {
     }
 }
 
+proc test_all_pouch_build {argv} {
+    # At this stage, no images are installed on the system.
+    set running [test_pouch_build_valid_args $argv]
+    set running [test_pouch_build_invalid_args $argv]
+    set running [prepare_pouch_images $argv]
+    # create fileX.txt from 1 to 5:
+    for {set i 1} {$i <= 5} {incr i} {
+        send "echo hi$i > file$i.txt\n"
+        assert_on_exit_status
+    }
+    set running [test_pouch_build_file_parsing $argv]
+    # Remove all files created
+    for {set i 1} {$i <= 5} {incr i} {
+        send "rm file$i.txt\n"
+        assert_on_exit_status
+    }
+    set running [remove_pouch_images $argv]
+}
+
 
 #-------------------------------------------------------------------------
 #-MAIN--------------------------------------------------------------------
 #-------------------------------------------------------------------------
 
-# no limit - usertests are time consuming
-set timeout -1
-
-# run standalone tests
-spawn bash -c "make run-vector-tests"
-expect eof
-set result [wait]
-if {[lindex $result 2] == 0} {
-    puts "VECTOR TESTS HAVE PASSED"
-} else {
-    puts "VECTOR TESTS HAVE FAILED"
-    exit 1
-}
+# DO NOT MODIFY THE SET TIMEOUT BELOW.
+# If you get a timeout in your tests,
+# it means you have a problem. This will only 
+# make the tests meaningless.
+# in some cases, you maw want to increase the timeout.
+# even then, NEVER SET THE TIMEOUT TO -1.
+set timeout 20
 
 # dry-run to get qemu command - to end qemu with close afterwards
 spawn bash -c "make -n qemu-nox | grep qemu"
@@ -992,15 +1087,23 @@ set qemu_command $expect_out(buffer)
 spawn qemu-system-i386 -nographic -drive file=fs.img,index=1,media=disk,format=raw -drive file=xv6.img,index=0,media=disk,format=raw -smp cpus=2,cores=1 -m 512
 expect "$ "
 
-#uncomment for expect debugging
-#exp_internal 1
+# === DO NOT REMOVE! MAKES SURE EXIT WHEN TIMEOUT! ===
+expect_before {
+    timeout { puts "timeout"; exit 2 }
+    eof     { puts "eof";     exit 1 }
+}
+# === DO NOT REMOVE! MAKES SURE EXIT WHEN TIMEOUT! ===
+
+
+# uncomment for expect debugging
+# exp_internal 1
 set running [mounttest $argv]
 set running [ioctl_syscall_test $argv]
 set running [cgroupstests $argv]
 set running [prepare_pouch_images $argv]
 set running [cgroup_io_states_test $argv]
 
-#basic tests
+# basic tests
 set running [rm_recursive_test $argv]
 set running [cp_copy_file_test $argv]
 set running [cp_copy_dir_test $argv]
@@ -1026,13 +1129,15 @@ set running [pouch_to_many_cnts_test_remove $argv]
 
 set running [remove_pouch_images $argv]
 
-set running [test_pouch_build_valid_args $argv]
-set running [test_pouch_build_invalid_args $argv]
-set running [test_pouch_build_file_parsing $argv]
+set running [test_all_pouch_build $argv]
 
 set running [pidns_tests $argv]
 set running [test_internal_images $argv]
+
 # run last, prints "ALL TESTS PASSED"
+# no limit - usertests are time consuming
+# DO NO MOVE! THIS IS CRITICAL FOR THE OTHER TESTS!
+set timeout -1
 set running [usertests $argv]
 
 log_file
