@@ -51,12 +51,19 @@ static struct mount_list *allocmntlist(void) {
 static int addmountinternal(struct mount_list *mnt_list, struct device *dev,
                             struct vfs_inode *mountpoint, struct mount *parent,
                             struct vfs_inode *bind, struct mount_ns *ns) {
+  if (parent != NULL) {
+    parent->ref++;
+  }
   mnt_list->mnt.parent = parent;
-  mnt_list->mnt.mountpoint = mountpoint;
+  if (mountpoint) {
+    mnt_list->mnt.mountpoint = mountpoint->i_op->idup(mountpoint);
+  } else {
+    mnt_list->mnt.mountpoint = NULL;
+  }
 
   if (bind != NULL) {
     XV6_ASSERT(dev == NULL);
-    mnt_list->mnt.bind = bind;
+    mnt_list->mnt.bind = bind->i_op->idup(bind);
     mnt_list->mnt.isbind = true;
   } else {
     XV6_ASSERT(dev != NULL);
@@ -91,11 +98,21 @@ void mntinit(void) {
   initlock(&mount_holder.mnt_list_lock, "mount_list");
 
   struct mount_list *root_mount = allocmntlist();
+  if (root_mount == NULL) {
+    panic("failed to allocate root mount");
+  }
 
-  if (addmountinternal(root_mount, get_ide_device(ROOTDEV), NULL, NULL, NULL,
+  struct device *root_dev = get_ide_device(ROOTDEV);
+  if (root_dev == NULL) {
+    panic("failed to get root device");
+  }
+
+  if (addmountinternal(root_mount, root_dev, NULL, NULL, NULL,
                        get_root_mount_ns())) {
     panic("failed to initialize root mount");
   }  // fs start later in init
+
+  deviceput(root_dev);
 
   // allocate root mount
   get_root_mount_ns()->root = &root_mount->mnt;
@@ -118,6 +135,7 @@ void mntput(struct mount *mnt) {
 // mountpoint and bind_dir must be locked.
 int mount(struct vfs_inode *mountpoint, struct device *target_dev,
           struct vfs_inode *bind_dir, struct mount *parent) {
+  int ret = -1;
   struct mount_list *newmountentry = allocmntlist();
   struct mount *newmount = &newmountentry->mnt;
 
@@ -136,25 +154,19 @@ int mount(struct vfs_inode *mountpoint, struct device *target_dev,
         current->mnt.mountpoint == mountpoint) {
       // error - mount already exists.
       release(&myproc()->nsproxy->mount_ns->lock);
-      if (target_dev) {
-        deviceput(target_dev);
-      }
       newmount->ref = 0;
       cprintf("mount already exists at that point.\n");
-      return -1;
+      goto end;
     }
     current = current->next;
   }
 
-  mntdup(parent);
-
   if (addmountinternal(newmountentry, target_dev, mountpoint, parent, bind_dir,
                        myproc()->nsproxy->mount_ns)) {
     release(&myproc()->nsproxy->mount_ns->lock);
-    deviceput(target_dev);
+
     newmount->ref = 0;
-    mntput(parent);
-    return -1;
+    goto end;
   }
 
   release(&myproc()->nsproxy->mount_ns->lock);
@@ -163,7 +175,11 @@ int mount(struct vfs_inode *mountpoint, struct device *target_dev,
     newmount->sb->ops->start(newmount->sb);
     XV6_ASSERT(newmount->sb->root_ip != NULL);
   }
-  return 0;
+
+  ret = 0;
+
+end:
+  return ret;
 }
 
 int umount(struct mount *mnt) {
@@ -444,8 +460,8 @@ int pivot_root(struct vfs_inode *new_root, struct mount *new_root_mount,
   acquire(&mount_holder.mnt_list_lock);
 
   struct mount *old_root = getrootmount();
-  old_root->parent = new_root_mount;
   new_root_mount->ref++;
+  old_root->parent = new_root_mount;
   myproc()->nsproxy->mount_ns->root = new_root_mount;
   set_mount_ns_root(myproc()->nsproxy->mount_ns, new_root_mount);
 
@@ -460,8 +476,7 @@ int pivot_root(struct vfs_inode *new_root, struct mount *new_root_mount,
   }
 
   // Finally, attach old root to it's new mountpoint.
-  old_root->mountpoint = put_old_root_inode;
-  put_old_root_inode->i_op->idup(put_old_root_inode);
+  old_root->mountpoint = put_old_root_inode->i_op->idup(put_old_root_inode);
 
   status = 0;
 

@@ -1,8 +1,9 @@
+// Pouch containers and ttys configuration management utility functions.
+
 #include "configs.h"
 
 #include "container.h"
 #include "fcntl.h"
-#include "lib/user.h"
 #include "param.h"
 #include "util.h"
 
@@ -18,6 +19,7 @@ static void pouch_get_tty_name(const int tty_num, char dest[TTYNAMESIZE]) {
 
 int pouch_open_tty(const int tty_num, const int mode) {
   char tty[TTYNAMESIZE];
+  ASSERT(tty_num >= 0);
   pouch_get_tty_name(tty_num, tty);
   return open(tty, mode);
 }
@@ -45,6 +47,10 @@ static int pouch_open_ttyc(const int tty_num, const int mode) {
 
 static void pouch_get_container_conf_name(const char* const container_name,
                                           char dest[MAX_PATH_LENGTH]) {
+  if (strlen(container_name) == 0) {
+    perror("Invalid container name.");
+    return;
+  }
   strcpy(dest, POUCH_CONFIGS_DIR);
   strcat(dest, container_name);
 }
@@ -55,6 +61,7 @@ static void pouch_get_container_conf_name(const char* const container_name,
 static int pouch_open_container_file(const char* const container_name,
                                      const int mode) {
   char container_file[CNTNAMESIZE + sizeof(POUCH_CONFIGS_DIR)];
+  ASSERT(container_name && *container_name);
   pouch_get_container_conf_name(container_name, container_file);
   int fd = open(container_file, mode);
   if (fd < 0) {
@@ -64,8 +71,9 @@ static int pouch_open_container_file(const char* const container_name,
   return fd;
 }
 
-int pouch_cconf_unlink(const struct container_config* const conf) {
+int pouch_cconf_unlink(const container_config* const conf) {
   char container_file[CNTNAMESIZE + sizeof(POUCH_CONFIGS_DIR)];
+  ASSERT(conf && strlen(conf->container_name) > 0);
   pouch_get_container_conf_name(conf->container_name, container_file);
   return unlink(container_file);
 }
@@ -111,6 +119,7 @@ end:
 pouch_status pouch_pconf_write(const int tty_num, const char* const cname) {
   int ttyc_fd = -1;
   pouch_status status = SUCCESS_CODE;
+  ASSERT(tty_num >= 0);
 
   if ((ttyc_fd = pouch_open_ttyc(tty_num, O_CREATE | O_WRONLY)) < 0) {
     printf(stderr, "cannot open tty conf for tty%d\n", tty_num);
@@ -133,6 +142,7 @@ end:
 pouch_status pouch_pconf_remove(const int tty_num) {
   int ttyc_fd;
   pouch_status status = SUCCESS_CODE;
+  ASSERT(tty_num >= 0);
 
   if ((ttyc_fd = pouch_open_ttyc(tty_num, O_RDWR)) < 0) {
     printf(stderr, "cannot open tty conf for tty%d\n", tty_num);
@@ -167,6 +177,7 @@ end:
 pouch_status pouch_pconf_get_ttyname(const int tty_num, char* const cname) {
   int ttyc_fd = -1;
   pouch_status status = SUCCESS_CODE;
+  ASSERT(tty_num >= 0 && cname);
 
   if ((ttyc_fd = pouch_open_ttyc(tty_num, O_RDWR)) < 0) {
     printf(stderr, "cannot open ttyc%s\n", tty_num);
@@ -194,8 +205,8 @@ end:
  * Reads a configuration file line, and parses it in the form of key: value.
  * key should include the colon.
  */
-pouch_status read_key_str_line(const int fd, const char* const key,
-                               char* const val, const int max_len) {
+static pouch_status read_key_str_line(const int fd, const char* const key,
+                                      char* const val, const int max_len) {
   char c;
 
   if (max_len <= 0) {
@@ -238,8 +249,8 @@ pouch_status read_key_str_line(const int fd, const char* const key,
  * Reads a configuration file line, and parses it in the form of key: value.
  * key should include the colon.
  */
-pouch_status read_key_int_line(const int fd, const char* const key,
-                               int* const val) {
+static pouch_status read_key_int_line(const int fd, const char* const key,
+                                      int* const val) {
   char buf[10];
   if (read_key_str_line(fd, key, buf, sizeof(buf)) != SUCCESS_CODE) {
     return ERROR_CODE;
