@@ -63,11 +63,14 @@ int exec(char *path, char **argv) {
   end_op();
   ip = 0;
 
-  // Allocate two pages at the next page boundary.
-  // Make the first inaccessible.  Use the second as the user stack.
+  // Allocate N+1 pages at the next page boundary.
+  // Make the first inaccessible.  Use the left N as the user stack.
   sz = PGROUNDUP(sz);
-  if ((sz = allocuvm(pgdir, sz, sz + 2 * PGSIZE, cgroup)) == 0) goto bad;
-  clearpteu(pgdir, (char *)(sz - 2 * PGSIZE));
+  const int ustack_num_pages = USTACKSIZE / PGSIZE;
+  if ((sz = allocuvm(pgdir, sz, sz + (ustack_num_pages + 1) * PGSIZE,
+                     cgroup)) == 0)
+    goto bad;
+  clearpteu(pgdir, (char *)(sz - (ustack_num_pages + 1) * PGSIZE));
   sp = sz;
 
   // Push argument strings, prepare rest of stack in ustack.
