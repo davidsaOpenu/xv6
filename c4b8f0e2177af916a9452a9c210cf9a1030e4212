@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9fe8fb57_46582037",
+        "filename": "user/lib/user.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-23T13:46:01Z",
+      "side": 1,
+      "message": "1. kernel/defs.h contains #define XV6_ASSERT(cond) \n \n2. kernel/lapic.c:25 contains #define ASSERT 0x00004000",
+      "range": {
+        "startLine": 86,
+        "startChar": 8,
+        "endLine": 86,
+        "endChar": 14
+      },
+      "revId": "c4b8f0e2177af916a9452a9c210cf9a1030e4212",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
