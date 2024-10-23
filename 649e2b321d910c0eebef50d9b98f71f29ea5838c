@@ -24,6 +24,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "987b1ee4_b8a44ab5",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 7
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-10-23T16:32:43Z",
+      "side": 1,
+      "message": "Fixed",
+      "parentUuid": "964680e9_eb75bfd8",
+      "range": {
+        "startLine": 11,
+        "startChar": 3,
+        "endLine": 11,
+        "endChar": 42
+      },
+      "revId": "649e2b321d910c0eebef50d9b98f71f29ea5838c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "68bb8b4a_ca4a8c8f",
@@ -37,6 +61,30 @@
       "writtenOn": "2024-10-20T05:12:29Z",
       "side": 1,
       "message": "in which cases?",
+      "range": {
+        "startLine": 14,
+        "startChar": 48,
+        "endLine": 14,
+        "endChar": 61
+      },
+      "revId": "649e2b321d910c0eebef50d9b98f71f29ea5838c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "24beb9fc_99935dee",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 7
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-10-23T16:32:43Z",
+      "side": 1,
+      "message": "Fixed",
+      "parentUuid": "68bb8b4a_ca4a8c8f",
       "range": {
         "startLine": 14,
         "startChar": 48,
@@ -70,6 +118,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "63f950fd_5b1776b4",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 7
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-10-23T16:32:43Z",
+      "side": 1,
+      "message": "Fixed",
+      "parentUuid": "a68a24ef_7ef9dc33",
+      "range": {
+        "startLine": 19,
+        "startChar": 32,
+        "endLine": 19,
+        "endChar": 45
+      },
+      "revId": "649e2b321d910c0eebef50d9b98f71f29ea5838c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "5a193be3_e3b4d7aa",
@@ -83,6 +155,30 @@
       "writtenOn": "2024-10-20T05:12:29Z",
       "side": 1,
       "message": "which \"race conditions\"? The test is stable. Do you have a change in the code that eliminates race conditions in the tests that was not submitting with this patch set?",
+      "range": {
+        "startLine": 20,
+        "startChar": 4,
+        "endLine": 20,
+        "endChar": 19
+      },
+      "revId": "649e2b321d910c0eebef50d9b98f71f29ea5838c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "97166a85_19fd99e5",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 7
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-10-23T16:32:43Z",
+      "side": 1,
+      "message": "Yes. in some cases this test will fail, especially on slow systems (like in my setup, a vm inside another vm + docker + qemu) and these sleeps were racing each other.",
+      "parentUuid": "5a193be3_e3b4d7aa",
       "range": {
         "startLine": 20,
         "startChar": 4,
@@ -116,6 +212,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "6d786161_62930870",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 7
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-10-23T16:32:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f3b0390a_1c7a9acd",
+      "range": {
+        "startLine": 21,
+        "startChar": 45,
+        "endLine": 22,
+        "endChar": 12
+      },
+      "revId": "649e2b321d910c0eebef50d9b98f71f29ea5838c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "a2de317a_4f7c0556",
@@ -129,6 +249,30 @@
       "writtenOn": "2024-10-20T05:12:29Z",
       "side": 1,
       "message": "using same approach as in \"test_cpu_stat\" (child moves itself to another group) eliminates all sleeps in this method.",
+      "range": {
+        "startLine": 682,
+        "startChar": 3,
+        "endLine": 682,
+        "endChar": 14
+      },
+      "revId": "649e2b321d910c0eebef50d9b98f71f29ea5838c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "32999384_6faf088a",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 7
+      },
+      "lineNbr": 682,
+      "author": {
+        "id": 1021119
+      },
+      "writtenOn": "2024-10-23T16:32:43Z",
+      "side": 1,
+      "message": "It\u0027s not the same.\nIn this test the parent checks that the child is not running, and If I\u0027ll move the child cgroup inside the child scope, there will be a two problems:\n1. the child will not get scheduled to check if it moved successfully\n2. the parent will not be able to first check that the child process didn\u0027t execute in the beginning and upon moving it to another cgroup it started to execute. \n\nunfortunately, without some more advanced wait\u0027s (like on some trigger from another process) it\u0027s not possible to remove these sleeps.\nBut, it still looks better now.",
+      "parentUuid": "a2de317a_4f7c0556",
       "range": {
         "startLine": 682,
         "startChar": 3,
