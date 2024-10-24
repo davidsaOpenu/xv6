@@ -16,6 +16,41 @@
       "message": "great work! One inline note and one question\nShould we add daemonize mode tests as well?",
       "revId": "36ed3ecd8cf50603c704d0acda0e22a14891698f",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e5245c18_822c9679",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 9
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-10-24T12:23:45Z",
+      "side": 1,
+      "message": "Replied to both comments.\nBelieve no change is currently relevant to this PR (explained for each comment in particular).\nThanks.",
+      "revId": "36ed3ecd8cf50603c704d0acda0e22a14891698f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "89b3f290_61ad1ba3",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 9
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-10-24T12:23:45Z",
+      "side": 1,
+      "message": "I think there is no need to add daemonize mode tests, since most of the daemonize logic is triggered in `pouch start` when it\u0027s true, and is triggered in `pouch build` when it\u0027s set to false.\nThe pouchfiles tests run a descent amount of commands in a non-dademonized mode + we will have to implement an additional switch to `pouch start` and consider the container\u0027s state machine in that case (what command are allowed inside the container? is it possible that another process shuts the container down from another context? etc.). It might be a nice feature, but seems unrelated to the current PR.\nIf you prefer that we do implement it, it is possible, but not simply immediate.",
+      "parentUuid": "27989c24_d63cfdb5",
+      "revId": "36ed3ecd8cf50603c704d0acda0e22a14891698f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }

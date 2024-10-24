@@ -22,6 +22,30 @@
       },
       "revId": "c4b8f0e2177af916a9452a9c210cf9a1030e4212",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "cfba4e37_20545be8",
+        "filename": "user/lib/user.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-10-24T12:23:45Z",
+      "side": 1,
+      "message": "this is a user mode assert (present at user/lib/user.h!)\n- XV6_ASSERT is for the kernel (if (!CONDITION) { panic(); })\n- #define ASSERT 0x00004000 is the assert interrupt, and is both only in the kernel, and used by the local APIC for internal interrupts.\nThe ASSERT(...) is mostly used in pouch, but we thought it worths adding it to all the user processes, in case it\u0027s ever needed.",
+      "parentUuid": "9fe8fb57_46582037",
+      "range": {
+        "startLine": 86,
+        "startChar": 8,
+        "endLine": 86,
+        "endChar": 14
+      },
+      "revId": "c4b8f0e2177af916a9452a9c210cf9a1030e4212",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
