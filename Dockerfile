@@ -20,6 +20,7 @@ RUN apt-get update && \
         bridge-utils \
         virt-manager \
         expect \
+        libenchant-2-2 \
         jq
 
 # Download and extract Cppcheck
