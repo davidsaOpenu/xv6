@@ -29,7 +29,8 @@ extensions = ['myst_parser',
               'sphinx.ext.todo',
               'sphinx.ext.viewcode',
               'sphinxemoji.sphinxemoji',
-              'reno.sphinxext']
+              'reno.sphinxext', 
+              'sphinxcontrib.spelling']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -94,3 +95,6 @@ html_theme = 'sphinx_rtd_theme'
 
 # Output file base name for HTML help builder.
 # htmlhelp_basename = 'doc'
+
+# -- Options for sphinxcontrib.spelling
+spelling_word_list_filename=['spelling_wordlist.txt']
