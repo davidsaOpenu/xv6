@@ -444,9 +444,8 @@ int pivot_root(struct vfs_inode *new_root, struct mount *new_root_mount,
   acquire(&mount_holder.mnt_list_lock);
 
   struct mount *old_root = getrootmount();
-  old_root->parent = new_root_mount;
   new_root_mount->ref++;
-  myproc()->nsproxy->mount_ns->root = new_root_mount;
+  old_root->parent = put_old_root_inode_mnt;
   set_mount_ns_root(myproc()->nsproxy->mount_ns, new_root_mount);
 
   if (new_root_mount->parent != NULL) {
