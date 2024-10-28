@@ -317,7 +317,12 @@ static int nestedmounttest(void) {
     return 1;
   }
 
-  if (testfile("a/b/test1") != 0) {
+  // Test access to a/b/test1 via different combinations and parent directories.
+  if (testfile("a/b/test1") != 0 || testfile("a/b/../b/test1") != 0 ||
+      testfile("a/../a/b/test1") != 0 || testfile("a/../b/../b/test1") != 0 ||
+      testfile("a/../../a/b/../../a/b/test1") != 0 ||
+      testfile("a/b/../b/../../a/b/test1") != 0 ||
+      testfile("a/b/../../../../a/../a/../a/b/test1") != 0) {
     return 1;
   }
 
