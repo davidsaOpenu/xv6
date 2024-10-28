@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "71e99c00_619bade0",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 9
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-28T11:16:00Z",
+      "side": 1,
+      "message": "And why that possibly creates a race condition?",
+      "range": {
+        "startLine": 16,
+        "startChar": 13,
+        "endLine": 16,
+        "endChar": 99
+      },
+      "revId": "dbcdf75ea3c1b9e486996b9e8ce8f7fd62b7ec7c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
