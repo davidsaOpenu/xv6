@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "369b455d_f57282e6",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-10-28T20:39:17Z",
+      "side": 1,
+      "message": "The PR has been verified, the validated+1 vote revoked because I edited the commit message (PS4).\n\nAlso, I have opened an additional pull request to the bug fixes: https://review.gerrithub.io/c/davidsaOpenu/xv6/+/1203206",
+      "revId": "692cfe3b622d42f8d68e5e4bda267bdc7d69d081",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
