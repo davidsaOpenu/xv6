@@ -46,6 +46,30 @@
       },
       "revId": "c4b8f0e2177af916a9452a9c210cf9a1030e4212",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "24560bc0_2c6c4a84",
+        "filename": "user/lib/user.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-28T10:57:09Z",
+      "side": 1,
+      "message": "ACK. thanks for the clarification. I was affraied that \"ASSERT  0x00004000\" was refined by ASSERT(...) or vice versa (hopefully we still have all the flags that tream warnings as errors).",
+      "parentUuid": "cfba4e37_20545be8",
+      "range": {
+        "startLine": 86,
+        "startChar": 8,
+        "endLine": 86,
+        "endChar": 14
+      },
+      "revId": "c4b8f0e2177af916a9452a9c210cf9a1030e4212",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
