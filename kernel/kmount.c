@@ -114,8 +114,8 @@ void mntinit(void) {
 
   deviceput(root_dev);
 
-  // allocate root mount
-  get_root_mount_ns()->root = &root_mount->mnt;
+  // set root mount in namespace
+  set_mount_ns_root(get_root_mount_ns(), &root_mount->mnt);
 }
 
 struct mount *mntdup(struct mount *mnt) {
@@ -461,8 +461,7 @@ int pivot_root(struct vfs_inode *new_root, struct mount *new_root_mount,
 
   struct mount *old_root = getrootmount();
   new_root_mount->ref++;
-  old_root->parent = new_root_mount;
-  myproc()->nsproxy->mount_ns->root = new_root_mount;
+  old_root->parent = put_old_root_inode_mnt;
   set_mount_ns_root(myproc()->nsproxy->mount_ns, new_root_mount);
 
   if (new_root_mount->parent != NULL) {

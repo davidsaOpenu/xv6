@@ -4,6 +4,8 @@
 #include "stat.h"
 #include "types.h"
 
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
 void ls(char *path) {
   char buf[512], *p;
   int fd;
@@ -11,7 +13,12 @@ void ls(char *path) {
   struct stat st;
   char cg_file_name[MAX_CGROUP_FILE_NAME_LENGTH];
   char proc_file_name[MAX_PROC_FILE_NAME_LENGTH];
-  char temp_name_buffer[DIRSIZ + 1];
+  // It should usually be DIRSIZ, but since cgroups' file names are longer, we
+  // set it to 64.
+  char temp_name_buffer[MAX(MAX(MAX_CGROUP_FILE_NAME_LENGTH,
+                                MAX_PROC_FILE_NAME_LENGTH),
+                            DIRSIZ) +
+                        1];
 
   if ((fd = open(path, 0)) < 0) {
     printf(stderr, "ls: cannot open %s\n", path);

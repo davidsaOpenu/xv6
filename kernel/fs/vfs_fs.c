@@ -86,8 +86,11 @@ static struct vfs_inode *vfs_namex(char *path, int nameiparent, char *name,
 
     ip->i_op->iunlockput(ip);
 
+    struct vfs_inode *curmount_root_ip = get_mount_root_ip(curmount);
+    curmount_root_ip->i_op->iput(curmount_root_ip);
+
     if ((!vfs_namencmp(name, "..", 3)) && curmount != 0 &&
-        (curmount != getrootmount()) && (ip == curmount->sb->root_ip) &&
+        (curmount != getrootmount()) && (ip == curmount_root_ip) &&
         curmount->mountpoint != 0 &&
         curmount->mountpoint->i_op->dirlookup != NULL) {
       // valid ".." path component lookup
