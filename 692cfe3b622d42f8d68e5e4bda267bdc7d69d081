@@ -16,6 +16,437 @@
       "message": "The PR has been verified, the validated+1 vote revoked because I edited the commit message (PS4).\n\nAlso, I have opened an additional pull request to the bug fixes: https://review.gerrithub.io/c/davidsaOpenu/xv6/+/1203206",
       "revId": "692cfe3b622d42f8d68e5e4bda267bdc7d69d081",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d0da8542_ddba3e33",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-29T05:50:07Z",
+      "side": 1,
+      "message": "posting inline comments. Thanks!",
+      "revId": "692cfe3b622d42f8d68e5e4bda267bdc7d69d081",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "df8db541_0bd1df53",
+        "filename": "docs/source/FunctionalSpecification/01-namespaces.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 170,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-29T05:50:07Z",
+      "side": 1,
+      "message": "let\u0027s add to the doc a link to the google doc with all the images (from the index page) for future modifications of the images",
+      "range": {
+        "startLine": 170,
+        "startChar": 1,
+        "endLine": 170,
+        "endChar": 39
+      },
+      "revId": "692cfe3b622d42f8d68e5e4bda267bdc7d69d081",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "496a941d_2a284187",
+        "filename": "docs/source/FunctionalSpecification/01-namespaces.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-29T05:50:07Z",
+      "side": 1,
+      "message": "two?",
+      "range": {
+        "startLine": 178,
+        "startChar": 35,
+        "endLine": 178,
+        "endChar": 38
+      },
+      "revId": "692cfe3b622d42f8d68e5e4bda267bdc7d69d081",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "494ce18d_2f6a938d",
+        "filename": "docs/source/FunctionalSpecification/03-cgroup.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-29T05:50:07Z",
+      "side": 1,
+      "message": "seems incomplete",
+      "range": {
+        "startLine": 32,
+        "startChar": 370,
+        "endLine": 32,
+        "endChar": 374
+      },
+      "revId": "692cfe3b622d42f8d68e5e4bda267bdc7d69d081",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8530d915_5eafe200",
+        "filename": "docs/source/FunctionalSpecification/03-cgroup.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-29T05:50:07Z",
+      "side": 1,
+      "message": "typo?",
+      "range": {
+        "startLine": 64,
+        "startChar": 11,
+        "endLine": 64,
+        "endChar": 20
+      },
+      "revId": "692cfe3b622d42f8d68e5e4bda267bdc7d69d081",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "52f52270_6676bde8",
+        "filename": "docs/source/FunctionalSpecification/03-cgroup.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-29T05:50:07Z",
+      "side": 1,
+      "message": "typo",
+      "range": {
+        "startLine": 73,
+        "startChar": 39,
+        "endLine": 73,
+        "endChar": 48
+      },
+      "revId": "692cfe3b622d42f8d68e5e4bda267bdc7d69d081",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9841d9d1_13e1feb0",
+        "filename": "docs/source/Introduction/01-linux-containers.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-29T05:50:07Z",
+      "side": 1,
+      "message": "typo",
+      "range": {
+        "startLine": 20,
+        "startChar": 3,
+        "endLine": 20,
+        "endChar": 10
+      },
+      "revId": "692cfe3b622d42f8d68e5e4bda267bdc7d69d081",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "aef03279_28f97273",
+        "filename": "docs/source/Introduction/02-xv6-containers.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-29T05:50:07Z",
+      "side": 1,
+      "message": "let\u0027s reference the chapter",
+      "range": {
+        "startLine": 5,
+        "startChar": 123,
+        "endLine": 5,
+        "endChar": 142
+      },
+      "revId": "692cfe3b622d42f8d68e5e4bda267bdc7d69d081",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ea51e93d_2c5c0267",
+        "filename": "docs/source/TechnicalSpecification/01-namespaces.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-29T05:50:07Z",
+      "side": 1,
+      "message": "pid_ns?",
+      "range": {
+        "startLine": 45,
+        "startChar": 324,
+        "endLine": 45,
+        "endChar": 330
+      },
+      "revId": "692cfe3b622d42f8d68e5e4bda267bdc7d69d081",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a10ea0f5_76517624",
+        "filename": "docs/source/TechnicalSpecification/01-namespaces.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-29T05:50:07Z",
+      "side": 1,
+      "message": "let\u0027s reference the pic",
+      "range": {
+        "startLine": 53,
+        "startChar": 119,
+        "endLine": 53,
+        "endChar": 125
+      },
+      "revId": "692cfe3b622d42f8d68e5e4bda267bdc7d69d081",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "283f398c_6a276d26",
+        "filename": "docs/source/TechnicalSpecification/01-namespaces.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-29T05:50:07Z",
+      "side": 1,
+      "message": "let\u0027s reference the pic",
+      "range": {
+        "startLine": 93,
+        "startChar": 78,
+        "endLine": 93,
+        "endChar": 84
+      },
+      "revId": "692cfe3b622d42f8d68e5e4bda267bdc7d69d081",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d331312a_8b42e15a",
+        "filename": "docs/source/TechnicalSpecification/01-namespaces.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-29T05:50:07Z",
+      "side": 1,
+      "message": "struct",
+      "range": {
+        "startLine": 123,
+        "startChar": 0,
+        "endLine": 123,
+        "endChar": 340
+      },
+      "revId": "692cfe3b622d42f8d68e5e4bda267bdc7d69d081",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f262cb99_c505b45c",
+        "filename": "docs/source/TechnicalSpecification/02-containers.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 300,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-29T05:50:07Z",
+      "side": 1,
+      "message": "typo",
+      "range": {
+        "startLine": 300,
+        "startChar": 210,
+        "endLine": 300,
+        "endChar": 223
+      },
+      "revId": "692cfe3b622d42f8d68e5e4bda267bdc7d69d081",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "17ecf000_ee8e547f",
+        "filename": "docs/source/TechnicalSpecification/05-vfs.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-29T05:50:07Z",
+      "side": 1,
+      "message": "typo",
+      "range": {
+        "startLine": 16,
+        "startChar": 28,
+        "endLine": 16,
+        "endChar": 41
+      },
+      "revId": "692cfe3b622d42f8d68e5e4bda267bdc7d69d081",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7c5184f3_c9b2ecf5",
+        "filename": "docs/source/TechnicalSpecification/05-vfs.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-29T05:50:07Z",
+      "side": 1,
+      "message": "typo\n\nmaybe worth adding a spell checker call in the Makefile",
+      "range": {
+        "startLine": 37,
+        "startChar": 44,
+        "endLine": 37,
+        "endChar": 50
+      },
+      "revId": "692cfe3b622d42f8d68e5e4bda267bdc7d69d081",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bd4c21bf_16c05d40",
+        "filename": "docs/source/TechnicalSpecification/05-vfs.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-29T05:50:07Z",
+      "side": 1,
+      "message": "typo",
+      "range": {
+        "startLine": 61,
+        "startChar": 194,
+        "endLine": 61,
+        "endChar": 208
+      },
+      "revId": "692cfe3b622d42f8d68e5e4bda267bdc7d69d081",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f10fd151_a5e9de8b",
+        "filename": "docs/source/TechnicalSpecification/05-vfs.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-29T05:50:07Z",
+      "side": 1,
+      "message": "typo",
+      "range": {
+        "startLine": 65,
+        "startChar": 30,
+        "endLine": 65,
+        "endChar": 37
+      },
+      "revId": "692cfe3b622d42f8d68e5e4bda267bdc7d69d081",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "58e04a26_6dff7d0a",
+        "filename": "docs/source/TechnicalSpecification/05-vfs.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-29T05:50:07Z",
+      "side": 1,
+      "message": "typo",
+      "range": {
+        "startLine": 65,
+        "startChar": 7,
+        "endLine": 65,
+        "endChar": 23
+      },
+      "revId": "692cfe3b622d42f8d68e5e4bda267bdc7d69d081",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b6201a11_3d4631ad",
+        "filename": "docs/source/TechnicalSpecification/05-vfs.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 101,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-29T05:50:07Z",
+      "side": 1,
+      "message": "typo",
+      "range": {
+        "startLine": 101,
+        "startChar": 280,
+        "endLine": 101,
+        "endChar": 289
+      },
+      "revId": "692cfe3b622d42f8d68e5e4bda267bdc7d69d081",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }

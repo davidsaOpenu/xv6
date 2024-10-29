@@ -34,6 +34,29 @@
       "parentUuid": "67785d12_5993e029",
       "revId": "6207aeb7c8457f185c7e43f99cd8fe2a1303d42e",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cd15d6f9_f768cead",
+        "filename": "docs/reload.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-10-29T05:50:07Z",
+      "side": 1,
+      "message": "seems like a duplication of build.sh.",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 0
+      },
+      "revId": "6207aeb7c8457f185c7e43f99cd8fe2a1303d42e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
