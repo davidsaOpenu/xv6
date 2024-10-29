@@ -57,6 +57,30 @@
       },
       "revId": "6207aeb7c8457f185c7e43f99cd8fe2a1303d42e",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c3719cef_01843c78",
+        "filename": "docs/reload.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-10-29T20:15:31Z",
+      "side": 1,
+      "message": "It has a modified \"entry point\". I changed it to be a common logic.",
+      "parentUuid": "cd15d6f9_f768cead",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 0
+      },
+      "revId": "6207aeb7c8457f185c7e43f99cd8fe2a1303d42e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
