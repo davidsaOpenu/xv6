@@ -106,6 +106,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "f27b51ab_fb0f9322",
+        "filename": "docs/source/FunctionalSpecification/01-namespaces.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 170,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-11-04T16:44:27Z",
+      "side": 1,
+      "message": "It is under introduction/02-xv6-containers.md",
+      "parentUuid": "442fd6f5_8a048a23",
+      "range": {
+        "startLine": 170,
+        "startChar": 1,
+        "endLine": 170,
+        "endChar": 39
+      },
+      "revId": "692cfe3b622d42f8d68e5e4bda267bdc7d69d081",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "496a941d_2a284187",
