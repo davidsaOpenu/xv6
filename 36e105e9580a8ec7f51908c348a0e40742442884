@@ -48,6 +48,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "b135f18c_8a66c4bf",
+        "filename": "docs/source/FunctionalSpecification/06-unified-fs-cache-system.md",
+        "patchSetId": 3
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-11-04T12:13:20Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "46649173_da17bb34",
+      "range": {
+        "startLine": 10,
+        "startChar": 5,
+        "endLine": 10,
+        "endChar": 22
+      },
+      "revId": "36e105e9580a8ec7f51908c348a0e40742442884",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "f2826199_f5568ffb",
@@ -95,6 +119,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "553c4dfb_d1a47825",
+        "filename": "docs/source/TechnicalSpecification/06-unified-fs-cache-system.md",
+        "patchSetId": 3
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-11-04T12:13:20Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5cdbe7d6_a28d36a3",
+      "range": {
+        "startLine": 16,
+        "startChar": 0,
+        "endLine": 16,
+        "endChar": 43
+      },
+      "revId": "36e105e9580a8ec7f51908c348a0e40742442884",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "f1470d6f_cf7432e5",
@@ -132,6 +180,30 @@
       "side": 1,
       "message": "Fixed.",
       "parentUuid": "f1470d6f_cf7432e5",
+      "range": {
+        "startLine": 25,
+        "startChar": 0,
+        "endLine": 25,
+        "endChar": 35
+      },
+      "revId": "36e105e9580a8ec7f51908c348a0e40742442884",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f5e1cb23_b5bd010a",
+        "filename": "docs/source/TechnicalSpecification/06-unified-fs-cache-system.md",
+        "patchSetId": 3
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-11-04T12:13:20Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8904f1be_27db58a5",
       "range": {
         "startLine": 25,
         "startChar": 0,
