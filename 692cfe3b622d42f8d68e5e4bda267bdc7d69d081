@@ -82,6 +82,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "442fd6f5_8a048a23",
+        "filename": "docs/source/FunctionalSpecification/01-namespaces.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 170,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-11-04T00:46:07Z",
+      "side": 1,
+      "message": "proabably missed where the link to the google doc with all the images (from the index page) was added. Could you please point to it?",
+      "parentUuid": "7150e0e5_f6bb4076",
+      "range": {
+        "startLine": 170,
+        "startChar": 1,
+        "endLine": 170,
+        "endChar": 39
+      },
+      "revId": "692cfe3b622d42f8d68e5e4bda267bdc7d69d081",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "496a941d_2a284187",
