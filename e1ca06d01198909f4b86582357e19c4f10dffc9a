@@ -16,6 +16,29 @@
       "message": "Thanks a lot for working on this change!",
       "revId": "e1ca06d01198909f4b86582357e19c4f10dffc9a",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1b780166_ee8a65ae",
+        "filename": "docs/source/Introduction/02-xv6-containers.md",
+        "patchSetId": 6
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-11-07T14:40:07Z",
+      "side": 1,
+      "message": "That\u0027s great but I meant something else. Let\u0027s add a link to the google doc that contains all the images you have added (docs/source/images/*.png) to be able to change them. Or, alternatively let\u0027s replace them by https://support.typora.io/Draw-Diagrams-With-Markdown/ (but it more work)",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 219
+      },
+      "revId": "e1ca06d01198909f4b86582357e19c4f10dffc9a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
