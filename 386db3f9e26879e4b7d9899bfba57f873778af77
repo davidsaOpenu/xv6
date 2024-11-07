@@ -33,6 +33,24 @@
       "message": "I tried to import of of svg file to drawio and incsape and it seems corrupted. Seems that currently we have no way to check the integrity of the files. Possible options are:\n1. add automatic integrity checker as a part of build.sh/Makefile tandem\n2. add images in a markdown format https://support.typora.io/Draw-Diagrams-With-Markdown/\n3. add a google doc with  images created using \"drow\"",
       "revId": "386db3f9e26879e4b7d9899bfba57f873778af77",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "601bd09d_2bb09a5e",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1037966
+      },
+      "writtenOn": "2024-11-07T16:30:45Z",
+      "side": 1,
+      "message": "I don\u0027t fully understand what do you mean. I tried now and I managed to download the svg files from the repo, import them to drawio.com, modify them and finally save them as svgs again. Can you explain the problem in more details please?",
+      "parentUuid": "9b8778a7_6b3ec2e3",
+      "revId": "386db3f9e26879e4b7d9899bfba57f873778af77",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
