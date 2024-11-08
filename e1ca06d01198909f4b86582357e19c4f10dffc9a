@@ -39,6 +39,30 @@
       },
       "revId": "e1ca06d01198909f4b86582357e19c4f10dffc9a",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d73ab0f7_d1d00fd3",
+        "filename": "docs/source/Introduction/02-xv6-containers.md",
+        "patchSetId": 6
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1037962
+      },
+      "writtenOn": "2024-11-08T09:58:48Z",
+      "side": 1,
+      "message": "I have just pushed the update to fix the images:\n1. All diagrams have been converted to *.svg files. \n2. The *.pptx file that was used to create all the diagrams have been pushed to docs/images/ directory.\nI have only left *.png files originated from outside sources (mostly in the introduction), so the things that may change and were created by us have 1+2 applicable.",
+      "parentUuid": "1b780166_ee8a65ae",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 219
+      },
+      "revId": "e1ca06d01198909f4b86582357e19c4f10dffc9a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
