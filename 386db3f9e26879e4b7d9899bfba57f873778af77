@@ -51,6 +51,24 @@
       "parentUuid": "9b8778a7_6b3ec2e3",
       "revId": "386db3f9e26879e4b7d9899bfba57f873778af77",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "49569224_d20e1ee0",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2024-11-10T11:13:04Z",
+      "side": 1,
+      "message": "All is fine. Thanks for pointing that saving from the gerrit path resulted in saving a diff :-).",
+      "parentUuid": "601bd09d_2bb09a5e",
+      "revId": "386db3f9e26879e4b7d9899bfba57f873778af77",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
