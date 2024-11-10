@@ -42,6 +42,7 @@ RUN if [ "$BUILD_LINTING_TOOLS" = "true" ]; then \
     libxmlsec1-dev \
     libffi-dev \
     gcc-multilib \
+    libenchant1c2a \
     jq; \
     fi
 # libvirt-clients causes an error when installing on Ubuntu 16.04
