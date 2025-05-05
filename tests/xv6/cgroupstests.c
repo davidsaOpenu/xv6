@@ -419,50 +419,50 @@ TEST(test_opening_closing_and_reading_cgroup_files) {
   ASSERT_OPEN_CLOSE_READ(TEST_1_MEM_MAX);
   ASSERT_OPEN_CLOSE_READ(TEST_1_MEM_MIN);
   ASSERT_OPEN_CLOSE_READ(TEST_1_MEM_STAT);
-TEST(test_opening_and_closing_cgroup_files)
-{
-    ASSERT_TRUE(open_close_file(TEST_1_CGROUP_PROCS));
-    ASSERT_TRUE(open_close_file(TEST_1_CGROUP_CONTROLLERS));
-    ASSERT_TRUE(open_close_file(TEST_1_CGROUP_SUBTREE_CONTROL));
-    ASSERT_TRUE(open_close_file(TEST_1_CGROUP_EVENTS));
-    ASSERT_TRUE(open_close_file(TEST_1_CGROUP_DESCENDANTS));
-    ASSERT_TRUE(open_close_file(TEST_1_CGROUP_MAX_DEPTH));
-    ASSERT_TRUE(open_close_file(TEST_1_CGROUP_STAT));
-    ASSERT_TRUE(open_close_file(TEST_1_CPU_MAX));
-    ASSERT_TRUE(open_close_file(TEST_1_CPU_WEIGHT));
-    ASSERT_TRUE(open_close_file(TEST_1_CPU_STAT));
-    ASSERT_TRUE(open_close_file(TEST_1_PID_MAX));
-    ASSERT_TRUE(open_close_file(TEST_1_PID_CURRENT));
-    ASSERT_TRUE(open_close_file(TEST_1_SET_CPU));
-    ASSERT_TRUE(open_close_file(TEST_1_SET_FRZ));
-    ASSERT_TRUE(open_close_file(TEST_1_MEM_CURRENT));
-    ASSERT_TRUE(open_close_file(TEST_1_MEM_MAX));
-    ASSERT_TRUE(open_close_file(TEST_1_MEM_MIN));
-    ASSERT_TRUE(open_close_file(TEST_1_MEM_STAT));
-    ASSERT_TRUE(open_close_file(TEST_1_MEM_FAILCNT));
 }
 
-TEST(test_reading_cgroup_files)
-{
-    ASSERT_TRUE(read_file(TEST_1_CGROUP_PROCS, 1));
-    ASSERT_TRUE(read_file(TEST_1_CGROUP_CONTROLLERS, 1));
-    ASSERT_TRUE(read_file(TEST_1_CGROUP_SUBTREE_CONTROL, 1));
-    ASSERT_TRUE(read_file(TEST_1_CGROUP_EVENTS, 1));
-    ASSERT_TRUE(read_file(TEST_1_CGROUP_DESCENDANTS, 1));
-    ASSERT_TRUE(read_file(TEST_1_CGROUP_MAX_DEPTH, 1));
-    ASSERT_TRUE(read_file(TEST_1_CGROUP_STAT, 1));
-    ASSERT_TRUE(read_file(TEST_1_CPU_MAX, 1));
-    ASSERT_TRUE(read_file(TEST_1_CPU_WEIGHT, 1));
-    ASSERT_TRUE(read_file(TEST_1_CPU_STAT, 1));
-    ASSERT_TRUE(read_file(TEST_1_PID_MAX, 1));
-    ASSERT_TRUE(read_file(TEST_1_PID_CURRENT, 1));
-    ASSERT_TRUE(read_file(TEST_1_SET_CPU, 1));
-    ASSERT_TRUE(read_file(TEST_1_SET_FRZ, 1));
-    ASSERT_TRUE(read_file(TEST_1_MEM_CURRENT, 1));
-    ASSERT_TRUE(read_file(TEST_1_MEM_MAX, 1));
-    ASSERT_TRUE(read_file(TEST_1_MEM_MIN, 1));
-    ASSERT_TRUE(read_file(TEST_1_MEM_STAT, 1));
-    ASSERT_TRUE(read_file(TEST_1_MEM_FAILCNT, 1));
+TEST(test_opening_and_closing_cgroup_files) {
+  ASSERT_TRUE(open_close_file(TEST_1_CGROUP_PROCS));
+  ASSERT_TRUE(open_close_file(TEST_1_CGROUP_CONTROLLERS));
+  ASSERT_TRUE(open_close_file(TEST_1_CGROUP_SUBTREE_CONTROL));
+  ASSERT_TRUE(open_close_file(TEST_1_CGROUP_EVENTS));
+  ASSERT_TRUE(open_close_file(TEST_1_CGROUP_DESCENDANTS));
+  ASSERT_TRUE(open_close_file(TEST_1_CGROUP_MAX_DEPTH));
+  ASSERT_TRUE(open_close_file(TEST_1_CGROUP_STAT));
+  ASSERT_TRUE(open_close_file(TEST_1_CPU_MAX));
+  ASSERT_TRUE(open_close_file(TEST_1_CPU_WEIGHT));
+  ASSERT_TRUE(open_close_file(TEST_1_CPU_STAT));
+  ASSERT_TRUE(open_close_file(TEST_1_PID_MAX));
+  ASSERT_TRUE(open_close_file(TEST_1_PID_CURRENT));
+  ASSERT_TRUE(open_close_file(TEST_1_SET_CPU));
+  ASSERT_TRUE(open_close_file(TEST_1_SET_FRZ));
+  ASSERT_TRUE(open_close_file(TEST_1_MEM_CURRENT));
+  ASSERT_TRUE(open_close_file(TEST_1_MEM_MAX));
+  ASSERT_TRUE(open_close_file(TEST_1_MEM_MIN));
+  ASSERT_TRUE(open_close_file(TEST_1_MEM_STAT));
+  ASSERT_TRUE(open_close_file(TEST_1_MEM_FAILCNT));
+}
+
+TEST(test_reading_cgroup_files) {
+  ASSERT_TRUE(read_file(TEST_1_CGROUP_PROCS, 1));
+  ASSERT_TRUE(read_file(TEST_1_CGROUP_CONTROLLERS, 1));
+  ASSERT_TRUE(read_file(TEST_1_CGROUP_SUBTREE_CONTROL, 1));
+  ASSERT_TRUE(read_file(TEST_1_CGROUP_EVENTS, 1));
+  ASSERT_TRUE(read_file(TEST_1_CGROUP_DESCENDANTS, 1));
+  ASSERT_TRUE(read_file(TEST_1_CGROUP_MAX_DEPTH, 1));
+  ASSERT_TRUE(read_file(TEST_1_CGROUP_STAT, 1));
+  ASSERT_TRUE(read_file(TEST_1_CPU_MAX, 1));
+  ASSERT_TRUE(read_file(TEST_1_CPU_WEIGHT, 1));
+  ASSERT_TRUE(read_file(TEST_1_CPU_STAT, 1));
+  ASSERT_TRUE(read_file(TEST_1_PID_MAX, 1));
+  ASSERT_TRUE(read_file(TEST_1_PID_CURRENT, 1));
+  ASSERT_TRUE(read_file(TEST_1_SET_CPU, 1));
+  ASSERT_TRUE(read_file(TEST_1_SET_FRZ, 1));
+  ASSERT_TRUE(read_file(TEST_1_MEM_CURRENT, 1));
+  ASSERT_TRUE(read_file(TEST_1_MEM_MAX, 1));
+  ASSERT_TRUE(read_file(TEST_1_MEM_MIN, 1));
+  ASSERT_TRUE(read_file(TEST_1_MEM_STAT, 1));
+  ASSERT_TRUE(read_file(TEST_1_MEM_FAILCNT, 1));
 }
 
 int test_enable_and_disable_controller(int controller_type) {
