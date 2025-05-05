@@ -25,6 +25,7 @@
 #define CGFS_MEM_MAX "memory.max"
 #define CGFS_MEM_MIN "memory.min"
 #define CGFS_MEM_STAT "memory.stat"
+#define CGFS_MEM_FAILCNT "memory.failcnt"
 #define CGFS_IO_STAT "io.stat"
 
 typedef enum cgroup_file_name_e {
@@ -40,9 +41,8 @@ typedef enum cgroup_file_name_e {
   SET_FRZ,
   MEM_MAX,
   MEM_MIN,
-
+  MEM_FAILCNT,
   NON_WRITABLE,
-
   CGROUP_CONTROLLERS,
   CGROUP_EVENTS,
   CGROUP_STAT,
@@ -82,8 +82,9 @@ typedef enum cgroup_file_name_e {
  *    14)   "cgroup.freeze"
  *    15)   "memory.current"
  *    16)   "memory.max"
- *    17)   "memory.min"
- * *  18)    cgroup directories
+ *    17)    cgroup directories
+ *    18)    "memory.min"
+ *    19)    "memory.failcnt"
  */
 int unsafe_cg_open(cg_file_type type, char* filename, struct cgroup* cgp,
                    int omode);
@@ -111,8 +112,9 @@ int unsafe_cg_open(cg_file_type type, char* filename, struct cgroup* cgp,
  *    14)   "cgroup.freeze"
  *    15)   "memory.current"
  *    16)   "memory.max"
- *    17)   "memory.min"
- **   18)    cgroup directories
+ *    17)    cgroup directories
+ *    18)    "memory.min"
+ *    19)    "memory.failcnt"
  */
 int unsafe_cg_read(cg_file_type type, struct vfs_file* f, char* addr, int n);
 
