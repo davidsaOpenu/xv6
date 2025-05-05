@@ -129,7 +129,8 @@ struct cgroup {
   /* How meny pages of memory we need to protect for this group (e.g. min_mem -
    * current_page).*/
   unsigned int protected_mem;
-    unsigned int mem_fail_cnt; /* Counts how many maximum memory threshold reached */
+  unsigned int
+      mem_fail_cnt; /* Counts how many maximum memory threshold reached */
   unsigned long long cpu_time;
   unsigned int cpu_period_time;
   unsigned int cpu_percent;
@@ -588,7 +589,6 @@ void cgroup_mem_stat_pgmajfault_incr(struct cgroup* cgroup);
 void get_cgroup_io_stat(struct vfs_file* f, struct cgroup* cgp);
 void set_cgroup_io_stat(struct vfs_file* f);
 
-
 /**
  * @brief Increments memory controller fail counter
  *
@@ -600,8 +600,7 @@ void set_cgroup_io_stat(struct vfs_file* f);
  */
 inline int cgroup_incr_mem_failcnt(struct cgroup* cgroup) {
   // If no cgroup found, return error
-  if (cgroup == 0)
-    return -1;
+  if (cgroup == 0) return -1;
 
   cgroup->mem_fail_cnt++;
   return 1;
