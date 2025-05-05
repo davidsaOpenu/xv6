@@ -244,7 +244,8 @@ static cgroup_file_name_t get_file_name_constant(char* filename) {
     return MEM_STAT;
   else if (strcmp(filename, CGFS_IO_STAT) == 0)
     return IO_STAT;
-
+    else if (strcmp(filename, CGFS_MEM_FAILCNT) == 0)
+        return MEM_FAILCNT;
   return -1;
 }
 
@@ -373,6 +374,13 @@ static int unsafe_cg_open_file(char* filename, struct cgroup* cgp, int omode) {
     // for any other type we do nothing (no special handling)
     default:
       break;
+
+            case MEM_FAILCNT:
+                if (cgp == cgroup_root())
+                    return -1;
+                f->mem.failcnt.active = cgp->mem_controller_enabled;
+                f->mem.failcnt.cnt = cgp->mem_fail_cnt;
+                break;
   }
 
   f->type = FD_CG;
@@ -961,6 +969,7 @@ int unsafe_cg_read(cg_file_type type, struct vfs_file* f, char* addr, int n) {
       if (f->cgp->mem_controller_enabled) {
         copy_and_move_buffer_max_len(&bufp, CGFS_MEM_MAX);
         copy_and_move_buffer_max_len(&bufp, CGFS_MEM_MIN);
+              copy_and_move_buffer_max_len(&bufp, CGFS_MEM_FAILCNT);
       }
     }
 
@@ -1376,6 +1385,8 @@ static int cg_file_size(struct vfs_file* f) {
   } else if (filename_const == MEM_CUR) {
     size += strlen("cur_mem_in_bytes - ") + intlen(f->cgp->current_mem) +
             strlen("\n");
+    } else if (filename_const == MEM_FAILCNT) {
+        size += intlen(f->cgp->mem_fail_cnt) + strlen("\n");
   }
 
   return size;

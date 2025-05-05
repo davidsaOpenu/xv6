@@ -419,6 +419,50 @@ TEST(test_opening_closing_and_reading_cgroup_files) {
   ASSERT_OPEN_CLOSE_READ(TEST_1_MEM_MAX);
   ASSERT_OPEN_CLOSE_READ(TEST_1_MEM_MIN);
   ASSERT_OPEN_CLOSE_READ(TEST_1_MEM_STAT);
+TEST(test_opening_and_closing_cgroup_files)
+{
+    ASSERT_TRUE(open_close_file(TEST_1_CGROUP_PROCS));
+    ASSERT_TRUE(open_close_file(TEST_1_CGROUP_CONTROLLERS));
+    ASSERT_TRUE(open_close_file(TEST_1_CGROUP_SUBTREE_CONTROL));
+    ASSERT_TRUE(open_close_file(TEST_1_CGROUP_EVENTS));
+    ASSERT_TRUE(open_close_file(TEST_1_CGROUP_DESCENDANTS));
+    ASSERT_TRUE(open_close_file(TEST_1_CGROUP_MAX_DEPTH));
+    ASSERT_TRUE(open_close_file(TEST_1_CGROUP_STAT));
+    ASSERT_TRUE(open_close_file(TEST_1_CPU_MAX));
+    ASSERT_TRUE(open_close_file(TEST_1_CPU_WEIGHT));
+    ASSERT_TRUE(open_close_file(TEST_1_CPU_STAT));
+    ASSERT_TRUE(open_close_file(TEST_1_PID_MAX));
+    ASSERT_TRUE(open_close_file(TEST_1_PID_CURRENT));
+    ASSERT_TRUE(open_close_file(TEST_1_SET_CPU));
+    ASSERT_TRUE(open_close_file(TEST_1_SET_FRZ));
+    ASSERT_TRUE(open_close_file(TEST_1_MEM_CURRENT));
+    ASSERT_TRUE(open_close_file(TEST_1_MEM_MAX));
+    ASSERT_TRUE(open_close_file(TEST_1_MEM_MIN));
+    ASSERT_TRUE(open_close_file(TEST_1_MEM_STAT));
+    ASSERT_TRUE(open_close_file(TEST_1_MEM_FAILCNT));
+}
+
+TEST(test_reading_cgroup_files)
+{
+    ASSERT_TRUE(read_file(TEST_1_CGROUP_PROCS, 1));
+    ASSERT_TRUE(read_file(TEST_1_CGROUP_CONTROLLERS, 1));
+    ASSERT_TRUE(read_file(TEST_1_CGROUP_SUBTREE_CONTROL, 1));
+    ASSERT_TRUE(read_file(TEST_1_CGROUP_EVENTS, 1));
+    ASSERT_TRUE(read_file(TEST_1_CGROUP_DESCENDANTS, 1));
+    ASSERT_TRUE(read_file(TEST_1_CGROUP_MAX_DEPTH, 1));
+    ASSERT_TRUE(read_file(TEST_1_CGROUP_STAT, 1));
+    ASSERT_TRUE(read_file(TEST_1_CPU_MAX, 1));
+    ASSERT_TRUE(read_file(TEST_1_CPU_WEIGHT, 1));
+    ASSERT_TRUE(read_file(TEST_1_CPU_STAT, 1));
+    ASSERT_TRUE(read_file(TEST_1_PID_MAX, 1));
+    ASSERT_TRUE(read_file(TEST_1_PID_CURRENT, 1));
+    ASSERT_TRUE(read_file(TEST_1_SET_CPU, 1));
+    ASSERT_TRUE(read_file(TEST_1_SET_FRZ, 1));
+    ASSERT_TRUE(read_file(TEST_1_MEM_CURRENT, 1));
+    ASSERT_TRUE(read_file(TEST_1_MEM_MAX, 1));
+    ASSERT_TRUE(read_file(TEST_1_MEM_MIN, 1));
+    ASSERT_TRUE(read_file(TEST_1_MEM_STAT, 1));
+    ASSERT_TRUE(read_file(TEST_1_MEM_FAILCNT, 1));
 }
 
 int test_enable_and_disable_controller(int controller_type) {
@@ -1159,6 +1203,8 @@ TEST(test_mem_limit_negative_and_over_kernelbase) {
 TEST(test_cant_move_over_mem_limit) {
   // Buffer for saving current memory written in limit
   char saved_mem[12];
+  char fail_cnt_mem[4];
+  uint fail_cnt;
 
   // Enable memory controller
   ASSERT_TRUE(enable_controller(MEM_CNT));
@@ -1166,6 +1212,8 @@ TEST(test_cant_move_over_mem_limit) {
   // Copy the current saved memory and remove newline at the end
   strcpy(saved_mem, read_file(TEST_1_MEM_MAX, 0));
   saved_mem[strlen(saved_mem) - 1] = '\0';
+  strcpy(fail_cnt_mem, read_file(TEST_1_MEM_FAILCNT, 0));
+  fail_cnt_mem[strlen(fail_cnt_mem) - 1] = '\0';
 
   // Update memory limit
   ASSERT_TRUE(write_file(TEST_1_MEM_MAX, "0"));
@@ -1176,8 +1224,15 @@ TEST(test_cant_move_over_mem_limit) {
   // Attemp to move the current process to "/cgroup/test1" cgroup.
   ASSERT_FALSE(move_proc(TEST_1_CGROUP_PROCS, getpid()));
 
+  // Fail count should be increased by 1 once the process moved to cgroup
+  fail_cnt = atoi(fail_cnt_mem) + 1;
+  itoa(fail_cnt_mem, fail_cnt);
+  strcat(fail_cnt_mem, "\n");
+
   // Check that the current process is not in "/cgroup/test1" cgroup.
   ASSERT_FALSE(is_pid_in_group(TEST_1_CGROUP_PROCS, getpid()));
+
+  ASSERT_TRUE(strcmp(read_file(TEST_1_MEM_FAILCNT, 0), fail_cnt_mem) == 0);
 
   // Check that the current process is still in root group.
   ASSERT_TRUE(is_pid_in_group(ROOT_CGROUP_PROCS, getpid()));
@@ -1199,6 +1254,11 @@ TEST(test_cant_fork_over_mem_limit) {
   strcpy(proc_mem, read_file(TEST_PROC_MEM, 0));
   // Buffer to read contents from memory file.
   char saved_mem[10];
+  char fail_cnt_mem[4];
+  uint fail_cnt;
+
+  strcpy(fail_cnt_mem, read_file(TEST_1_MEM_FAILCNT, 0));
+  fail_cnt_mem[strlen(fail_cnt_mem) - 1] = '\0';
 
   // Enable memory controller
   ASSERT_TRUE(enable_controller(MEM_CNT));
@@ -1220,6 +1280,14 @@ TEST(test_cant_fork_over_mem_limit) {
   // Attempt to fork, notice this operation should fail and return -1.
   ASSERT_UINT_EQ(fork(), -1);
 
+  // Fail count should be increased by 1 once the process moved to cgroup
+  fail_cnt = atoi(fail_cnt_mem) + 1;
+  itoa(fail_cnt_mem, fail_cnt);
+  strcat(fail_cnt_mem, "\n");
+
+  // Fail count should be increased by 1
+  ASSERT_TRUE(strcmp(read_file(TEST_1_MEM_FAILCNT, 0), fail_cnt_mem) == 0);
+
   // Return the process to root cgroup.
   ASSERT_TRUE(move_proc(ROOT_CGROUP_PROCS, getpid()));
 
@@ -1230,12 +1298,18 @@ TEST(test_cant_fork_over_mem_limit) {
   ASSERT_TRUE(disable_controller(MEM_CNT));
 }
 
-TEST(test_cant_grow_over_mem_limit) {
+TEST(test_cant_grow_over_mem_limit)
+{
   // Save current process memory size.
   char proc_mem[10];
   strcpy(proc_mem, read_file(TEST_PROC_MEM, 0));
   // Buffer to read contents from memory file.
   char saved_mem[10];
+  char fail_cnt_mem[4];
+  uint fail_cnt;
+
+  strcpy(fail_cnt_mem, read_file(TEST_1_MEM_FAILCNT, 0));
+  fail_cnt_mem[strlen(fail_cnt_mem) - 1] = '\0';
 
   // Enable memory controller
   ASSERT_TRUE(enable_controller(MEM_CNT));
@@ -1247,6 +1321,7 @@ TEST(test_cant_grow_over_mem_limit) {
 
   // Read the contents of limit file and convert it for comparison.
   strcpy(saved_mem, read_file(TEST_1_MEM_MAX, 0));
+  strcpy(fail_cnt_mem, read_file(TEST_1_MEM_FAILCNT, 0));
 
   // Check changes
   ASSERT_FALSE(strcmp(saved_mem, proc_mem));
@@ -1257,6 +1332,72 @@ TEST(test_cant_grow_over_mem_limit) {
   // Attempt to grow process memory, notice this operation should fail and
   // return -1.
   ASSERT_UINT_EQ((int)sbrk(10), -1);
+
+  // Fail count should be increased by 1 once the process moved to cgroup
+  fail_cnt = atoi(fail_cnt_mem) + 1;
+  itoa(fail_cnt_mem, fail_cnt);
+  strcat(fail_cnt_mem, "\n");
+
+  // Fail count should be increased by 1
+  ASSERT_TRUE(strcmp(read_file(TEST_1_MEM_FAILCNT, 0), fail_cnt_mem) == 0);
+
+  // Return the process to root cgroup.
+  ASSERT_TRUE(move_proc(ROOT_CGROUP_PROCS, getpid()));
+
+  // Check that the process we returned is really in root cgroup.
+  ASSERT_TRUE(is_pid_in_group(ROOT_CGROUP_PROCS, getpid()));
+
+  // Disable memory controller
+  ASSERT_TRUE(disable_controller(MEM_CNT));
+}
+
+TEST(test_memory_failcnt_reset)
+{
+  // Save current process memory size.
+  char proc_mem[10];
+  itoa(proc_mem, getmem());
+  // Buffer to read contents from memory file.
+  char saved_mem[10];
+  char fail_cnt_mem[4];
+  uint fail_cnt;
+
+  strcpy(fail_cnt_mem, read_file(TEST_1_MEM_FAILCNT, 0));
+  fail_cnt_mem[strlen(fail_cnt_mem) - 1] = '\0';
+
+  // Enable memory controller
+  ASSERT_TRUE(enable_controller(MEM_CNT));
+
+  // Update memory limit
+  ASSERT_TRUE(write_file(TEST_1_MEM_MAX, proc_mem));
+
+  strcat(proc_mem, "\n");
+
+  // Read the contents of limit file and convert it for comparison.
+  strcpy(saved_mem, read_file(TEST_1_MEM_MAX, 0));
+  strcpy(fail_cnt_mem, read_file(TEST_1_MEM_FAILCNT, 0));
+
+  // Check changes
+  ASSERT_FALSE(strcmp(saved_mem, proc_mem));
+
+  // Move the current process to "/cgroup/test1" cgroup.
+  ASSERT_TRUE(move_proc(TEST_1_CGROUP_PROCS, getpid()));
+
+  // Attempt to grow process memory, notice this operation should fail and return -1.
+  ASSERT_UINT_EQ((int)sbrk(10), -1);
+
+  // Fail count should be increased by 1 once the process moved to cgroup
+  fail_cnt = atoi(fail_cnt_mem) + 1;
+  itoa(fail_cnt_mem, fail_cnt);
+  strcat(fail_cnt_mem, "\n");
+
+  // Fail count should be increased by 1
+  ASSERT_TRUE(strcmp(read_file(TEST_1_MEM_FAILCNT, 0), fail_cnt_mem) == 0);
+
+  ASSERT_TRUE(write_file(TEST_1_MEM_FAILCNT, "0"));
+  ASSERT_TRUE(strcmp(read_file(TEST_1_MEM_FAILCNT, 0), "0\n") == 0);
+
+  // Writing any other value than zero is invalid
+  ASSERT_FALSE(write_file(TEST_1_MEM_FAILCNT, "1"));
 
   // Return the process to root cgroup.
   ASSERT_TRUE(move_proc(ROOT_CGROUP_PROCS, getpid()));
@@ -2020,6 +2161,7 @@ int main(int argc, char* argv[]) {
   run_test(test_cant_move_over_mem_limit);
   run_test(test_cant_fork_over_mem_limit);
   run_test(test_cant_grow_over_mem_limit);
+    run_test(test_memory_failcnt_reset);
   run_test(test_limiting_cpu_max_and_period);
   run_test(test_setting_max_descendants_and_max_depth);
   run_test(test_deleting_cgroups);

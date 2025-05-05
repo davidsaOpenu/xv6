@@ -199,10 +199,12 @@ int growproc(int n) {
   // given memory controller is enabled, return failure
   if (n > 0) {
     if (curproc->cgroup->mem_controller_enabled &&
-        (curproc->cgroup->current_mem + n) > curproc->cgroup->max_mem)
+          (curproc->cgroup->current_mem + n) > curproc->cgroup->max_mem) {
+      cgroup_incr_mem_failcnt(curproc->cgroup);
       return -1;
-  }
-
+    }
+  } 
+  
   sz = curproc->sz;
   if (n > 0) {  // In this case we update protected memory inside of allocuvm
                 // function
@@ -264,8 +266,10 @@ int fork(void) {
   // In case trying to fork a new process and the cgroup reached its memory
   // limit, given memory controller is enabled, return failure
   if (curproc->cgroup->mem_controller_enabled &&
-      (curproc->cgroup->current_mem + curproc->sz) > curproc->cgroup->max_mem)
-    return -1;
+    (curproc->cgroup->current_mem + curproc->sz) > curproc->cgroup->max_mem) {
+      cgroup_incr_mem_failcnt(curproc->cgroup);
+      return -1;
+    }
 
   // Allocate process.
   if ((np = allocproc()) == 0) {
