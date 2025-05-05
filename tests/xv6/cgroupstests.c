@@ -1351,11 +1351,11 @@ TEST(test_cant_grow_over_mem_limit) {
   ASSERT_TRUE(disable_controller(MEM_CNT));
 }
 
-TEST(test_memory_failcnt_reset)
-{
+TEST(test_memory_failcnt_reset) {
   // Save current process memory size.
   char proc_mem[10];
-  itoa(proc_mem, getmem());
+  strcpy(proc_mem, read_file(TEST_PROC_MEM, 0));
+
   // Buffer to read contents from memory file.
   char saved_mem[10];
   char fail_cnt_mem[4];
