@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "87516735_43fdd7dd",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-05-07T05:54:37Z",
+      "side": 1,
+      "message": "please squash style changed into the https://review.gerrithub.io/c/davidsaOpenu/xv6/+/1214453",
+      "revId": "7a92a8a40bfd1bfe227c0bc51918ea24809e24d2",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
