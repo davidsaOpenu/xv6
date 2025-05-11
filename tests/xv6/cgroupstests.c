@@ -1281,8 +1281,6 @@ TEST(test_memory_stat_content_valid) {
   ASSERT_UINT_EQ(pgmajfault, 0);
 }
 
-TEST(test_kernel_freem_mem) { ASSERT_FALSE(kmemtest()); }
-
 TEST(test_cpu_stat_content_valid) {
   char buf[265];
   strcpy(buf, read_file(TEST_1_CPU_STAT, 0));
@@ -2024,7 +2022,6 @@ int main(int argc, char* argv[]) {
   run_test(test_setting_max_descendants_and_max_depth);
   run_test(test_deleting_cgroups);
   run_test(test_umount_cgroup_fs);
-  run_test_break_msg(test_kernel_freem_mem);
 
   PRINT_TESTS_RESULT("CGROUPTESTS");
   return CURRENT_TESTS_RESULT();

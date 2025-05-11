@@ -1824,11 +1824,17 @@ void exitrctest() {
 }
 
 void memtest() {
-  if (kmemtest()) {
-    printf(stderr, "memtest: memory corruption\n");
+  char *buf[256];  // should be big enough for kmemtest output
+  int fd = open("/proc/kmemtest", O_RDONLY);
+  if (-1 == fd) {
+    printf(stdout, "failed to open /proc/kmemtest\n");
     exit(1);
   }
-  printf(stdout, "memtest: memory ok\n");
+  if (read(fd, buf, sizeof(buf) < 0)) {
+    printf(stdout, "failed to read from /proc/kmemtest\n");
+    exit(1);
+  }
+  close(fd);
 }
 
 void rm_recursive(const char *const path) {

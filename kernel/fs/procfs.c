@@ -4,6 +4,7 @@
 #include "device/buf_cache.h"
 #include "device/device.h"
 #include "fcntl.h"
+#include "kalloc.h"
 #include "mount_ns.h"
 #include "namespace.h"
 #include "param.h"
@@ -109,6 +110,8 @@ static proc_file_name_t get_file_name_constant(char* filename) {
 
   if (strcmp(filename, PROCFS_CACHE) == 0) return PROC_CACHE;
 
+  if (strcmp(filename, PROCFS_KMEMTEST) == 0) return PROC_KMEMTEST;
+
   return NONE;
 }
 
@@ -160,6 +163,10 @@ int unsafe_proc_open_file(char* filename, int omode) {
 
     case PROC_CACHE:
       file_writeable = 1;
+      break;
+
+    case PROC_KMEMTEST:
+      break;
 
     default:
       break;
@@ -318,6 +325,27 @@ static int write_file_proc_cache(struct vfs_file* f, char* addr, int n) {
   return RESULT_ERROR;
 }
 
+static int read_file_proc_kmemtest(struct vfs_file* f, char* addr, int n) {
+  char* bufp = buf;
+  memset(buf, 0, sizeof(buf));
+
+  kmemtest_info info;
+  (void)kmemtest(&info);
+
+  copy_and_move_buffer(&bufp, KMEMTEST_TITLE, sizeof(KMEMTEST_TITLE));
+  *bufp++ = '\n';
+  copy_and_move_buffer(&bufp, KMEMTEST_COUNTER, sizeof(KMEMTEST_COUNTER));
+  bufp += utoa(bufp, (uint)info.page_cnt);
+  *bufp++ = '\n';
+  copy_and_move_buffer(&bufp, KMEMTEST_LIST, sizeof(KMEMTEST_LIST));
+  bufp += utoa(bufp, (uint)info.list_cnt);
+  *bufp++ = '\n';
+  copy_and_move_buffer(&bufp, KMEMTEST_ERRORS, sizeof(KMEMTEST_ERRORS));
+  bufp += utoa(bufp, (uint)info.err_cnt);
+  *bufp++ = '\n';
+  return copy_buffer(addr, f->off, n);
+}
+
 int unsafe_proc_read(struct vfs_file* f, char* addr, int n) {
   int result = RESULT_ERROR;
   char* bufp = buf;
@@ -343,6 +371,10 @@ int unsafe_proc_read(struct vfs_file* f, char* addr, int n) {
         result = read_file_proc_cache(f, addr, n);
         break;
 
+      case PROC_KMEMTEST:
+        result = read_file_proc_kmemtest(f, addr, n);
+        break;
+
       default:
         return RESULT_ERROR;
     }
@@ -357,6 +389,7 @@ int unsafe_proc_read(struct vfs_file* f, char* addr, int n) {
       copy_and_move_buffer_max_len(&bufp, PROCFS_MOUNTS);
       copy_and_move_buffer_max_len(&bufp, PROCFS_DEVICES);
       copy_and_move_buffer_max_len(&bufp, PROCFS_CACHE);
+      copy_and_move_buffer_max_len(&bufp, PROCFS_KMEMTEST);
 
       *bufp++ = '\0';
 
@@ -432,6 +465,17 @@ static int proc_file_size(struct vfs_file* f) {
 
     case PROC_CACHE:
       size = CACHE_STATUS_LEN;
+      break;
+
+    case PROC_KMEMTEST:
+      size += sizeof(KMEMTEST_TITLE) + 1;  // \n.
+      size += sizeof(KMEMTEST_COUNTER) + sizeof(((kmemtest_info*)0)->page_cnt) +
+              1;  // \n.
+      size += sizeof(KMEMTEST_LIST) + sizeof(((kmemtest_info*)0)->list_cnt) +
+              1;  // \n.
+      size += sizeof(KMEMTEST_ERRORS) + sizeof(((kmemtest_info*)0)->err_cnt) +
+              1;  // \n.
+      break;
 
     default:
       break;

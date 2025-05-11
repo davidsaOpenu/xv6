@@ -205,7 +205,3 @@ int sys_getcpu(void) {
   sti();
   return id;
 }
-
-// This is our solution for what can be found at the /proc
-// virtual filesystem in linux.
-int sys_kmemtest(void) { return kmemtest(); }
