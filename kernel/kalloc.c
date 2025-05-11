@@ -2,6 +2,7 @@
 // memory for user processes, kernel stacks, page table pages,
 // and pipe buffers. Allocates 4096-byte pages.
 
+#include "kalloc.h"
 #include "defs.h"
 #include "memlayout.h"
 #include "mmu.h"
@@ -122,7 +123,9 @@ char *kalloc(void) {
 //    were when freed.
 // Mismatched counters or errors indicate memory
 // corruption!
-int kmemtest(void) {
+//
+// The results are filled into the input struct.
+int kmemtest(kmemtest_info *info) {
   int page_cnt, list_cnt;
   int page_err, err_cnt;
   struct run *r;
@@ -142,12 +145,9 @@ int kmemtest(void) {
   }
   if (kmem.use_lock) release(&kmem.lock);
 
-  cprintf(
-      "Free Memory Pages:\n"
-      "  counter: %d\n"
-      "  list:    %d\n"
-      "  errors:  %d\n",
-      page_cnt, list_cnt, err_cnt);
+  info->page_cnt = page_cnt;
+  info->list_cnt = list_cnt;
+  info->err_cnt = err_cnt;
 
   if (page_cnt == list_cnt && !err_cnt) return 0;
   return -1;

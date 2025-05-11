@@ -40,7 +40,6 @@ int uptime(void);
 int ioctl(int fd, unsigned long request, ...);
 int getppid(void);
 int getcpu(void);
-int kmemtest(void);
 
 int mount(const char*, const char*, const char*);
 int umount(const char*);
