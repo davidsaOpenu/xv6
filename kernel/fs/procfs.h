@@ -12,6 +12,7 @@
 #define PROCFS_MOUNTS "mounts"
 #define PROCFS_DEVICES "devices"
 #define PROCFS_CACHE "cache"
+#define PROCFS_KMEMTEST "kmemtest"
 
 /* /proc/mounts strings. */
 #define MOUNTS_TITLE "Mounts:"
@@ -30,6 +31,12 @@
 #define CACHE_DISABLED "0\n"
 #define CACHE_STATUS_LEN (2)
 
+/* /proc/kmemtest strings. */
+#define KMEMTEST_TITLE "Free Memory Pages:"
+#define KMEMTEST_COUNTER "  counter: "
+#define KMEMTEST_LIST "  list:    "
+#define KMEMTEST_ERRORS "  errors:  "
+
 typedef enum proc_file_name_e {
   NONE = -1,
   PROC_FILE_NAME_START = 0,
@@ -38,6 +45,7 @@ typedef enum proc_file_name_e {
   PROC_MOUNTS,
   PROC_DEVICES,
   PROC_CACHE,
+  PROC_KMEMTEST,
 
   PROC_FILE_NAME_END,
   NON_WRITABLE,

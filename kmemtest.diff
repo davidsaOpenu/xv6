@@ -1,0 +1,336 @@
+commit 2bf42db05ab32fcf2dc19e567c9d69e3368d52b9
+Author: tomershafir <tomer.shafir8@gmail.com>
+Date:   Fri May 9 10:23:20 2025 +0300
+
+    mm: kmemtest: migrate SYS_kmemtest syscall to /proc/kmemtest
+    
+    This patch adds the `/proc/kmemtest` virtual directory to `kernel/fs/procfs`, which returns the results of kmemtest, and removes the old syscall interf
+    ace. As part of SYS_kmemtest removal, SYS_pivot_root is changed from 30 to 29.
+    
+    It changes the internal kernel API of kmemtest to consume a new kmemtest_info struct address to fill, instead of printing directly. The new struct is d
+    efined in a new header `kernel/kalloc.h`.
+    
+    It adds support for the new /proc/kmemtest, and a sanity check in tests/xv6/usertests.c . The results are calculated lazily upon read() , rather than e
+    agerly upon `open()`. It also adds 2 missing breaks in procfs.
+    
+    Closes: https://trello.com/c/WgX9sNkz
+    
+    Co-authored-by: Michael Kalyna <michaelkalyna@gmail.com>
+
+diff --git a/include/syscall.h b/include/syscall.h
+index 1b4f95b..ce1a8a9 100644
+--- a/include/syscall.h
++++ b/include/syscall.h
+@@ -30,7 +30,6 @@
+ #define SYS_ioctl 26
+ #define SYS_getppid 27
+ #define SYS_getcpu 28
+-#define SYS_kmemtest 29
+-#define SYS_pivot_root 30
++#define SYS_pivot_root 29
+ 
+ #endif /* XV6_SYSCALL_H */
+diff --git a/kernel/defs.h b/kernel/defs.h
+index 02993af..0a62ab5 100644
+--- a/kernel/defs.h
++++ b/kernel/defs.h
+@@ -30,6 +30,7 @@ struct devsw;
+ struct dev_stat;
+ struct cgroup_io_device_statistics_s;
+ enum file_type;
++typedef struct kmemtest_info kmemtest_info;
+ 
+ // console.c
+ void consoleclear(void);
+@@ -105,7 +106,7 @@ char* kalloc(void);
+ void kfree(char*);
+ void kinit1(void*, void*);
+ void kinit2(void*, void*);
+-int kmemtest(void);
++int kmemtest(kmemtest_info*);
+ int increse_protect_counter(int num);
+ int decrese_protect_counter(int num);
+ uint get_total_memory();
+diff --git a/kernel/fs/procfs.c b/kernel/fs/procfs.c
+index c9bc45b..ed05e83 100644
+--- a/kernel/fs/procfs.c
++++ b/kernel/fs/procfs.c
+@@ -8,6 +8,7 @@
+ #include "namespace.h"
+ #include "param.h"
+ #include "vfs_file.h"
++#include "kalloc.h"
+ 
+ // Static to save space in the stack.
+ static char buf[MAX_BUF];
+@@ -109,6 +110,8 @@ static proc_file_name_t get_file_name_constant(char* filename) {
+ 
+   if (strcmp(filename, PROCFS_CACHE) == 0) return PROC_CACHE;
+ 
++  if (strcmp(filename, PROCFS_KMEMTEST) == 0) return PROC_KMEMTEST;
++
+   return NONE;
+ }
+ 
+@@ -160,6 +163,10 @@ int unsafe_proc_open_file(char* filename, int omode) {
+ 
+     case PROC_CACHE:
+       file_writeable = 1;
++      break;
++
++    case PROC_KMEMTEST:
++      break;
+ 
+     default:
+       break;
+@@ -318,6 +325,27 @@ static int write_file_proc_cache(struct vfs_file* f, char* addr, int n) {
+   return RESULT_ERROR;
+ }
+ 
++static int read_file_proc_kmemtest(struct vfs_file* f, char* addr, int n) {
++  char* bufp = buf;
++  memset(buf, 0, sizeof(buf));
++
++  kmemtest_info info;
++  (void)kmemtest(&info);
++
++  copy_and_move_buffer(&bufp, KMEMTEST_TITLE, sizeof(KMEMTEST_TITLE));
++  *bufp++ = '\n';
++  copy_and_move_buffer(&bufp, KMEMTEST_COUNTER, sizeof(KMEMTEST_COUNTER));
++  bufp += utoa(bufp, (uint)info.page_cnt);
++  *bufp++ = '\n';
++  copy_and_move_buffer(&bufp, KMEMTEST_LIST, sizeof(KMEMTEST_LIST));
++  bufp += utoa(bufp, (uint)info.list_cnt);
++  *bufp++ = '\n';
++  copy_and_move_buffer(&bufp, KMEMTEST_ERRORS, sizeof(KMEMTEST_ERRORS));
++  bufp += utoa(bufp, (uint)info.err_cnt);
++  *bufp++ = '\n';
++  return copy_buffer(addr, f->off, n);
++}
++
+ int unsafe_proc_read(struct vfs_file* f, char* addr, int n) {
+   int result = RESULT_ERROR;
+   char* bufp = buf;
+@@ -342,6 +370,10 @@ int unsafe_proc_read(struct vfs_file* f, char* addr, int n) {
+       case PROC_CACHE:
+         result = read_file_proc_cache(f, addr, n);
+         break;
++      
++      case PROC_KMEMTEST:
++        result = read_file_proc_kmemtest(f, addr, n);
++        break;
+ 
+       default:
+         return RESULT_ERROR;
+@@ -357,6 +389,7 @@ int unsafe_proc_read(struct vfs_file* f, char* addr, int n) {
+       copy_and_move_buffer_max_len(&bufp, PROCFS_MOUNTS);
+       copy_and_move_buffer_max_len(&bufp, PROCFS_DEVICES);
+       copy_and_move_buffer_max_len(&bufp, PROCFS_CACHE);
++      copy_and_move_buffer_max_len(&bufp, PROCFS_KMEMTEST);
+ 
+       *bufp++ = '\0';
+ 
+@@ -432,6 +465,14 @@ static int proc_file_size(struct vfs_file* f) {
+ 
+     case PROC_CACHE:
+       size = CACHE_STATUS_LEN;
++      break;
++    
++    case PROC_KMEMTEST:
++      size += sizeof(KMEMTEST_TITLE) + 1; // \n.
++      size += sizeof(KMEMTEST_COUNTER) + sizeof(((kmemtest_info *)0)->page_cnt) + 1; // \n.
++      size += sizeof(KMEMTEST_LIST) + sizeof(((kmemtest_info *)0)->list_cnt) + 1; // \n.
++      size += sizeof(KMEMTEST_ERRORS) + sizeof(((kmemtest_info *)0)->err_cnt) + 1; // \n.
++      break;
+ 
+     default:
+       break;
+diff --git a/kernel/fs/procfs.h b/kernel/fs/procfs.h
+index 84c9106..0498753 100644
+--- a/kernel/fs/procfs.h
++++ b/kernel/fs/procfs.h
+@@ -12,6 +12,7 @@
+ #define PROCFS_MOUNTS "mounts"
+ #define PROCFS_DEVICES "devices"
+ #define PROCFS_CACHE "cache"
++#define PROCFS_KMEMTEST "kmemtest"
+ 
+ /* /proc/mounts strings. */
+ #define MOUNTS_TITLE "Mounts:"
+@@ -30,6 +31,12 @@
+ #define CACHE_DISABLED "0\n"
+ #define CACHE_STATUS_LEN (2)
+ 
++/* /proc/kmemtest strings. */
++#define KMEMTEST_TITLE "Free Memory Pages:"
++#define KMEMTEST_COUNTER "  counter: "
++#define KMEMTEST_LIST "  list:    "
++#define KMEMTEST_ERRORS "  errors:  "
++
+ typedef enum proc_file_name_e {
+   NONE = -1,
+   PROC_FILE_NAME_START = 0,
+@@ -38,6 +45,7 @@ typedef enum proc_file_name_e {
+   PROC_MOUNTS,
+   PROC_DEVICES,
+   PROC_CACHE,
++  PROC_KMEMTEST,
+ 
+   PROC_FILE_NAME_END,
+   NON_WRITABLE,
+diff --git a/kernel/kalloc.c b/kernel/kalloc.c
+index 98655ba..acc1879 100644
+--- a/kernel/kalloc.c
++++ b/kernel/kalloc.c
+@@ -2,6 +2,7 @@
+ // memory for user processes, kernel stacks, page table pages,
+ // and pipe buffers. Allocates 4096-byte pages.
+ 
++#include "kalloc.h"
+ #include "defs.h"
+ #include "memlayout.h"
+ #include "mmu.h"
+@@ -122,7 +123,9 @@ char *kalloc(void) {
+ //    were when freed.
+ // Mismatched counters or errors indicate memory
+ // corruption!
+-int kmemtest(void) {
++//
++// The results are filled into the input struct.
++int kmemtest(kmemtest_info *info) {
+   int page_cnt, list_cnt;
+   int page_err, err_cnt;
+   struct run *r;
+@@ -142,12 +145,9 @@ int kmemtest(void) {
+   }
+   if (kmem.use_lock) release(&kmem.lock);
+ 
+-  cprintf(
+-      "Free Memory Pages:\n"
+-      "  counter: %d\n"
+-      "  list:    %d\n"
+-      "  errors:  %d\n",
+-      page_cnt, list_cnt, err_cnt);
++  info->page_cnt = page_cnt;
++  info->list_cnt = list_cnt;
++  info->err_cnt = err_cnt;
+ 
+   if (page_cnt == list_cnt && !err_cnt) return 0;
+   return -1;
+diff --git a/kernel/kalloc.h b/kernel/kalloc.h
+new file mode 100644
+index 0000000..566be8f
+--- /dev/null
++++ b/kernel/kalloc.h
+@@ -0,0 +1,10 @@
++#ifndef XV6_KALLOC_H
++#define XV6_KALLOC_H
++
++typedef struct kmemtest_info {
++    int page_cnt;
++    int list_cnt;
++    int err_cnt;
++} kmemtest_info;
++
++#endif /* XV6_KALLOC_H */
+diff --git a/kernel/syscall.c b/kernel/syscall.c
+index 214505a..b2c8461 100644
+--- a/kernel/syscall.c
++++ b/kernel/syscall.c
+@@ -96,7 +96,6 @@ extern int sys_usleep(void);
+ extern int sys_ioctl(void);
+ extern int sys_getppid(void);
+ extern int sys_getcpu(void);
+-extern int sys_kmemtest(void);
+ extern int sys_pivot_root(void);
+ 
+ static int (*syscalls[])(void) = {
+@@ -114,7 +113,7 @@ static int (*syscalls[])(void) = {
+     [SYS_umount] sys_umount,     [SYS_unshare] sys_unshare,
+     [SYS_usleep] sys_usleep,     [SYS_ioctl] sys_ioctl,
+     [SYS_getppid] sys_getppid,   [SYS_getcpu] sys_getcpu,
+-    [SYS_kmemtest] sys_kmemtest, [SYS_pivot_root] sys_pivot_root,
++    [SYS_pivot_root] sys_pivot_root,
+ };
+ 
+ void syscall(void) {
+diff --git a/kernel/sysproc.c b/kernel/sysproc.c
+index cd65a43..524a949 100644
+--- a/kernel/sysproc.c
++++ b/kernel/sysproc.c
+@@ -205,7 +205,3 @@ int sys_getcpu(void) {
+   sti();
+   return id;
+ }
+-
+-// This is our solution for what can be found at the /proc
+-// virtual filesystem in linux.
+-int sys_kmemtest(void) { return kmemtest(); }
+diff --git a/tests/xv6/cgroupstests.c b/tests/xv6/cgroupstests.c
+index 0be9277..6e0abde 100644
+--- a/tests/xv6/cgroupstests.c
++++ b/tests/xv6/cgroupstests.c
+@@ -1281,8 +1281,6 @@ TEST(test_memory_stat_content_valid) {
+   ASSERT_UINT_EQ(pgmajfault, 0);
+ }
+ 
+-TEST(test_kernel_freem_mem) { ASSERT_FALSE(kmemtest()); }
+-
+ TEST(test_cpu_stat_content_valid) {
+   char buf[265];
+   strcpy(buf, read_file(TEST_1_CPU_STAT, 0));
+@@ -2024,7 +2022,6 @@ int main(int argc, char* argv[]) {
+   run_test(test_setting_max_descendants_and_max_depth);
+   run_test(test_deleting_cgroups);
+   run_test(test_umount_cgroup_fs);
+-  run_test_break_msg(test_kernel_freem_mem);
+ 
+   PRINT_TESTS_RESULT("CGROUPTESTS");
+   return CURRENT_TESTS_RESULT();
+diff --git a/tests/xv6/usertests.c b/tests/xv6/usertests.c
+index d35254f..44659b0 100644
+--- a/tests/xv6/usertests.c
++++ b/tests/xv6/usertests.c
+@@ -1824,11 +1824,17 @@ void exitrctest() {
+ }
+ 
+ void memtest() {
+-  if (kmemtest()) {
+-    printf(stderr, "memtest: memory corruption\n");
++  char *buf[256]; // should be big enough for kmemtest output
++  int fd = open("/proc/kmemtest", O_RDONLY);
++  if (-1 == fd) {
++    printf(stdout, "failed to open /proc/kmemtest\n");
++    exit(1);
++  }
++  if (read(fd, buf, sizeof(buf) < 0)) {
++    printf(stdout, "failed to read from /proc/kmemtest\n");
+     exit(1);
+   }
+-  printf(stdout, "memtest: memory ok\n");
++  close(fd);
+ }
+ 
+ void rm_recursive(const char *const path) {
+diff --git a/user/lib/user.h b/user/lib/user.h
+index da6e930..8206829 100644
+--- a/user/lib/user.h
++++ b/user/lib/user.h
+@@ -40,7 +40,6 @@ int uptime(void);
+ int ioctl(int fd, unsigned long request, ...);
+ int getppid(void);
+ int getcpu(void);
+-int kmemtest(void);
+ 
+ int mount(const char*, const char*, const char*);
+ int umount(const char*);
+diff --git a/user/lib/usys.S b/user/lib/usys.S
+index 6dc4a42..2a71930 100644
+--- a/user/lib/usys.S
++++ b/user/lib/usys.S
+@@ -36,5 +36,4 @@ SYSCALL(usleep)
+ SYSCALL(ioctl)
+ SYSCALL(getppid)
+ SYSCALL(getcpu)
+-SYSCALL(kmemtest)
+ SYSCALL(pivot_root)

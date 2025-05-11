@@ -30,6 +30,7 @@ struct devsw;
 struct dev_stat;
 struct cgroup_io_device_statistics_s;
 enum file_type;
+typedef struct kmemtest_info kmemtest_info;
 
 // console.c
 void consoleclear(void);
@@ -105,7 +106,7 @@ char* kalloc(void);
 void kfree(char*);
 void kinit1(void*, void*);
 void kinit2(void*, void*);
-int kmemtest(void);
+int kmemtest(kmemtest_info*);
 int increse_protect_counter(int num);
 int decrese_protect_counter(int num);
 uint get_total_memory();
