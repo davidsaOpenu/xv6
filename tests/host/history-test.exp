@@ -1,0 +1,318 @@
+#!/usr/bin/expect -f
+
+# default bash keybindings
+set LINE_START "\x00"
+set CANCEL "\x03"
+set LINE_END "\x05"
+set BELL "\x07"
+set BACKSPACE "\x08"
+set HTAB "\x09"
+set PREV "\x10"
+set DELETE_TO_START "\x15"
+set SEARCH "\x12"
+set CARRIAGE_FEED "\x0D"
+set NEXT "\x0E"
+set ESCAPE_SEARCH "\x07"
+
+# consts
+set PROMPT "\\$ "
+set SHORTPAUSE 0.5
+set timeout 10
+
+# vars
+set passed_test_count 0
+set total_test_count 0
+set testno 0
+set test_title ""
+
+# - Test 1: basic history scrolling (using arrow key) ------------------------
+#
+# - Objective:
+#   Verify that the "up" and "down" arrow keys scroll through the command
+#   history correctly.
+#
+# - Steps:
+#   1. Execute a known sequence of distinct commands (e.g., echo "test1",
+#   echo "test2", echo "test3").
+#   2. Press the "up" arrow key three times, each press should bring the
+#   previous command back into the prompt, in reverse order of execution.
+#   3. Press the "down" arrow key once, it should bring the next command in
+#   history or clear the prompt if the most recent command is reached.
+#
+# - Expected:
+#   Each "up" arrow key press correctly brings up the previous command in the
+#   command history. The "down" arrow key navigates forward through the
+#   history or clears the prompt when the most recent command is displayed.
+#
+# @return list { true } - on success, { false error_msg } - otherwise
+# ----------------------------------------------------------------------------
+proc test1 {} {
+    global spawn_id timeout PROMPT PREV NEXT SHORTPAUSE BACKSPACE
+    global testno test_title
+
+    set testno 1
+    set test_title "basic history scrolling"
+
+    # populate history
+    expect $PROMPT
+    send "history -s 'echo test1'; \
+          history -s 'echo test2'; \
+          history -s 'echo test3'\r"
+    sleep $SHORTPAUSE
+    expect -re ".*echo test3"
+
+    # test backwards
+    send $PREV
+    sleep $SHORTPAUSE
+    expect {
+        "echo test3" {}
+        timeout { return { false "first up key failed" } }
+    }
+
+    send $PREV
+    sleep $SHORTPAUSE
+    expect {
+        "${BACKSPACE}2" {}
+        timeout { return { false "second up key failed" } }
+    }
+
+    send $PREV
+    sleep $SHORTPAUSE
+    expect {
+        "${BACKSPACE}1" {}
+        timeout { return { false "third up key failed" } }
+    }
+
+    # test forwards
+    send $NEXT
+    sleep $SHORTPAUSE
+    expect {
+        "${BACKSPACE}2" {}
+        timeout { return { false "down key failed" } }
+    }
+
+    return { true }
+}
+
+# - Test 2: edge case for history scrolling ----------------------------------
+#
+# - Objective:
+#   Ensure the shell handles edge cases gracefully when scrolling beyond the
+#   available command history.
+#
+# - Steps:
+#   1. Execute a small number of commands (e.g., two commands).
+#   2. Attempt to scroll past the oldest command by pressing the "up" arrow
+#   more times than the number of commands executed.
+#   3. Attempt to scroll down past the most recent command in the history.
+#
+# - Expected:
+#   The shell should not attempt to scroll past the oldest or the most recent
+#   command in the history, ensuring the user cannot scroll into an undefined
+#   state. Reaching the limit is indicated by a bell sound.
+#
+# @return list { true } - on success, { false error_msg } - otherwise
+# ----------------------------------------------------------------------------
+proc test2 {} {
+    global spawn_id timeout PROMPT PREV NEXT SHORTPAUSE BACKSPACE BELL
+    global testno test_title
+
+    set testno 2
+    set test_title "scrolling above limit"
+
+    # populate history
+    expect $PROMPT
+    send "history -s 'echo test1'; \
+          history -s 'echo test2'\r"
+    sleep $SHORTPAUSE
+    expect -re ".*echo test2"
+
+    # scroll back by two
+    send $PREV
+    sleep $SHORTPAUSE
+    expect "echo test2"
+
+    send $PREV
+    sleep $SHORTPAUSE
+    expect "${BACKSPACE}1"
+
+    send $PREV
+    sleep $SHORTPAUSE
+    expect {
+        -re "^${BELL}" {}
+        timeout {
+            return { false "going past limit didn't yield a bell sound" }
+        }
+    }
+
+    return { true }
+}
+
+# - Test 3: basic search -----------------------------------------------------
+#
+# - Objective:
+#   Test the basic functionality of the search with "Ctrl-R".
+#
+# - Steps:
+#   1. Populate the history with a set of commands.
+#   2. Initiate a "Ctrl-R" search and enter a unique part of a command
+#   previously executed.
+#   3. Press "Ctrl-R" repeatedly to cycle through commands that include the
+#   sub-string.
+#
+# - Expected:
+#   The shell finds and displays matches for the search, cycling through them
+#   with each "Ctrl-R" press.
+#
+# @return list { true } - on success, { false error_msg } - otherwise
+# ----------------------------------------------------------------------------
+proc test3 {} {
+    global spawn_id timeout PROMPT PREV NEXT SHORTPAUSE BACKSPACE SEARCH \
+           ESCAPE_SEARCH
+    global testno test_title
+
+    set testno 3
+    set test_title "basic search"
+
+    # populate history
+    expect $PROMPT
+    send "history -s 'echo test'; \
+          history -s 'ls'; \
+          history -s 'echo foo'; \
+          history -s 'cat /proc/mem'; \
+          history -s 'echo bar'\r"
+    sleep $SHORTPAUSE
+    expect -re ".*echo bar"
+
+    # initiate search
+    send $SEARCH
+    sleep $SHORTPAUSE
+    expect "reverse-i-search"
+
+    # search for existing term
+    send "echo"
+    sleep $SHORTPAUSE
+    expect {
+        -re {.*bar} {}
+        timeout {
+            send $ESCAPE_SEARCH
+            return { false "no match found for 'echo'" }
+        }
+    }
+
+    # cycle to next find
+    send $SEARCH
+    sleep $SHORTPAUSE
+    expect {
+        -re ".*foo" {}
+        timeout {
+            send $ESCAPE_SEARCH
+            return { false "cycling through CTRL+R failed" }
+        }
+    }
+
+    send $ESCAPE_SEARCH
+    return { true }
+}
+
+# - Test 4: No Match Found ---------------------------------------------------
+#
+# - Objective: Test the behavior when no command history matches the search.
+#
+# - Steps:
+#   1. Populate the history with a set of commands.
+#   2. Attempt a "Ctrl-R" search with a sub-string that does not match any
+#   command in the history.
+#
+# - Expected:
+#   The shell indicates that no match is found, possibly with a feedback
+#   mechanism like a beep or a visual cue (failed string).
+#
+# @return list { true } - on success, { false error_msg } - otherwise
+# ----------------------------------------------------------------------------
+proc test4 {} {
+    global spawn_id timeout PROMPT PREV NEXT SHORTPAUSE SEARCH BELL \
+           ESCAPE_SEARCH
+    global testno test_title
+
+    set testno 4
+    set test_title "search with no match"
+
+    # populate history
+    expect $PROMPT
+    send "history -s 'cat test'; \
+          history -s 'echo test';\
+          history -s 'ls'\r"
+    sleep $SHORTPAUSE
+    expect -re ".*history -s 'ls'"
+
+    # initiate search
+    send $SEARCH
+    sleep $SHORTPAUSE
+    expect -re "reverse-i-search"
+
+    # search for non-existent term
+    send "foobar"
+    sleep $SHORTPAUSE
+    expect {
+        "$BELL" {}
+        "failed" {}
+        timeout {
+            send $ESCAPE_SEARCH
+            return { false "no indicator for search failure found" }
+        }
+    }
+
+    send $ESCAPE_SEARCH
+    return { true }
+}
+
+# - wrapper with common code for all tests.
+# @test_proc - test function to wrap around
+proc history_test_wrapper {test_proc} {
+    global spawn_id timeout PROMPT LINE_END DELETE_TO_START
+    global total_test_count passed_test_count testno test_title
+
+    incr total_test_count 1
+
+    # spawn shell
+    spawn bash --noprofile --norc
+
+    # clear history
+    send "history -c\r"
+    expect "history -c"
+
+    set res [$test_proc]
+
+    if { [lindex $res 0] } {
+        send_user "\n\[INFO\] Test ${testno}: ${test_title}. \(PASS\)\n"
+        incr passed_test_count 1
+    } else {
+        send_user \
+        "\n\[ERROR\] Test ${testno}: ${test_title} -- [lindex $res 1]. \(FAIL\)\n"
+    }
+
+    # clear prompt
+    send $LINE_END
+    send $DELETE_TO_START
+
+    # exit cleanly
+    send "exit\r"
+}
+
+proc test_all {} {
+    history_test_wrapper test1
+    history_test_wrapper test2
+    history_test_wrapper test3
+    history_test_wrapper test4
+}
+
+if { [llength $argv] > 0 } {
+    log_file -noappend [lindex $argv 0]
+}
+
+test_all
+
+send_user "\nPassed (${passed_test_count}/${total_test_count})\n"
+
+exit [expr {$passed_test_count == $total_test_count ? 0 : 1}]
