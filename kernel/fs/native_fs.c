@@ -11,6 +11,7 @@
 
 #include "native_fs.h"
 
+#include "cgroup.h"
 #include "defs.h"
 #include "device/bio.h"
 #include "device/buf.h"
@@ -466,18 +467,38 @@ static void stati(struct vfs_inode *vfs_ip, struct stat *st) {
 static int readi(struct vfs_inode *vfs_ip, uint off, uint n,
                  vector *dstvector) {
   uint tot, m;
+  uint curr_n = 0;
+  int can_read = 0;
   struct buf *bp;
+  struct cgroup *cgroup = myproc()->cgroup;
   struct native_inode *ip =
       container_of(vfs_ip, struct native_inode, vfs_inode);
 
   if (ip->vfs_inode.type == T_DEV) {
     if (ip->vfs_inode.major < 0 || ip->vfs_inode.major >= NDEV ||
         ip->vfs_inode.minor < 0 || ip->vfs_inode.minor >= MAX_TTY ||
-        !devsw[ip->vfs_inode.major].read)
+        !devsw[ip->vfs_inode.major].read) {
       return -1;
+    }
 
-    int read_result = devsw[ip->vfs_inode.major].read(vfs_ip, n, dstvector);
-    return read_result;
+    curr_n = 0;
+    while (curr_n < n) {
+      can_read = cgroup_request_io(cgroup, vfs_ip->major, vfs_ip->minor,
+                                   n - curr_n, 0);
+
+      // Failure
+      if (can_read < 0) {
+        return can_read;
+      }
+
+      if (can_read > 0) {
+        devsw[vfs_ip->major].read(vfs_ip, curr_n, dstvector);
+        curr_n += can_read;
+        update_io_stat(cgroup, vfs_ip->major, vfs_ip->minor, can_read, 0);
+      }
+    }
+
+    return n;
   }
 
   if (off > ip->vfs_inode.size || off + n < off) return -1;
@@ -502,28 +523,63 @@ static int readi(struct vfs_inode *vfs_ip, uint off, uint n,
 // Caller must hold ip->lock.
 static int writei(struct vfs_inode *vfs_ip, char *src, uint off, uint n) {
   uint tot, m;
+  uint curr_n = 0;
   struct buf *bp;
+  struct cgroup *cgroup = myproc()->cgroup;
   struct native_inode *ip =
       container_of(vfs_ip, struct native_inode, vfs_inode);
+
+  int can_write = 0;
 
   if (ip->vfs_inode.type == T_DEV) {
     if (ip->vfs_inode.major < 0 || ip->vfs_inode.major >= NDEV ||
         ip->vfs_inode.minor < 0 || ip->vfs_inode.minor >= MAX_TTY ||
-        !devsw[ip->vfs_inode.major].write)
+        !devsw[ip->vfs_inode.major].write) {
       return -1;
-    return devsw[ip->vfs_inode.major].write(vfs_ip, src, n);
+    }
+
+    curr_n = 0;
+    while (curr_n < n) {
+      can_write = cgroup_request_io(cgroup, vfs_ip->major, vfs_ip->minor,
+                                    n - curr_n, 1);
+      // cprintf("writing curr_n %d can_write %d\n", curr_n, can_write);
+      if (can_write < 0) {
+        // Failure
+        return can_write;
+      }
+
+      devsw[vfs_ip->major].write(vfs_ip, src + curr_n, can_write);
+      curr_n += can_write;
+
+      update_io_stat(cgroup, vfs_ip->major, vfs_ip->minor, can_write, 1);
+    }
   }
 
   if (off > ip->vfs_inode.size || off + n < off) return -1;
   if (off + n > MAXFILE * BSIZE) return -1;
 
-  for (tot = 0; tot < n; tot += m, off += m, src += m) {
-    bp = fs_bread(ip->vfs_inode.sb, bmap(ip, off / BSIZE));
-    m = min(n - tot,  // NOLINT(build/include_what_you_use)
-            BSIZE - off % BSIZE);
-    memmove(bp->data + off % BSIZE, src, m);
-    log_write(bp);
-    buf_cache_release(bp);
+  curr_n = 0;
+
+  while (curr_n < n) {
+    can_write =
+        cgroup_request_io(cgroup, vfs_ip->major, vfs_ip->minor, n - curr_n, 1);
+
+    // Failure
+    if (can_write < 0) {
+      return can_write;
+    }
+
+    for (tot = curr_n; tot < curr_n + can_write; tot += m, off += m, src += m) {
+      bp = fs_bread(ip->vfs_inode.sb, bmap(ip, off / BSIZE));
+      m = min(curr_n + can_write,  // NOLINT(build/include_what_you_use)
+              BSIZE - off % BSIZE);
+      memmove(bp->data + off % BSIZE, src, m);
+      log_write(bp);
+      buf_cache_release(bp);
+    }
+
+    curr_n += can_write;
+    update_io_stat(cgroup, vfs_ip->major, vfs_ip->minor, can_write, 1);
   }
 
   if (n > 0 && off > ip->vfs_inode.size) {

@@ -26,6 +26,7 @@
 #define CGFS_MEM_MIN "memory.min"
 #define CGFS_MEM_STAT "memory.stat"
 #define CGFS_IO_STAT "io.stat"
+#define CGFS_IO_MAX "io.max"
 
 typedef enum cgroup_file_name_e {
   CG_FILE_NAME_START = 0,
@@ -51,6 +52,7 @@ typedef enum cgroup_file_name_e {
   MEM_CUR,
   MEM_STAT,
   IO_STAT,
+  IO_MAX,
   INVALID_TYPE
 } cgroup_file_name_t;
 

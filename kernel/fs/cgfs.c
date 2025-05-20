@@ -244,6 +244,8 @@ static cgroup_file_name_t get_file_name_constant(char* filename) {
     return MEM_STAT;
   else if (strcmp(filename, CGFS_IO_STAT) == 0)
     return IO_STAT;
+  else if (strcmp(filename, CGFS_IO_MAX) == 0)
+    return IO_MAX;
 
   return -1;
 }
@@ -370,6 +372,20 @@ static int unsafe_cg_open_file(char* filename, struct cgroup* cgp, int omode) {
       /* internally initialize the io related stats in the file structure */
       set_cgroup_io_stat(f);
       break;
+
+    case IO_MAX:
+      if (cgp == cgroup_root()) {
+        return -1;
+      }
+
+      for (int i = 0; i < NELEM(f->io.max.io_max_table); i++) {
+        for (int j = 0; j < NELEM(f->io.max.io_max_table[0]); j++) {
+          io_stat_copy(&(cgp->io_account_table[i][j].max_io),
+                       &(f->io.max.io_max_table[i][j]));
+        }
+      }
+      break;
+
     // for any other type we do nothing (no special handling)
     default:
       break;
@@ -742,6 +758,72 @@ static int read_file_io_stat(struct vfs_file* f, char* addr, int n) {
       addr);
 }
 
+static int read_file_io_max(struct vfs_file* f, char* addr, int n) {
+  char tmp_buf[32];  // As defined in old `unsafe_cg_write` before refactor
+
+  // NOTE (Ron): original patch had this weird buf aliasing, this should be
+  // refactored out in next commits, as it is a bug beacon!
+  char* tmp_num_buff = tmp_buff;
+  char* maxtext = buf;
+  char* maxtextp = maxtext;
+  int num_str_length;
+
+  const cgroup_io_stat_t* pstat;
+
+  memset(&buf, 0, sizeof buf);
+
+  for (int dev_i = 0; dev_i < NELEM(f->io.max.io_max_table); dev_i++) {
+    for (int tty_i = 0; tty_i < NELEM(f->io.max.io_max_table[0]); tty_i++) {
+      pstat = &(f->io.max.io_max_table[dev_i][tty_i]);
+
+      if ((pstat->read.bytes == IO_ACCOUNT_NO_LIMIT) &&
+          (pstat->read.ios == IO_ACCOUNT_NO_LIMIT) &&
+          (pstat->write.bytes == IO_ACCOUNT_NO_LIMIT) &&
+          (pstat->write.ios == IO_ACCOUNT_NO_LIMIT)) {
+        // No limit to show
+        continue;
+      }
+
+      num_str_length = itoa(tmp_num_buff, dev_i);
+      copy_and_move_buffer(&maxtextp, tmp_num_buff, num_str_length);
+      copy_and_move_buffer(&maxtextp, ":", strlen(":"));
+      num_str_length = itoa(tmp_num_buff, tty_i);
+      copy_and_move_buffer(&maxtextp, tmp_num_buff, num_str_length);
+
+      if (pstat->read.bytes != IO_ACCOUNT_NO_LIMIT) {
+        copy_and_move_buffer(&maxtextp, " ", strlen(" "));
+        copy_and_move_buffer(&maxtextp, "rbps=", strlen("rbps="));
+        num_str_length = itoa(tmp_num_buff, pstat->read.bytes);
+        copy_and_move_buffer(&maxtextp, tmp_num_buff, num_str_length);
+      }
+      if (pstat->write.bytes != IO_ACCOUNT_NO_LIMIT) {
+        copy_and_move_buffer(&maxtextp, " ", strlen(" "));
+        copy_and_move_buffer(&maxtextp, "wiops=", strlen("wiops="));
+        num_str_length = itoa(tmp_num_buff, pstat->write.bytes);
+        copy_and_move_buffer(&maxtextp, tmp_num_buff, num_str_length);
+      }
+      if (pstat->read.ios != IO_ACCOUNT_NO_LIMIT) {
+        copy_and_move_buffer(&maxtextp, " ", strlen(" "));
+        copy_and_move_buffer(&maxtextp, "riops=", strlen("riops="));
+        num_str_length = itoa(tmp_num_buff, pstat->read.ios);
+        copy_and_move_buffer(&maxtextp, tmp_num_buff, num_str_length);
+      }
+      if (pstat->write.ios != IO_ACCOUNT_NO_LIMIT) {
+        copy_and_move_buffer(&maxtextp, " ", strlen(" "));
+        copy_and_move_buffer(&maxtextp, "wbps=", strlen("wbps="));
+        num_str_length = itoa(tmp_num_buff, pstat->write.ios);
+        copy_and_move_buffer(&maxtextp, tmp_num_buff, num_str_length);
+      }
+      copy_and_move_buffer(&maxtextp, "\n", strlen("\n"));
+    }
+  }
+
+  copy_and_move_buffer(&maxtextp, "\n\0", 2);
+
+  return copy_buffer_up_to_end(maxtext + f->off,
+                               min(abs(maxtextp - maxtext - f->off), n), addr);
+}
+
 static int read_file_mem_stat(struct vfs_file* f, char* addr, int n) {
   char file_dirty_buf[10] = {0};
   char file_dirty_aggregated_buf[10] = {0};
@@ -894,8 +976,19 @@ static int unsafe_cg_read_file(struct vfs_file* f, char* addr, int n) {
       break;
 
     case IO_STAT:
+      // -----------------------------------------------------------------------
+      // NOTE (Ron):
+      // commit f678d90ae337be41a5c@xv6-ns changes variable names in `io-stat`
+      // related functions.
+      //
+      // In effort to Keep commits atomic, variable name-changes will be
+      // deferred.
+      // -----------------------------------------------------------------------
       r = read_file_io_stat(f, addr, n);
       break;
+
+    case IO_MAX:
+      r = read_file_io_max(f, addr, n);
     // for any other file type we do nothing (no special handling)
     default:
       break;
@@ -961,6 +1054,10 @@ int unsafe_cg_read(cg_file_type type, struct vfs_file* f, char* addr, int n) {
       if (f->cgp->mem_controller_enabled) {
         copy_and_move_buffer_max_len(&bufp, CGFS_MEM_MAX);
         copy_and_move_buffer_max_len(&bufp, CGFS_MEM_MIN);
+      }
+
+      if (f->cgp->io_controller_enabled) {
+        copy_and_move_buffer_max_len(&bufp, CGFS_IO_MAX);
       }
     }
 
@@ -1251,6 +1348,51 @@ static int write_file_mem_min(struct vfs_file* f, char* addr, int n) {
   return n;
 }
 
+static int write_file_io_max(struct vfs_file* f, char* addr, int n) {
+  // Ex of expected format: "<dev_i>:<tty_i>,<order_1>=<num>,<order_2>=max"
+  // where order is one of rbps,wbps,riops or wiops
+  int dev_i = 0;
+  int tty_i = 0;
+  int max_value = 0;
+  // Read the major device number
+  len = copy_until_char(tmp_num_buff, addr, ':', sizeof(tmp_num_buff));
+  addr += len;
+  dev_i = atoi(tmp_num_buff);
+  if (dev_i < 0 || dev_i >= NDEV) return -1;
+  // Read the minor device
+  len = copy_until_char(tmp_num_buff, addr, ',', sizeof(tmp_num_buff));
+  addr += len;
+  tty_i = atoi(tmp_num_buff);
+  if (tty_i < 0 || tty_i >= MAX_TTY) return -1;
+  while (*addr) {
+    len = copy_until_char(tmp_buff, addr, '=', sizeof(tmp_buff));
+    addr += len;
+    len = copy_until_char(tmp_num_buff, addr, ',', sizeof(tmp_num_buff));
+    addr += len;
+    max_value = atoi(tmp_num_buff);
+    if (max_value < 0) {
+      if (strcmp(tmp_num_buff, "max") == 0) {
+        max_value = IO_ACCOUNT_NO_LIMIT;
+      } else {
+        return -1;
+      }
+    }
+    if (strcmp(tmp_buff, "rbps") == 0) {
+      f->cgp->io_account_table[dev_i][tty_i].max_io.read.bytes = max_value;
+    } else if (strcmp(tmp_buff, "wbps") == 0) {
+      f->cgp->io_account_table[dev_i][tty_i].max_io.write.bytes = max_value;
+    } else if (strcmp(tmp_buff, "riops") == 0) {
+      f->cgp->io_account_table[dev_i][tty_i].max_io.read.ios = max_value;
+    } else if (strcmp(tmp_buff, "wiops") == 0) {
+      f->cgp->io_account_table[dev_i][tty_i].max_io.write.ios = max_value;
+    } else {
+      return -1;
+    }
+  }
+
+  return 0;  // Original variable `r` initial value before refactoring.
+}
+
 int unsafe_cg_write(struct vfs_file* f, char* addr, int n) {
   int r = 0;
   cgroup_file_name_t filename_const = get_file_name_constant(f->cgfilename);
@@ -1278,6 +1420,8 @@ int unsafe_cg_write(struct vfs_file* f, char* addr, int n) {
     r = write_file_mem_max(f, addr, n);
   } else if (filename_const == MEM_MIN && f->cgp->mem_controller_enabled) {
     r = write_file_mem_min(f, addr, n);
+  } else if (filename_const == IO_MAX && f->cgp->io_controller_enabled) {
+    r = write_file_io_max(f, addr, n);
   }
 
   return r;

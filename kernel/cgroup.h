@@ -17,6 +17,8 @@
 /* Max length allowed for controller names. */
 #define MAX_CONTROLLER_NAME_LENGTH 16
 
+#define IO_ACCOUNT_NO_LIMIT (-1)
+
 /* major:minor format which takes at most 17 bytes (8 bytes for each uint value)
  */
 #define DEVICE_NAME 17
@@ -37,6 +39,23 @@ typedef struct cgroup_io_device_statistics_s {
   uint minor;
   struct dev_stat device_stats;
 } cgroup_io_device_statistics_t;
+
+typedef struct cgroup_io_action_s {
+  int bytes;  // Number of bytes
+  int ios;    // Number of IO actions
+} cgroup_io_action_t;
+
+typedef struct cgroup_io_stat_s {
+  cgroup_io_action_t read;
+  cgroup_io_action_t write;
+} cgroup_io_stat_t;
+
+typedef struct {
+  unsigned int io_account_frame;
+  cgroup_io_stat_t last_frame_io;
+  cgroup_io_stat_t curr_frame_io;
+  cgroup_io_stat_t max_io;
+} cgroup_io_account_t;
 
 /*
  * Control group, contains up to NPROC processes.
@@ -76,6 +95,11 @@ struct cgroup {
   char mem_controller_avalible;
   /* Is 1 if memory controller is enabled, otherwise 0. */
   char mem_controller_enabled;
+
+  /* Is 1 if io controller may be enabled, otherwise 0.*/
+  char io_controller_avalible;
+  /* Is 1 if io controller is enabled, otherwise 0.*/
+  char io_controller_enabled;
 
   /* Is 1 if subtree has at least one process in it, otherise 0. */
   char populated;
@@ -147,6 +171,17 @@ struct cgroup {
 
   /* IO statistics for each available IO in cgroup */
   cgroup_io_device_statistics_t io_stats[NDEV];
+
+  cgroup_io_stat_t io_stat_table[NDEV][MAX_TTY];
+  cgroup_io_account_t io_account_table[NDEV][MAX_TTY];
+
+  unsigned int io_account_period;
+
+  /* This lock is enough as a cgroup can't be deleted while there are still
+   * processes/other cgroups in it */
+
+  /* Lock access to io_stat_table and io_account_table */
+  struct spinlock lock_cgroup_io_tables;
 };
 
 /**
@@ -587,5 +622,38 @@ void cgroup_mem_stat_pgmajfault_incr(struct cgroup* cgroup);
 /* TODO: add documentation */
 void get_cgroup_io_stat(struct vfs_file* f, struct cgroup* cgp);
 void set_cgroup_io_stat(struct vfs_file* f);
+
+// -----------------------------------------------------------------------------
+// NOTE (ron): This API is weird, `dst` should be the first argument, to conform
+// to typical C-library style!
+//
+// I'm not refactoring this right now to maintain simillarities to the original
+// patch.
+// -----------------------------------------------------------------------------
+// Corresponds to `copy_ioStat` in original patch
+void io_stat_copy(const cgroup_io_stat_t* src, cgroup_io_stat_t* dst);
+
+/**
+ * This function updates the io account of a cgroup.
+ * The funcion will dealy the io if the cgroup's io max is reached.
+ * Receives cgroup pointer parameter "cgroup", 2 shorts major and minor, int
+ * size and char is_write. Updates the io_stat_table in the cell corresponding
+ * to the major and minor numbers. In accordance to size and is_write, updates
+ * the number of reads/writes to the device and the total size (in bytes) of
+ * reads/writes.
+ */
+int cgroup_request_io(struct cgroup* cgroup, short major, short minor,
+                      uint size, char is_write);
+
+/**
+ * This function updates the io usage of a cgroup and all of its ancestors.
+ * Receives cgroup pointer parameter "cgroup", 2 shorts major and minor, int
+ * size and char is_write. Updates the io_stat_table in the cell corresponding
+ * to the major and minor numbers. In accordance to size and is_write, updates
+ * the number of reads/writes to the device and the total size (in bytes) of
+ * reads/writes.
+ */
+void update_io_stat(struct cgroup* cgroup, short major, short minor, int size,
+                    char is_write);
 
 #endif /* XV6_CGROUP_H */
