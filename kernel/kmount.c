@@ -64,13 +64,13 @@ static int addmountinternal(struct mount_list *mnt_list, struct device *dev,
   if (bind != NULL) {
     XV6_ASSERT(dev == NULL);
     mnt_list->mnt.bind = bind->i_op->idup(bind);
-    mnt_list->mnt.isbind = true;
+    mnt_list->mnt.isbind = XV_TRUE;
   } else {
     XV6_ASSERT(dev != NULL);
     // allocate superblock
     struct vfs_superblock *vfs_sb = sballoc();
     mnt_list->mnt.sb = vfs_sb;
-    mnt_list->mnt.isbind = false;
+    mnt_list->mnt.isbind = XV_FALSE;
     // initialize filesystem
     switch (dev->type) {
       case DEVICE_TYPE_IDE:
@@ -201,7 +201,7 @@ int umount(struct mount *mnt) {
     return -1;
   }
 
-  const bool is_root_mount = current->mnt.parent == NULL;
+  const XV_Bool is_root_mount = current->mnt.parent == NULL;
   // sanity -- root mount has no attached mountpoint.
   XV6_ASSERT(!is_root_mount || current->mnt.mountpoint == NULL);
 
@@ -444,7 +444,7 @@ int pivot_root(struct vfs_inode *new_root, struct mount *new_root_mount,
 
   // Check that new_root is the root of the new mount.
   struct vfs_inode *entry = get_mount_root_ip(new_root_mount);
-  bool is_matching = entry == new_root;
+  XV_Bool is_matching = entry == new_root;
   entry->i_op->iput(entry);
   if (!is_matching) {
     cprintf("entry != new_root_inode\n");

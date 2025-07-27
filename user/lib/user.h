@@ -69,8 +69,8 @@ int itoa(char*, int);
 char* strcat(char* dest, const char* source);
 char* strdup(const char* s);
 
-bool isspace(char c);
-bool isalnum(char c);
+XV_Bool isspace(char c);
+XV_Bool isalnum(char c);
 
 int attach_tty(int tty_fd);
 int detach_tty(int tty_fd);
@@ -79,7 +79,7 @@ int is_attached_tty(int tty_fd);
 int disconnect_tty(int tty_fd);
 int is_connected_tty(int tty_fd);
 
-bool fmtname(const char* const path, char* const out_name, const int out_size);
+XV_Bool fmtname(const char* const path, char* const out_name, const int out_size);
 
 int system(const char* command);
 

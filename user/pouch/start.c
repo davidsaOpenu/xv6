@@ -53,7 +53,7 @@ pouch_status pouch_do_container_start(const char* container_name,
                                       const char* const image_name) {
   struct container_start_config info = {.child_func = pouch_start_child_func,
                                         .mounts = pouch_start_mounts,
-                                        .daemonize = true};
+                                        .daemonize = XV_TRUE};
   strcpy(info.image_name, image_name);
   strcpy(info.container_name, container_name);
   return _pouch_container_start(&info);

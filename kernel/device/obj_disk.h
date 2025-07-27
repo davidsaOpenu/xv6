@@ -112,7 +112,7 @@ struct objsuperblock {
 
 struct memory_storage_holder {
   char memory_storage[STORAGE_DEVICE_SIZE];
-  bool is_used;
+  XV_Bool is_used;
 };
 
 struct obj_device_private {

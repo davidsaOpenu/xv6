@@ -163,7 +163,7 @@ static struct vfs_inode *vfs_igetparent(struct vfs_inode *ip, struct mount *mnt,
   return parent;
 }
 
-bool vfs_is_child_of(struct vfs_inode *parent, struct mount *parentmnt,
+XV_Bool vfs_is_child_of(struct vfs_inode *parent, struct mount *parentmnt,
                      struct vfs_inode *child, struct mount *childmnt) {
   struct vfs_inode *cur = child->i_op->idup(child);
   struct mount *curmnt = mntdup(childmnt);
@@ -171,7 +171,7 @@ bool vfs_is_child_of(struct vfs_inode *parent, struct mount *parentmnt,
     if (cur == parent && curmnt == parentmnt) {
       mntput(curmnt);
       cur->i_op->iput(cur);
-      return true;
+      return XV_TRUE;
     }
     if (curmnt == getrootmount()) {
       struct vfs_inode *mnt_root_ip = get_mount_root_ip(curmnt);
@@ -192,7 +192,7 @@ bool vfs_is_child_of(struct vfs_inode *parent, struct mount *parentmnt,
     cur->i_op->iput(cur);
   }
   mntput(curmnt);
-  return false;
+  return XV_FALSE;
 }
 
 int vfs_namecmp(const char *s, const char *t) { return strncmp(s, t, DIRSIZ); }
