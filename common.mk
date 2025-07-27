@@ -61,7 +61,7 @@ OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
 INCLUDE_COMMON += -I$(realpath $(COMMON_MAKEFILE_DIR)) -I$(realpath $(COMMON_MAKEFILE_DIR)include)
 ########## CFLAGS ##########
-CFLAGS = -static -MD -m32 -mno-sse -gstabs -std=gnu99 -Wall -Werror -Wstack-usage=4096 \
+CFLAGS = -static -MD -m32 -mno-sse -std=gnu99 -Wall -Werror -Wstack-usage=4096 \
 	-fno-pic -fno-builtin -fno-strict-aliasing -fno-omit-frame-pointer $(OFLAGS) $(INCLUDE_COMMON)
 
 #x86
