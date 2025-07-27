@@ -63,7 +63,9 @@ INCLUDE_COMMON += -I$(realpath $(COMMON_MAKEFILE_DIR)) -I$(realpath $(COMMON_MAK
 ########## CFLAGS ##########
 CFLAGS = -static -MD -m32 -mno-sse -std=gnu99 -Wall -Werror -Wstack-usage=4096 \
 	-fno-pic -fno-builtin -fno-strict-aliasing -fno-omit-frame-pointer $(OFLAGS) $(INCLUDE_COMMON) \
-	-Wno-error=infinite-recursion
+	-Wno-error=infinite-recursion \
+	-Wno-error=stringop-overflow
+	
 #x86
 HOST_CPU_TSC_FREQ := $(shell cat /proc/cpuinfo | grep -i "cpu mhz" | head -n 1 | rev | cut -d ' ' -f 1 | rev | cut -d '.' -f 1)*1000
 #ARM
