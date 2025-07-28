@@ -9,7 +9,7 @@ COMMON_MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 # that disk image changes after first build are persistent until clean.  More
 # details:
 # http://www.gnu.org/software/make/manual/html_node/Chained-Rules.html
-.PRECIOUS: %.o
+# .PRECIOUS: %.o
 
 TOOLPREFIX =
 
@@ -55,4 +55,4 @@ USER_CFLAGS = $(CFLAGS) -fno-builtin -I$(realpath $(COMMON_MAKEFILE_DIR)/user)
 HOST_CFLAGS = -static -m32 -MD -std=gnu99 -Wall -Werror -Wno-builtin-declaration-mismatch -DHOST_TESTS
 HOST_CFLAGS += $(INCLUDE_COMMON) -I$(realpath $(COMMON_MAKEFILE_DIR)/tests)
 
--include *.d
+# -include *.d

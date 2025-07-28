@@ -61,7 +61,7 @@ OBJS = \
 	fs/fs.o
 
 .PHONY: all
-ALL= bootblock entryother initcode kernel.bin vectors.S
+ALL = bootblock entryother initcode kernel.bin vectors.S
 
 all: $(ALL)
 
