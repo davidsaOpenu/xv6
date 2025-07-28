@@ -60,11 +60,10 @@ OBJS = \
 	device/loop_device.o\
 	fs/fs.o
 
-
+.PHONY: all
 ALL= bootblock entryother initcode kernel.bin vectors.S
 
 all: $(ALL)
-
 
 bootblock: bootasm.S bootmain.c
 	$(CC) $(CFLAGS) -fno-pic -O -nostdinc -I. -c bootmain.c
