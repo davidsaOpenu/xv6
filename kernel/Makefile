@@ -78,17 +78,14 @@ entryother: entryother.S
 	$(CC) $(CFLAGS) -fno-pic -nostdinc -I. -c entryother.S
 	$(LD) $(LDFLAGS) -N -e start -Ttext 0x7000 -o bootblockother.o entryother.o
 	$(OBJCOPY) -S -O binary -j .text bootblockother.o entryother
-	$(call dump_objs,$@)
 
 initcode: initcode.S
 	$(CC) $(CFLAGS) -nostdinc -I. -c initcode.S
 	$(LD) $(LDFLAGS) -N -e start -Ttext 0 -o initcode.out initcode.o
 	$(OBJCOPY) -S -O binary -j .text initcode.out initcode
-	$(call dump_objs,$@)
 
 kernel.bin: entry.o entryother initcode kernel.ld $(OBJS)
 	$(LD) $(LDFLAGS) -T kernel.ld -o kernel.bin entry.o $(OBJS) -b binary initcode entryother
-	$(call dump_objs,$@)
 
 tags: $(OBJS) entryother.S _init
 	etags *.S *.c
