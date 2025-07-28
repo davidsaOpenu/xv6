@@ -84,12 +84,14 @@ OCI_IMAGES_PREFIX ?= latest
 # Docker build & skopeo copy, create OCI images.
 # Docker daemon must be running and available from this context.
 # It also requires some user programs, since build is not implemented yet in xv6.
+# The prefix $(OCI_IMAGES_PREFIX) is used to avoid conflicts when building 
+# images for different Ubuntu versions on the same machine.
+# This can happen in the current CI model (same daemon, different jobs), and cause a race issue.
+
 images/img_internal_fs_%/index.json: images/build/img_internal_fs_%.Dockerfile $(UPROGS_ABS)
 	mkdir -p images/build/user
 	cp $(UPROGS_ABS) images/build/user
 	strip images/build/user/*
-# The prefix $(OCI_IMAGES_PREFIX) is used to avoid conflicts when building images for different Ubuntu versions on the same machine.
-# This can happen in the current CI model (same daemon, different jobs), and cause a race issue.
 	docker build -t xv6_internal_fs_$*:$(OCI_IMAGES_PREFIX) -f images/build/img_internal_fs_$*.Dockerfile images/build
 	mkdir -p images/img_internal_fs_$*
 	docker run --rm --mount type=bind,source="$(CURDIR)",target=/home/$(shell whoami)/xv6 \
