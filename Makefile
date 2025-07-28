@@ -1,6 +1,6 @@
 MAKEFILE_DIRECTORY := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
-xv6.img: kernel/bootblock kernel/kernel.bin fs.img | windows_debugging
+xv6.img: kernel/bootblock kernel
 	dd if=/dev/zero of=xv6.img count=10000
 	dd if=kernel/bootblock of=xv6.img conv=notrunc
 	dd if=kernel/kernel.bin of=xv6.img seek=1 conv=notrunc
@@ -67,7 +67,8 @@ INTERNAL_DEV=\
 mkfs: mkfs.c
 	$(CC) -ggdb -Werror -Wall -o mkfs mkfs.c
 
-kernel/%:
+.PHONY: kernel
+kernel:
 	$(MAKE) -C kernel
 
 user/%:
