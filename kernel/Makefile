@@ -102,3 +102,5 @@ device/%.o: device/%.c
 clean:
 	rm -f $(OBJS) $(ALL) initcode.out
 	rm -rf *.o *.d *.asm *.sym
+
+-include *.d
