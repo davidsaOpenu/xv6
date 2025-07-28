@@ -10,7 +10,7 @@ static int cp(const char* src, const char* target);
 static int join_paths(char** dest, const char* lhs, const char* rhs) {
   int lhs_len = strlen(lhs);
   int rhs_len = strlen(rhs);
-  bool need_slash = lhs[lhs_len - 1] != '/';
+  XV_Bool need_slash = lhs[lhs_len - 1] != '/';
 
   int total_size = lhs_len + rhs_len + need_slash + 1;
   char* joined = malloc(total_size);

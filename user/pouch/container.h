@@ -25,7 +25,7 @@ struct container_start_config {
   char container_name[CNTNAMESIZE];
 
   /** Specifies the type of container to be started. */
-  bool daemonize;
+  XV_Bool daemonize;
 
   /** Specifies mounts to apply when starting the container. */
   const struct container_mounts_def* mounts;
@@ -47,9 +47,9 @@ struct container_start_config {
 };
 
 /**
- * Returns true if the current process is running in a container.
+ * Returns XV_TRUE if the current process is running in a container.
  */
-bool pouch_container_is_attached();
+XV_Bool pouch_container_is_attached();
 
 /*
  *   Pouch start (internal):

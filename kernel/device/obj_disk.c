@@ -217,14 +217,14 @@ static void copy_bufs_vector_to_disk(char* address, vector bufs, uint size) {
 }
 
 static struct memory_storage_holder memory_storage_holders[MAX_OBJ_DEVS_NUM] = {
-    {.is_used = false},
-    {.is_used = false},
+    {.is_used = XV_FALSE},
+    {.is_used = XV_FALSE},
 };
 
 static void obj_dev_destroy(struct device* dev) {
   buf_cache_invalidate_blocks(dev);
   struct obj_device_private* device = dev_private(dev);
-  device->storage_holder->is_used = false;
+  device->storage_holder->is_used = XV_FALSE;
 }
 
 void init_obj_device(struct device* dev) {
@@ -238,7 +238,7 @@ void init_obj_device(struct device* dev) {
   for (uint i = 0; i < MAX_OBJ_DEVS_NUM; i++) {
     if (!memory_storage_holders[i].is_used) {
       device->storage_holder = &memory_storage_holders[i];
-      memory_storage_holders[i].is_used = true;
+      memory_storage_holders[i].is_used = XV_TRUE;
       break;
     }
   }

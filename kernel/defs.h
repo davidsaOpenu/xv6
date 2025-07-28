@@ -65,7 +65,7 @@ struct vfs_inode* vfs_namei(char*);
 struct vfs_inode* vfs_nameimount(char*, struct mount**);
 struct vfs_inode* vfs_nameiparent(char*, char*);
 struct vfs_inode* vfs_nameiparentmount(char*, char*, struct mount**);
-bool vfs_is_child_of(struct vfs_inode* parent, struct mount* parentmnt,
+XV_Bool vfs_is_child_of(struct vfs_inode* parent, struct mount* parentmnt,
                      struct vfs_inode* child, struct mount* childmnt);
 int vfs_namecmp(const char*, const char*);
 int vfs_namencmp(const char* s, const char* t, int length);

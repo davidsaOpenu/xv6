@@ -152,10 +152,10 @@ char *strtok_r(char *str, char *const delim, char **saveptr) {
   }
 
   for (; *str; ++str) {
-    bool any_del_found = false;
+    XV_Bool any_del_found = XV_FALSE;
     for (char *currd = delim; *currd; ++currd) {
       if (*str == *currd) {
-        any_del_found = true;
+        any_del_found = XV_TRUE;
         break;
       }
     }
@@ -177,17 +177,17 @@ char *strtok_r(char *str, char *const delim, char **saveptr) {
   return to_return;
 }
 
-bool isspace(char c) {
+XV_Bool isspace(char c) {
   return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f' ||
          c == '\v';
 }
 
-bool isalnum(char c) {
+XV_Bool isalnum(char c) {
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
          (c >= '0' && c <= '9');
 }
 
-bool fmtname(const char *const path, char *const out_name, const int out_size) {
+XV_Bool fmtname(const char *const path, char *const out_name, const int out_size) {
   const char *pstart, *pend;
 
   // Find first character after last slash.
@@ -200,14 +200,14 @@ bool fmtname(const char *const path, char *const out_name, const int out_size) {
   };
 
   if (pend - pstart > out_size - 1) {
-    return false;
+    return XV_FALSE;
   }
 
   memmove(out_name, pstart, pend - pstart);
   memset(out_name + (pend - pstart), ' ', out_size - (pend - pstart));
   out_name[out_size - 1] = '\0';
 
-  return true;
+  return XV_TRUE;
 }
 
 char *strdup(const char *s) {

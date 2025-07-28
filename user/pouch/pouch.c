@@ -363,8 +363,8 @@ static const struct pouch_cli_command supported_pouch_commands[P_CMD_MAX] = {
      .inside_or_out = INSIDE_AND_OUTSIDE_CONTAINER},
 };
 
-static bool is_match_attachment(const struct pouch_cli_command* cmd,
-                                const bool inside_container) {
+static XV_Bool is_match_attachment(const struct pouch_cli_command* cmd,
+                                const XV_Bool inside_container) {
   // use bit masks.
   return ((cmd->inside_or_out & INSIDE_CONTAINER) == INSIDE_CONTAINER &&
           inside_container) ||
@@ -383,7 +383,7 @@ const struct pouch_cli_command* pouch_cli_get_command_from_args(
   // best match for the command -- if multiple commands match, choose the one
   // matching inside/outside. that way we can have command with same name for
   // inside and outside differently (see pouch info)
-  bool inside_container = pouch_container_is_attached();
+  XV_Bool inside_container = pouch_container_is_attached();
   for (int i = 0; i < P_CMD_MAX; i++) {
     if (strcmp(argv[1], supported_pouch_commands[i].command_name) == 0) {
       if (best_match == NULL) {

@@ -13,7 +13,7 @@ struct mount {
   int ref;
 
   /* Whether this is a bind mount. */
-  bool isbind;
+  XV_Bool isbind;
 
   union {
     /* Associated mounted FS superblock. Used if !isbind. */

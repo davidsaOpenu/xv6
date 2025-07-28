@@ -68,7 +68,7 @@ int sys_umount(void) {
 
   // Make sure we are umounting a mountpoint, not just any dir.
   struct vfs_inode *mount_root_dir = get_mount_root_ip(mnt);
-  bool is_mountpoint = (mount_root_dir == mount_dir);
+  XV_Bool is_mountpoint = (mount_root_dir == mount_dir);
   mount_root_dir->i_op->iput(mount_root_dir);
   if (!is_mountpoint) {
     cprintf("%s is not a mountpoint\n", mount_path);

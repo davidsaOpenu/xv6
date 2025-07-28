@@ -1,6 +1,6 @@
 MAKEFILE_DIRECTORY := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
-xv6.img: kernel/bootblock kernel/kernel.bin fs.img | windows_debugging
+xv6.img: kernel/bootblock kernel
 	dd if=/dev/zero of=xv6.img count=10000
 	dd if=kernel/bootblock of=xv6.img conv=notrunc
 	dd if=kernel/kernel.bin of=xv6.img seek=1 conv=notrunc
@@ -67,7 +67,8 @@ INTERNAL_DEV=\
 mkfs: mkfs.c
 	$(CC) -ggdb -Werror -Wall -o mkfs mkfs.c
 
-kernel/%:
+.PHONY: kernel
+kernel:
 	$(MAKE) -C kernel
 
 user/%:
@@ -84,12 +85,14 @@ OCI_IMAGES_PREFIX ?= latest
 # Docker build & skopeo copy, create OCI images.
 # Docker daemon must be running and available from this context.
 # It also requires some user programs, since build is not implemented yet in xv6.
+# The prefix $(OCI_IMAGES_PREFIX) is used to avoid conflicts when building 
+# images for different Ubuntu versions on the same machine.
+# This can happen in the current CI model (same daemon, different jobs), and cause a race issue.
+
 images/img_internal_fs_%/index.json: images/build/img_internal_fs_%.Dockerfile $(UPROGS_ABS)
 	mkdir -p images/build/user
 	cp $(UPROGS_ABS) images/build/user
 	strip images/build/user/*
-# The prefix $(OCI_IMAGES_PREFIX) is used to avoid conflicts when building images for different Ubuntu versions on the same machine.
-# This can happen in the current CI model (same daemon, different jobs), and cause a race issue.
 	docker build -t xv6_internal_fs_$*:$(OCI_IMAGES_PREFIX) -f images/build/img_internal_fs_$*.Dockerfile images/build
 	mkdir -p images/img_internal_fs_$*
 	docker run --rm --mount type=bind,source="$(CURDIR)",target=/home/$(shell whoami)/xv6 \
@@ -135,16 +138,15 @@ bochs : fs.img xv6.img
 	if [ ! -e .bochsrc ]; then ln -s dot-bochsrc .bochsrc; fi
 	bochs -q
 
-# try to generate a unique GDB port
 GDBPORT = $(shell expr `id -u` % 5000 + 25000)
 # QEMU's gdb stub command line changed in 0.11
-QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
-	then echo "-gdb tcp::$(GDBPORT)"; \
-	else echo "-s -p $(GDBPORT)"; fi)
+# QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
+# 	then echo "-gdb tcp::$(GDBPORT)"; \
+# 	else echo "-s -p $(GDBPORT)"; fi)
 ifndef CPUS
 CPUS := cpus=2,cores=1
 endif
-QEMUOPTS = -drive file=fs.img,index=1,media=disk,format=raw -drive file=xv6.img,index=0,media=disk,format=raw -smp $(CPUS) -m 512 $(QEMUEXTRA) -nographic
+QEMUOPTS = -drive file=fs.img,index=1,media=disk,format=raw -drive file=xv6.img,index=0,media=disk,format=raw -smp $(CPUS) -m 512 -nographic
 
 gdb: OFLAGS = -Og -ggdb
 gdb: fs.img xv6.img

@@ -31,7 +31,7 @@ pouch_status pouch_images_print() {
     return ERROR_IMAGE_NOT_FOUND_CODE;
   }
 
-  bool printed_first = false;
+  XV_Bool printed_first = XV_FALSE;
   if (st.type != T_DIR) {
     printf(stderr, "%s should be a directory\n", IMAGE_DIR);
     close(fd);
@@ -56,7 +56,7 @@ pouch_status pouch_images_print() {
     if (strncmp(dir, ".", 1) != 0) {
       if (!printed_first) {
         printf(stdout, "Pouch images available:\n");
-        printed_first = true;
+        printed_first = XV_TRUE;
       }
       printf(stdout, "%s\n", dir);
     }

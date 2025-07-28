@@ -15,7 +15,7 @@
  * already pivoted, old root. */
 static const char old_root_relative_path[] = "/.old_root";
 
-bool pouch_container_is_attached() { return getppid() == 1; }
+XV_Bool pouch_container_is_attached() { return getppid() == 1; }
 
 /*
  *   Prepate cgroup name:
@@ -252,7 +252,7 @@ pouch_status pouch_container_get_connected_name(char* const cname) {
       printf(stderr, "cannot open tty%d fd\n", i);
       return TTY_OPEN_ERROR_CODE;
     }
-    bool is_curr_tty_connected = is_connected_tty(tty_fd);
+    XV_Bool is_curr_tty_connected = is_connected_tty(tty_fd);
     if (close(tty_fd) < 0) {
       printf(stderr, "cannot close tty%d fd\n", i);
       return TTY_CLOSE_ERROR_CODE;
@@ -440,19 +440,19 @@ static pouch_status pouch_container_umount(
     cmount++;
     i++;
   }
-  bool failed = false;
+  XV_Bool failed = XV_FALSE;
   for (cmount--; i > 0; cmount--, i--) {
     char dest[MAX_PATH_LENGTH];
     strcpy(dest, config->image_mount_point);
     strcat(dest, cmount->dest);
     if (umount(dest) < 0) {
       printf(stderr, "Pouch: failed to unmount %s\n", dest);
-      failed = true;
+      failed = XV_TRUE;
     }
     if (cmount->type == IMAGE_ROOT_FS) {
       if (unlink(dest) < 0) {
         printf(stderr, "Pouch: failed to unlink rootfs %s\n", dest);
-        failed = true;
+        failed = XV_TRUE;
       }
     }
   }
@@ -595,7 +595,7 @@ static int pouch_container_start_parent(
     const int tty_to_use, mutex_t* const start_running_child_mutex,
     mutex_t* const allow_mount_cleanup_mutex, const char* const cg_cname,
     container_config* const conf_out) {
-  bool child_allowed_to_start = false, has_config_written = false;
+  XV_Bool child_allowed_to_start = XV_FALSE, has_config_written = XV_FALSE;
   pouch_status parent_status = SUCCESS_CODE;
   int child_exit_status = 0;
   char cg_procs_path[MAX_PATH_LENGTH] = {0};
@@ -631,7 +631,7 @@ static int pouch_container_start_parent(
     perror("Failed to write to cconf_out");
     goto parent_end;
   }
-  has_config_written = true;
+  has_config_written = XV_TRUE;
 
   // let the child process run
   if (mutex_unlock(start_running_child_mutex) != MUTEX_SUCCESS) {
@@ -639,7 +639,7 @@ static int pouch_container_start_parent(
     parent_status = POUCH_MUTEX_ERROR_CODE;
     goto parent_end;
   }
-  child_allowed_to_start = true;
+  child_allowed_to_start = XV_TRUE;
 
   // and wait until the child process allows mount cleanup
   if (mutex_wait(allow_mount_cleanup_mutex) != MUTEX_SUCCESS) {
@@ -859,7 +859,7 @@ pouch_status _pouch_container_stop(const container_config* const conf) {
   pouch_status ret = SUCCESS_CODE;
   int tty_fd = -1;
   char cur_pid_buf[10] = {0};
-  bool is_daemon = conf->tty_num >= 0;
+  XV_Bool is_daemon = conf->tty_num >= 0;
 
   // If it's a daemon, we need to stop the container process.
   if (is_daemon) {

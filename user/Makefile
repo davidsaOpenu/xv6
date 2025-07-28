@@ -8,11 +8,9 @@ include ../common.mk
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
-	$(call dump_objs,$@)
 
 _%: %.o $(ULIB)
 	$(LD) $(USER_LD_FLAGS) $^ -o $@
-	$(call dump_objs,$@)
 
 pouch/_%:
 	$(MAKE) -C pouch _$*
