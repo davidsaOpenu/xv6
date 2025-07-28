@@ -146,7 +146,7 @@ GDBPORT = $(shell expr `id -u` % 5000 + 25000)
 ifndef CPUS
 CPUS := cpus=2,cores=1
 endif
-QEMUOPTS = -drive file=fs.img,index=1,media=disk,format=raw -drive file=xv6.img,index=0,media=disk,format=raw -smp $(CPUS) -m 512 $(QEMUEXTRA) -nographic
+QEMUOPTS = -drive file=fs.img,index=1,media=disk,format=raw -drive file=xv6.img,index=0,media=disk,format=raw -smp $(CPUS) -m 512 -nographic
 
 gdb: OFLAGS = -Og -ggdb
 gdb: fs.img xv6.img

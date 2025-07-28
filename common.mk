@@ -24,7 +24,8 @@ INCLUDE_COMMON += -I$(realpath $(COMMON_MAKEFILE_DIR)) -I$(realpath $(COMMON_MAK
 CFLAGS = -static -MD -m32 -mno-sse -std=gnu99 -Wall -Werror -Wstack-usage=4096 \
 	-fno-pic -fno-builtin -fno-strict-aliasing -fno-omit-frame-pointer $(OFLAGS) $(INCLUDE_COMMON) \
 	-Wno-error=infinite-recursion \
-	-Wno-error=stringop-overflow
+	-Wno-error=stringop-overflow \
+	-fno-stack-protector
 	
 #x86
 HOST_CPU_TSC_FREQ := $(shell cat /proc/cpuinfo | grep -i "cpu mhz" | head -n 1 | rev | cut -d ' ' -f 1 | rev | cut -d '.' -f 1)*1000
@@ -38,12 +39,7 @@ endif
 
 OFLAGS = -O2
 CFLAGS += -DSTORAGE_DEVICE_SIZE=327680
-CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
-############################
-
 ASFLAGS = -m32 -gdwarf-2 -Wa,-divide $(INCLUDE_COMMON)
-# FreeBSD ld wants ``elf_i386_fbsd''
-LDFLAGS += -m $(shell $(LD) -V | grep elf_i386 2>/dev/null | head -n 1)
 
 
 # Variables for user programs -- user library path and objects.
