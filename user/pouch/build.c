@@ -36,14 +36,14 @@ static pouch_status next_line(const int pouchfile_fd, char** const line,
   int index = 0;
 
   int read_ret = 0;
-  bool started_read = false;
+  XV_Bool started_read = XV_FALSE;
   while ((read_ret = read(pouchfile_fd, &current, 1)) > 0) {
     /* Skip initial whitespace */
     if (!started_read) {
       if (isspace(current)) {
         continue;
       }
-      started_read = true;
+      started_read = XV_TRUE;
     }
 
     if (current == '\n' || current == '\0') {
@@ -211,7 +211,7 @@ end:
 }
 
 /** Returns whether a certain line starts with the command token. */
-static bool is_command(const char* const line, const char* const command) {
+static XV_Bool is_command(const char* const line, const char* const command) {
   const char* current = line;
   // Skip whitespace
   while (isspace(*current)) ++current;
@@ -251,7 +251,7 @@ static pouch_status pouch_build_parse_pouchfile(
   char* last_line = NULL;
   int last_line_length = 0;
   int extract_line_status = SUCCESS_CODE;
-  bool found_import = false;
+  XV_Bool found_import = XV_FALSE;
   const int pouchfile_fd = open(pouchfile_path, O_RDONLY);
   if (pouchfile_fd < 0) {
     printf(stderr, "Failed to open pouchfile %s\n", pouchfile_path);
@@ -277,7 +277,7 @@ static pouch_status pouch_build_parse_pouchfile(
     }
 
     // Check what command is it.
-    bool ok = false;
+    XV_Bool ok = XV_FALSE;
     for (const struct command_to_type* cmd_to_type = command_to_type_map;
          cmd_to_type->command != NULL; ++cmd_to_type) {
       if (!is_command(last_line, cmd_to_type->command)) {
@@ -306,7 +306,7 @@ static pouch_status pouch_build_parse_pouchfile(
         goto end;
       }
 
-      ok = true;
+      ok = XV_TRUE;
 
       // Make sure import is always one and is always the first command.
       if (parser->command_type == POUCHFILE_IMPORT) {
@@ -316,7 +316,7 @@ static pouch_status pouch_build_parse_pouchfile(
           exit_code = ERROR_INVALID_IMAGE_NAME_CODE;
           goto end;
         }
-        found_import = true;
+        found_import = XV_TRUE;
       } else if (!found_import) {
         printf(stderr,
                "IMPORT command must be the first command in the file\n");
@@ -416,14 +416,14 @@ static pouch_status pouch_build_container_child(
        current_command != NULL; current_command = current_command->next, ++n) {
     printf(stdout, ">> Step %d/%d: ", n, pouchfile->ncmds - 1);
     // Find executor for command, and run it.
-    bool ok = false;
+    XV_Bool ok = XV_FALSE;
     for (struct command_type_to_executor* executor = command_executors;
          executor->command_type != COMMAND_NONE; ++executor) {
       if (executor->command_type == current_command->type) {
         if (executor->handler(current_command) != SUCCESS_CODE) {
           return ERROR_CODE;
         }
-        ok = true;
+        ok = XV_TRUE;
         break;
       }
     }
@@ -471,7 +471,7 @@ static pouch_status pouch_build_execute(const struct pouchfile* const pouchfile,
   }
 
   struct container_start_config config = {
-      .daemonize = false,
+      .daemonize = XV_FALSE,
       .child_func = pouch_build_container_child,
       .mounts = build_mounts,
       .private_data = (void*)pouchfile,
