@@ -1,5 +1,10 @@
-FROM ubuntu:22.04 as base
+FROM ubuntu:24.04 AS base
 ENV DEBIAN_FRONTEND=noninteractive
+
+# Apparently newer ubuntu images already create a user
+# https://bugs.launchpad.net/cloud-images/+bug/2005129
+RUN userdel -r ubuntu
+
 # Update package lists and install dependencies
 RUN apt-get update && \
     apt-get install -y \
@@ -13,7 +18,7 @@ RUN apt-get update && \
         git \
         cmake \
         sudo \
-        python3.10-venv \
+        python3.12-venv \
         qemu-kvm \
         libvirt-daemon-system \
         libvirt-clients \
