@@ -45,6 +45,11 @@ static int pouch_open_ttyc(const int tty_num, const int mode) {
   return open(ttyc, mode);
 }
 
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif  // if defined(__GNUC__)
+
 static void pouch_get_container_conf_name(const char* const container_name,
                                           char dest[MAX_PATH_LENGTH]) {
   if (strlen(container_name) == 0) {
@@ -77,6 +82,10 @@ int pouch_cconf_unlink(const container_config* const conf) {
   pouch_get_container_conf_name(conf->container_name, container_file);
   return unlink(container_file);
 }
+
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif  // if defined(__GNUC__)
 
 pouch_status pouch_pconf_init() {
   // create a file for eacth tty that will hold cname inside currently connected
