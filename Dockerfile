@@ -1,5 +1,10 @@
-FROM ubuntu:22.04 as base
+FROM ubuntu:24.04 AS base
 ENV DEBIAN_FRONTEND=noninteractive
+
+# Apparently newer ubuntu images already create a user
+# https://bugs.launchpad.net/cloud-images/+bug/2005129
+RUN userdel -r ubuntu
+
 # Update package lists and install dependencies
 RUN apt-get update && \
     apt-get install -y \
@@ -13,7 +18,7 @@ RUN apt-get update && \
         git \
         cmake \
         sudo \
-        python3.10-venv \
+        python3.12-venv \
         qemu-kvm \
         libvirt-daemon-system \
         libvirt-clients \
@@ -21,7 +26,8 @@ RUN apt-get update && \
         virt-manager \
         expect \
         libenchant-2-2 \
-        jq
+        jq \
+        clang-format-16
 
 # Download and extract Cppcheck
 WORKDIR /opt
@@ -33,19 +39,6 @@ WORKDIR /opt/cppcheck-2.11
 RUN make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck HAVE_RULES=yes \
       CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function" \
       install
-
-# Clone the llvm-project repository
-WORKDIR /opt/llvm-project
-RUN git clone --depth 1 --branch llvmorg-16.0.6 \
-        https://github.com/llvm/llvm-project.git clang-format
-
-
-# Build and install clang-format
-WORKDIR /opt/llvm-project/clang-format/build
-RUN cmake -G "Unix Makefiles" -DLLVM_ENABLE_PROJECTS="clang" \
-       -DCMAKE_BUILD_TYPE=Release ../llvm && \
-    make clang-format && \
-    cp bin/clang-format /usr/local/bin
 
 # Install packages for host unit tests
 RUN apt-get install -y gcc-multilib

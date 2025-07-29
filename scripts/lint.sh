@@ -12,7 +12,7 @@ echo "Running clang-format..."
 #########################################################################
 # clang-format
 # clang-format -style=google -dump-config > .clang-format
-changed_files=$(find . -regex ".*\.[c|h]$" -exec clang-format -i {} \; \
+changed_files=$(find . -regex ".*\.[c|h]$" -exec clang-format-16 -i {} \; \
     -exec git diff --name-only {} \;)
 
 if [ -n "$changed_files" ]; then

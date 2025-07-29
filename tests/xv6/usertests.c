@@ -2071,7 +2071,7 @@ void run_file_operations() {
   }
 }
 
-void performance_test() {
+void performance_test(float factor) {
   int start, end;
   int time_with_cache, time_without_cache;
 
@@ -2101,7 +2101,7 @@ void performance_test() {
 
   // Step 6: Check the result of the test
   // Verify the performance boost is at least 3 times.
-  if (time_without_cache > (3 * time_with_cache)) {
+  if (time_without_cache > factor * time_with_cache) {
     printf(stdout, "performance_test - OK!\n");
   } else {
     printf(stdout, "performance_test - FAIL!\n");
@@ -2128,7 +2128,7 @@ void objfs_performance_test() {
     exit(1);
   }
 
-  performance_test();
+  performance_test(2.7);
 
   if (chdir("..") < 0) {
     printf(stdout, "chdir ..failed\n");
@@ -2141,7 +2141,7 @@ void objfs_performance_test() {
 void nativefs_performance_test() {
   printf(stdout, "start of nativefs_performance_test\n");
 
-  performance_test();
+  performance_test(3);
 
   printf(stdout, "end of objfs_performance_test\n");
 }

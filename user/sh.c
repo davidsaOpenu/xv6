@@ -82,6 +82,11 @@ static void last_cmd_retval_update_wait_exit_status(void) {
   last_cmd_retval = WEXITSTATUS(last_cmd_retval);
 }
 
+#if defined(__GNUC__) && __GNUC__ >= 12
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winfinite-recursion"
+#endif
+
 // Execute cmd.  Never returns.
 void runcmd(struct cmd *cmd) {
   int p[2];
@@ -172,6 +177,10 @@ void runcmd(struct cmd *cmd) {
 
   exit(0);
 }
+
+#if defined(__GNUC__) && __GNUC__ >= 12
+#pragma GCC diagnostic pop
+#endif
 
 int getcmd(char *buf, int nbuf) {
   printf(stderr, "$ ");
