@@ -1,11 +1,10 @@
 #!/bin/bash
 
 # use this script to build and test the xv6 image in a docker container.
-# if <ubuntu-version> is not specified, it defaults to 22.04.
 # Run this script with: ./docker-ci.sh ...
-#                                      build       <ubuntu-version>
-#                                      test        <ubuntu-version>
-#                                      interactive <ubuntu-version> <command>
+#                                      build
+#                                      test
+#                                      interactive <command>
 
 LINTING_FLAG=false # Default value
 
@@ -17,26 +16,9 @@ for arg in "$@"; do
     fi
 done
 
-# Set the default version of Ubuntu to use
-if [ -z "$2" ]; then
-    UBUNTU_VERSION="22.04"
-elif [ "$2" == "16.04" ]; then
-    UBUNTU_VERSION="16.04"
-elif [ "$2" == "22.04" ]; then
-    UBUNTU_VERSION="22.04"
-else
-    echo "Invalid Ubuntu version: $2"
-    exit 1
-fi
-
-# Set the Dockerfile based on the Ubuntu version
-if [ "$UBUNTU_VERSION" == "16.04" ]; then
-    DOCKERFILE="Dockerfile_16.04.dockerfile"
-    IMAGE_NAME="xv6-test-image-16-04"
-else
-    DOCKERFILE="Dockerfile"
-    IMAGE_NAME="xv6-test-image"
-fi
+UBUNTU_VERSION="24.04"
+DOCKERFILE="Dockerfile"
+IMAGE_NAME="xv6-test-image"
 
 
 if [ "$1" == "build" ]; then
@@ -72,13 +54,13 @@ if [ "$1" == "test" ]; then
         /home/$(whoami)/xv6/scripts/build-test.sh || exit 1
 elif [ "$1" == "interactive" ]; then
     # Run interactive command
-    if [ -z "$3" ]; then
-        echo "Usage: $0 interactive <ubuntu-version> <command>"
+    if [ -z "$2" ]; then
+        echo "Usage: $0 interactive <command>"
         exit 1
     fi
     docker run -it \
         --mount type=bind,source="$(pwd)",target=/home/$(whoami)/xv6 \
-        --rm --privileged $IMAGE_NAME $3
+        --rm --privileged $IMAGE_NAME $2
 else
     echo "Invalid command: $1"
     exit 1
