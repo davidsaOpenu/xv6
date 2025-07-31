@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "594cebb4_0949f568",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-07-31T13:59:28Z",
+      "side": 1,
+      "message": "@michaelk20115@protonmail.com\n\nJenkins job was updated to run with\n\n\ncd ${WORKSPACE}/xv6\n./docker-ci.sh build 24.04 --lint\n./docker-ci.sh test 24.04",
+      "revId": "06af2f149d2eed132c572617b21f0e33bcd8160d",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
