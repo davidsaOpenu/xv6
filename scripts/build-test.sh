@@ -7,6 +7,13 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 ########################################################################
+# Run host shell history tests
+LOG_FILE="expect_tests.log"
+if ! ./tests/host/history-test.exp $LOG_FILE; then
+    echo "FAILED host history test failed -- check ${LOG_FILE} for more info."
+    exit 1
+fi
+
 #  Run guest tests
 make clean
 make TEST_POUCHFILES=1
