@@ -16,6 +16,24 @@
       "message": "Consider adding  \"Co-authored-by: NAME \u003cNAME@EXAMPLE.COM\" mentioned Maayan if relevant in this case",
       "revId": "85a7e07304ca44e618c0a6e770ba34d506855786",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1011574a_ff14500c",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-08-01T06:53:15Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ca0fea6f_b8b3ca01",
+      "revId": "85a7e07304ca44e618c0a6e770ba34d506855786",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
