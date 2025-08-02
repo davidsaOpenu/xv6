@@ -1,6 +1,10 @@
 /**
  * Pouch configuration file management utilities
  */
+
+#pragma GCC diagnostic ignored "-Wstringop-overflow="
+
+
 #ifndef XV6_USER_POUCH_CONFIGS_H
 #define XV6_USER_POUCH_CONFIGS_H
 #include "pouch.h"

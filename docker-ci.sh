@@ -1,67 +1,82 @@
 #!/bin/bash
 
-# use this script to build and test the xv6 image in a docker container.
-# Run this script with: ./docker-ci.sh ...
-#                                      build
-#                                      test
-#                                      interactive <command>
+# Display help for this CI script
+help() {
+cat <<EOF
+docker-ci.sh: a CI script for xv6
 
-LINTING_FLAG=false # Default value
+Commands:
+    build           Build a docker image from the Dockerfile.
+    test            Run xv6 test suite.
+    shell           Run bash inside the container.
+    format          Run clang-format on the codebase.
+    lint            Run various linting tools on the codebase.
+    help            Display this message and exit.
 
-# Check for the --lint flag
-for arg in "$@"; do
-    if [ "$arg" == "--lint" ]; then
-        LINTING_FLAG=true
-        break
-    fi
-done
+Maintainers:
+    Ron Shabi <ron@ronsh.net>
+EOF
+}
 
-UBUNTU_VERSION="24.04"
-DOCKERFILE="Dockerfile"
-IMAGE_NAME="xv6-test-image"
+print_error() {
+    tput setaf 1
+    echo -n "ERROR: "
+    tput sgr0
+    echo "$1"
+}
 
+print_success() {
+    tput setaf 2
+    echo -n "OK: "
+    tput sgr0
+    echo "$1"
+}
 
-if [ "$1" == "build" ]; then
-    echo "Building Docker image $IMAGE_NAME"
-    docker build --build-arg USERNAME=$(whoami) \
-                --build-arg GRPNAME=$(id -gn) \
-                --build-arg UID=$(id -u) \
-                --build-arg BUILD_LINTING_TOOLS=$LINTING_FLAG \
-                --build-arg GID=$(id -g) -t $IMAGE_NAME -f $DOCKERFILE .
-    exit 0
-fi
+print_warning() {
+    tput setaf 3
+    echo -n "WARN: "
+    tput sgr0
+    echo "$1"
+}
 
+DEFAULT_TAG=xv6-ubuntu-2204
 
-#########################################################################
-# test the docker image using the run-ci.sh script or intaractive mode
+build() {
+    docker build -t "$DEFAULT_TAG" . && \
+    print_success "Built container $DEFAULT_TAG"
+}
 
-# Check the first argument to determine what to do
-if [ "$1" == "test" ]; then
-    DOCKER_RUN_CMDLINE="--mount type=bind,source="$(pwd)","
-    DOCKER_RUN_CMDLINE+="target=/home/$(whoami)/xv6"
-    DOCKER_RUN_CMDLINE+=" --rm --privileged"
-    # 1. Lint (static analysis) the code
-    docker run ${DOCKER_RUN_CMDLINE} $IMAGE_NAME \
-        /home/$(whoami)/xv6/scripts/lint.sh || exit 1
-    # 2. Build user binaries
-    docker run ${DOCKER_RUN_CMDLINE} $IMAGE_NAME \
-        /home/$(whoami)/xv6/scripts/build-user.sh || exit 1
-    # 3. Re-Build container images
-    make clean_oci OCI_IMAGES_PREFIX=${UBUNTU_VERSION} 2>/dev/null || true
-    make build-oci OCI_IMAGES_PREFIX=${UBUNTU_VERSION}
-    # 4. Build and run tests for xv6.
-    docker run ${DOCKER_RUN_CMDLINE} $IMAGE_NAME \
-        /home/$(whoami)/xv6/scripts/build-test.sh || exit 1
-elif [ "$1" == "interactive" ]; then
-    # Run interactive command
-    if [ -z "$2" ]; then
-        echo "Usage: $0 interactive <command>"
-        exit 1
-    fi
-    docker run -it \
-        --mount type=bind,source="$(pwd)",target=/home/$(whoami)/xv6 \
-        --rm --privileged $IMAGE_NAME $2
-else
-    echo "Invalid command: $1"
-    exit 1
-fi
+shell() {
+    docker run \
+        --rm \
+        -it \
+        -v ".:/xv6" \
+        -w "/xv6" \
+        "$DEFAULT_TAG"
+}
+
+format() {
+    bash ./scripts/format.sh && \
+    print_success "Run clang-format"
+}
+
+case "$1" in
+    "build" )
+        build ;;
+    "test" )
+        print_error "Not implemented yet :("
+        exit 1 ;;
+    "shell" )
+        shell ;;
+    "help" )
+        help
+        exit 0 ;; 
+    "format" )
+        format ;;
+    "lint" )
+        print_error "Not implemented yet :("
+        exit 1 ;;
+    * )
+        help
+        exit 1 ;;
+esac

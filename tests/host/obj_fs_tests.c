@@ -12,6 +12,8 @@
 #include "kernel/device/obj_disk.h"
 #include "param.h"
 
+#define DEV_PRIVATE(dev) (struct obj_device_private*) dev.private
+
 struct device mock_device = {
     .id = 1,
     .type = DEVICE_TYPE_OBJ,
@@ -22,7 +24,7 @@ struct device mock_device = {
 
 #define TESTED_DEVICE (&mock_device)
 
-void deviceput(struct device* dev) {}
+// void deviceput(struct device* dev) {} -- NO NEED ANYMORE
 
 /**
  * Utility test functions
@@ -94,7 +96,7 @@ const uint initial_objects_table_bytes =
  * correctly by calling the get functions.
  */
 TEST(initialization) {
-  struct obj_device_private* device = dev_private(&mock_device);
+  struct obj_device_private* device = DEV_PRIVATE(mock_device);
   EXPECT_UINT_EQ(2, occupied_objects(device));
   EXPECT_UINT_EQ(STORAGE_DEVICE_SIZE, device_size(device));
   EXPECT_UINT_EQ(sizeof(struct objsuperblock) + initial_objects_table_bytes,
@@ -340,7 +342,7 @@ TEST(writing_multiple_objects) {
 TEST(add_to_full_table) {
   // Fill the disk
 
-  struct obj_device_private* device = dev_private(&mock_device);
+  struct obj_device_private* device = DEV_PRIVATE(&mock_device);
   uint num_of_free_entries =
       INITIAL_OBJECT_TABLE_SIZE - occupied_objects(device);
   char object_id[OBJECT_ID_LENGTH] = {};
@@ -358,7 +360,7 @@ TEST(add_to_full_table) {
     if ((num_of_free_entries - 1) == i) {
       freevector(&bufs_vec);
 
-      struct obj_device_private* device = dev_private(&mock_device);
+      struct obj_device_private* device = DEV_PRIVATE(&mock_device);
       object_size = device_size(device) - occupied_bytes(device);
       last_obj_bufs =
           malloc(SIZE_TO_NUM_OF_BUFS(object_size) * sizeof(struct buf));

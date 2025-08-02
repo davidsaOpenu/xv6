@@ -1,3 +1,0 @@
-
-runoff:
-	$(MAKE) -C runoff

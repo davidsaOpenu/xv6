@@ -11,6 +11,8 @@
 
 struct dev_holder_s dev_holder = {0};
 
+void* dev_private(struct device* dev) { return dev->private; }
+
 void devinit() {
   int i = 0;
   initlock(&dev_holder.lock, "dev_list");

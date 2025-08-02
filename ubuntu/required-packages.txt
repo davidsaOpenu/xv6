@@ -1,0 +1,10 @@
+docker.io
+build-essential
+qemu-system-x86
+clang-format-16
+shellcheck
+gcc-multilib
+
+# Use Docker without sudo
+sudo usermod -aG docker $USER
+newgrp docker

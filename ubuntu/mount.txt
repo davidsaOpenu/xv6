@@ -1,0 +1,2 @@
+sudo mkdir /xv6
+sudo mount -t 9p -o trans=virtio xv6 /xv6 -oversion=9p2000.L,posixacl,msize=104857600

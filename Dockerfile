@@ -1,72 +1,19 @@
-FROM ubuntu:24.04 AS base
-ENV DEBIAN_FRONTEND=noninteractive
+# A Note about clang-format
+# -------------------------
+# Ubuntu has almost all versions of clang-format in its repositories, meaning
+# There is no reason to compile LLVM tooling from scratch in the docker container!
+# See: https://pkgs.org/search/?q=clang-format
+#
+# While as of date, clang-format 20 is available, we'll settle on clang-format
+# 17 for compatibility reasons. Version 17 is also available in the repositories
+# of newer Ubuntu versions, in case we want to upgrade in the future!
+#
+# ~ Ron
 
-# Apparently newer ubuntu images already create a user
-# https://bugs.launchpad.net/cloud-images/+bug/2005129
-RUN userdel -r ubuntu
+FROM ubuntu:24.04
 
-# Update package lists and install dependencies
-RUN apt-get update && \
-    apt-get install -y \
-        g++ \
-        make \
-        libpcre3-dev \
-        curl \
-        tar \
-        python3 \
-        vim \
-        git \
-        cmake \
-        sudo \
-        python3.12-venv \
-        qemu-kvm \
-        libvirt-daemon-system \
-        libvirt-clients \
-        bridge-utils \
-        virt-manager \
-        expect \
-        libenchant-2-2 \
-        jq \
-        clang-format-16
+RUN apt update && \
+    apt install --yes gcc make perl python3 jq expect wget curl qemu-system-x86\
+    git vim clang-format-16
 
-# Download and extract Cppcheck
-WORKDIR /opt
-RUN curl -LO https://github.com/danmar/cppcheck/archive/2.11.tar.gz && \
-    tar -xf 2.11.tar.gz
-
-# Build and install Cppcheck
-WORKDIR /opt/cppcheck-2.11
-RUN make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck HAVE_RULES=yes \
-      CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function" \
-      install
-
-# Install packages for host unit tests
-RUN apt-get install -y gcc-multilib
-
-# Create a non-root user with the same username,uid,gid
-# as the user running the container
-ARG USERNAME
-ARG GRPNAME
-ARG UID
-ARG GID
-RUN groupadd -g $GID $GRPNAME
-RUN useradd -u $UID -g $GID -s /bin/bash $USERNAME
-
-# Install cpplint+bashate for the user in a venv, and activate it.
-ENV XV6_VENV=/xv6-venv
-RUN python3 -m venv $XV6_VENV
-ENV PATH=$XV6_VENV/bin:$PATH
-RUN pip install cpplint~=2.0.0 bashate==2.1.1 && \
-    chmod -R 777 $XV6_VENV
-
-# Change user
-USER $USERNAME
-
-# Set the working directory inside the container
-WORKDIR /home/$USERNAME/xv6
-
-# Set the default command to start the container
-CMD ["/bin/bash"]
-
-# Set the entrypoint command
-# ENTRYPOINT ["/home/$USERNAME/xv6/run-ci.sh"]
+CMD bash

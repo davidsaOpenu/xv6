@@ -15,7 +15,7 @@ HOST_CFLAGS += -I$(KERNEL_BASE_DIR)
 
 # Object file system related files
 # TODO integrate with the rest of xv6 sources - would be done in later part.
-obj_fs_tests: obj_fs_tests.o device_obj_disk_ktbin.o device_obj_cache_ktbin.o device_buf_cache_ktbin.o kvector_ktbin.o common_mocks.o
+obj_fs_tests: obj_fs_tests.o device_obj_disk_ktbin.o device_obj_cache_kbin.o device_buf_cache_ktbin.o kvector_ktbin.o common_mocks.o
 	$(CC) $(HOST_CFLAGS) $(OFLAGS) $^ -std=gnu99 -o $@
 
 kvector_tests:  kvector_ktbin.o kvector_tests.o common_mocks.o
