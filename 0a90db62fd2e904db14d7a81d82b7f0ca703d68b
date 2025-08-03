@@ -69,6 +69,24 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "68bebd9c_09390c67",
+        "filename": "user/pouch/configs.c",
+        "patchSetId": 3
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 1038801
+      },
+      "writtenOn": "2025-08-03T15:56:33Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "996707c3_1b823602",
+      "revId": "0a90db62fd2e904db14d7a81d82b7f0ca703d68b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "7532cce2_d9f97d33",
@@ -82,6 +100,30 @@
       "writtenOn": "2025-08-03T08:41:16Z",
       "side": 1,
       "message": "let\u0027s fix the problem without #pragma GCC diagnostic ignored \"",
+      "range": {
+        "startLine": 85,
+        "startChar": 0,
+        "endLine": 89,
+        "endChar": 0
+      },
+      "revId": "0a90db62fd2e904db14d7a81d82b7f0ca703d68b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7a01eac2_fa008a38",
+        "filename": "user/sh.c",
+        "patchSetId": 3
+      },
+      "lineNbr": 89,
+      "author": {
+        "id": 1038801
+      },
+      "writtenOn": "2025-08-03T15:56:33Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "7532cce2_d9f97d33",
       "range": {
         "startLine": 85,
         "startChar": 0,
