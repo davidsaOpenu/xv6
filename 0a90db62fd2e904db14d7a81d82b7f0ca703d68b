@@ -35,6 +35,23 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "4b9c062a_38e040f6",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-08-03T08:44:07Z",
+      "side": 1,
+      "message": "let\u0027s fix the linter issues. Then run the CI twice in a raw with this patch to see that the job succeeds.",
+      "revId": "0a90db62fd2e904db14d7a81d82b7f0ca703d68b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "996707c3_1b823602",
