@@ -33,6 +33,46 @@
       "message": "Hi @michaelk20115@protonmail.com, \n1) I have updated commit message. \n2) the job times out from time to time. Comparing with 22.04 reveals x2 increase in time it takes to complete.\n\nxv6-22.04\n\t8 hr 54 min #3098\t14 hr #3097\t28 min\t\t-\nxv6-24.04\n\t2 days 18 hr #1160\t9 hr 24 min #1173\t1 hr 2 min\t\n\n\t-",
       "revId": "0a90db62fd2e904db14d7a81d82b7f0ca703d68b",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "996707c3_1b823602",
+        "filename": "user/pouch/configs.c",
+        "patchSetId": 3
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-08-03T08:41:16Z",
+      "side": 1,
+      "message": "let\u0027s fix the problem without #pragma GCC diagnostic ignored",
+      "revId": "0a90db62fd2e904db14d7a81d82b7f0ca703d68b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7532cce2_d9f97d33",
+        "filename": "user/sh.c",
+        "patchSetId": 3
+      },
+      "lineNbr": 89,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-08-03T08:41:16Z",
+      "side": 1,
+      "message": "let\u0027s fix the problem without #pragma GCC diagnostic ignored \"",
+      "range": {
+        "startLine": 85,
+        "startChar": 0,
+        "endLine": 89,
+        "endChar": 0
+      },
+      "revId": "0a90db62fd2e904db14d7a81d82b7f0ca703d68b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
