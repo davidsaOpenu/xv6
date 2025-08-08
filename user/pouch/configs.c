@@ -46,7 +46,7 @@ static int pouch_open_ttyc(const int tty_num, const int mode) {
 }
 
 static void pouch_get_container_conf_name(const char* const container_name,
-                                          char dest[MAX_PATH_LENGTH]) {
+                                          char* dest) {
   if (strlen(container_name) == 0) {
     perror("Invalid container name.");
     return;
