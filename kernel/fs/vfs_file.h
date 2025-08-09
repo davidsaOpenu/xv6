@@ -74,6 +74,7 @@ struct vfs_file {
         // IO
         union {
           struct cgroup_io_device_statistics_s *devices_stats[NDEV];
+          struct dev_stat *io_stats_table[NDEV][MAX_TTY];
         } io;
         // memory
         union {
