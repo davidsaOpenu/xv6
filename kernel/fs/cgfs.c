@@ -11,6 +11,7 @@
 #define MAX_CGROUP_DIR_ENTRIES 64
 #define MAX_STR 64
 #define MAX_BUF 4096
+#define abs(x) (x) > 0 ? (x) : (0)
 
 // Is static to save space in the stack
 static char buf[MAX_BUF];
@@ -368,8 +369,13 @@ static int unsafe_cg_open_file(char* filename, struct cgroup* cgp, int omode) {
 
     case IO_STAT:
       if (cgp == cgroup_root()) return -1;
-      /* internally initialize the io related stats in the file structure */
-      set_cgroup_io_stat(f);
+      struct dev_stat* pstat;
+      for (int i = 0; i < NDEV; i++) {
+        for (int j = 0; j < MAX_TTY; j++) {
+          pstat = &cgp->io_stat_table[i][j];
+          f->io.io_stats_table[i][j] = pstat;
+        }
+      }
       break;
     // for any other type we do nothing (no special handling)
     default:
@@ -454,6 +460,9 @@ static int read_file_cg_controllers(struct vfs_file* f, char* addr, int n) {
   if (f->cgp->mem_controller_avalible) {
     move_and_add(buf, "mem\n", &i);
   }
+  if (f->cgp->io_controller_available) {
+    move_and_add(buf, "io\n", &i);
+  }
 
   return copy_buffer_up_to_end(buf + f->off, min(i, n), addr);
 }
@@ -473,6 +482,9 @@ static int read_file_cg_subtree(struct vfs_file* f, char* addr, int n) {
   }
   if (f->cgp->mem_controller_enabled) {
     move_and_add(buf, "mem\n", &i);
+  }
+  if (f->cgp->io_controller_enabled) {
+    move_and_add(buf, "io\n", &i);
   }
 
   return copy_buffer_up_to_end(buf + f->off, min(i, n), addr);
@@ -714,55 +726,55 @@ static int read_file_io_stat(struct vfs_file* f, char* addr, int n) {
   char* stattext = buf;
   char* stattextp = stattext;
   uint stattext_size = 0;
-  cgroup_io_device_statistics_t* dev_stat = (void*)0;
-  char rbytes_buff[8] = {0};
-  char wbytes_buff[8] = {0};
-  char rios_buff[8] = {0};
-  char wios_buff[8] = {0};
-  uint buff_length = 0;
+  struct dev_stat* dev_stat = (void*)0;
+  char tmp_buff[max(20, MAX_DECS_SIZE)] = {0};
+  // uint buff_length = 0;
 
   if (f == (void*)0 || f->cgp == (void*)0)
     panic("Can't read file io stat. file structure invalid (NULL)");
 
   stattext_size = min(n + f->off, sizeof(buf) / sizeof(char));
 
-  /* set the io stats in the file structure (f->cgp should be already set with
-      the io inodes, if there are any)
-  */
-  get_cgroup_io_stat(f, f->cgp);
-
   /* parse from file structure */
   memset(stattext, 0, stattext_size);
 
-  for (int i = 0; i < NDEV; i++) {
-    dev_stat = (cgroup_io_device_statistics_t*)f->io.devices_stats[i];
-    if (dev_stat == (void*)0) continue;
+  for (int dev_i = 0; dev_i < NDEV; dev_i++) {
+    for (int tty_i = 0; tty_i < MAX_TTY; tty_i++) {
+      dev_stat = f->io.io_stats_table[dev_i][tty_i];
+      if (0 == dev_stat->rbytes && 0 == dev_stat->rios &&
+          0 == dev_stat->wbytes && 0 == dev_stat->wios) {
+        continue;
+      }
+      int num_str_length = itoa(tmp_buff, dev_i);
+      copy_and_move_buffer(&stattextp, tmp_buff, num_str_length);
+      copy_and_move_buffer(&stattextp, ":", 1);
 
-    copy_and_move_buffer(&stattextp, dev_stat->dev_name,
-                         strlen(dev_stat->dev_name));
+      num_str_length = itoa(tmp_buff, tty_i);
+      copy_and_move_buffer(&stattextp, tmp_buff, num_str_length);
 
-    copy_and_move_buffer(&stattextp, " rbytes=", strlen(" rbytes="));
-    buff_length = utoa(rbytes_buff, dev_stat->device_stats.rbytes);
-    copy_and_move_buffer(&stattextp, rbytes_buff, buff_length);
+      num_str_length = itoa(tmp_buff, dev_stat->rbytes);
+      copy_and_move_buffer(&stattextp, "\trbytes=", 8);
+      copy_and_move_buffer(&stattextp, tmp_buff, num_str_length);
 
-    copy_and_move_buffer(&stattextp, " wbytes=", strlen(" wbytes="));
-    buff_length = utoa(wbytes_buff, dev_stat->device_stats.wbytes);
-    copy_and_move_buffer(&stattextp, wbytes_buff, buff_length);
+      num_str_length = itoa(tmp_buff, dev_stat->wbytes);
+      copy_and_move_buffer(&stattextp, "\twbytes=", 8);
+      copy_and_move_buffer(&stattextp, tmp_buff, num_str_length);
 
-    copy_and_move_buffer(&stattextp, " rios=", strlen(" rios="));
-    buff_length = utoa(rios_buff, dev_stat->device_stats.rios);
-    copy_and_move_buffer(&stattextp, rios_buff, buff_length);
+      num_str_length = itoa(tmp_buff, dev_stat->rios);
+      copy_and_move_buffer(&stattextp, "\trios=", 6);
+      copy_and_move_buffer(&stattextp, tmp_buff, num_str_length);
 
-    copy_and_move_buffer(&stattextp, " wios=", strlen(" wios="));
-    buff_length = utoa(wios_buff, dev_stat->device_stats.wios);
-    copy_and_move_buffer(&stattextp, wios_buff, buff_length);
-
-    copy_and_move_buffer(&stattextp, "\n", strlen("\n"));
+      num_str_length = itoa(tmp_buff, dev_stat->wios);
+      copy_and_move_buffer(&stattextp, "\twios=", 6);
+      copy_and_move_buffer(&stattextp, tmp_buff, num_str_length);
+      copy_and_move_buffer(&stattextp, "\tdbytes=0\tdios=0", 16);
+      copy_and_move_buffer(&stattextp, "\n", 1);
+    }
   }
+  copy_and_move_buffer(&stattextp, "\n", 1);
 
   return copy_buffer_up_to_end(
-      stattext + f->off, min(at_least_zero(stattextp - stattext - f->off), n),
-      addr);
+      stattext + f->off, min(abs(stattextp - stattext - f->off), n), addr);
 }
 
 static int read_file_mem_stat(struct vfs_file* f, char* addr, int n) {
@@ -990,6 +1002,9 @@ int unsafe_cg_read(cg_file_type type, struct vfs_file* f, char* addr, int n) {
         copy_and_move_buffer_max_len(&bufp, CGFS_MEM_MIN);
         copy_and_move_buffer_max_len(&bufp, CGFS_MEM_FAILCNT);
       }
+      if (f->cgp->io_controller_enabled) {
+        copy_and_move_buffer_max_len(&bufp, CGFS_IO_STAT);
+      }
     }
 
     get_cgroup_names_at_path(bufp, f->cgp->cgroup_dir_path);
@@ -1021,6 +1036,7 @@ static int write_file_cg_subtree(struct vfs_file* f, char* addr, int n) {
   char pidcontroller = 0;
   char setcontroller = 0;
   char memcontroller = 0;
+  char iocontroller = 0;
   char ch = ' ';
   int len = 0;
   int total_len = 0;
@@ -1044,6 +1060,10 @@ static int write_file_cg_subtree(struct vfs_file* f, char* addr, int n) {
       total_len += len + 1;
     } else if (strcmp(buf, "mem") == 0) {
       memcontroller = return_new_controller_state(*addr);
+      addr += len + 1;
+      total_len += len + 1;
+    } else if (strcmp(buf, "io") == 0) {
+      iocontroller = return_new_controller_state(*addr);
       addr += len + 1;
       total_len += len + 1;
     } else
@@ -1076,6 +1096,11 @@ static int write_file_cg_subtree(struct vfs_file* f, char* addr, int n) {
     return -1;
   if (memcontroller == 2 &&
       unsafe_disable_mem_controller(f->cgp) <= RESULT_ERROR)
+    return -1;
+
+  if (iocontroller == 1 && unsafe_enable_io_controller(f->cgp) <= RESULT_ERROR)
+    return -1;
+  if (iocontroller == 2 && unsafe_disable_io_controller(f->cgp) <= RESULT_ERROR)
     return -1;
 
   return n - total_len;
