@@ -781,19 +781,19 @@ proc cgroup_io_states_test {argv} {
     set running [start_container $argv "temp" "Pouch: ctemp starting" "img_a"]
     sleep 1
     send "cat /cgroup/ctemp/io.stat\n"
-    expect "1:1 rbytes=0 wbytes=0 rios=0 wios=0"
+    expect -re {.*1:1\trbytes=0\twbytes=33\trios=0\twios=33\tdbytes=0\tdios=0.*}
 
     send "pouch connect ctemp\n"
     expect "tty0 connected"
 
     sleep 1
     send "cat /cgroup/ctemp/io.stat\n"
-    expect "1:1 rbytes=26 wbytes=0 rios=26 wios=0"
+    expect -re {.*1:1\trbytes=26\twbytes=33\trios=26\twios=33\tdbytes=0\tdios=0.*}
 
     send "echo 12345678901234567890\n"
     sleep 1
     send "cat /cgroup/ctemp/io.stat\n"
-    expect "1:1 rbytes=78 wbytes=64 rios=78 wios=7"
+    expect -re {.*1:1\trbytes=78\twbytes=233\trios=78\twios=40\tdbytes=0\tdios=0.*}
 
     set running [disconnect_container $argv]
     set running [destroy_container $argv "temp" "Pouch: ctemp destroyed"]
