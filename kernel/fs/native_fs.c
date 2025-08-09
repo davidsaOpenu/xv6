@@ -11,6 +11,7 @@
 
 #include "native_fs.h"
 
+#include "cgroup.h"
 #include "defs.h"
 #include "device/bio.h"
 #include "device/buf.h"
@@ -477,6 +478,11 @@ static int readi(struct vfs_inode *vfs_ip, uint off, uint n,
       return -1;
 
     int read_result = devsw[ip->vfs_inode.major].read(vfs_ip, n, dstvector);
+    if (read_result != -1) {
+      struct cgroup *cgroup = myproc()->cgroup;
+      update_io_stat(cgroup, ip->vfs_inode.major, ip->vfs_inode.minor,
+                     read_result, 0);
+    }
     return read_result;
   }
 
@@ -494,6 +500,8 @@ static int readi(struct vfs_inode *vfs_ip, uint off, uint n,
     // BSIZE), m);
     buf_cache_release(bp);
   }
+  struct cgroup *cgroup = myproc()->cgroup;
+  update_io_stat(cgroup, ip->vfs_inode.major, ip->vfs_inode.minor, n, 0);
   return n;
 }
 
@@ -511,7 +519,12 @@ static int writei(struct vfs_inode *vfs_ip, char *src, uint off, uint n) {
         ip->vfs_inode.minor < 0 || ip->vfs_inode.minor >= MAX_TTY ||
         !devsw[ip->vfs_inode.major].write)
       return -1;
-    return devsw[ip->vfs_inode.major].write(vfs_ip, src, n);
+    int n_write = devsw[ip->vfs_inode.major].write(vfs_ip, src, n);
+    if (n_write != -1) {
+      struct cgroup *cgroup = myproc()->cgroup;
+      update_io_stat(cgroup, vfs_ip->major, vfs_ip->minor, n_write, 1);
+    }
+    return n_write;
   }
 
   if (off > ip->vfs_inode.size || off + n < off) return -1;
@@ -530,6 +543,9 @@ static int writei(struct vfs_inode *vfs_ip, char *src, uint off, uint n) {
     ip->vfs_inode.size = off;
     iupdate(&ip->vfs_inode);
   }
+  struct cgroup *cgroup = myproc()->cgroup;
+  update_io_stat(cgroup, ip->vfs_inode.major, ip->vfs_inode.minor, n, 1);
+
   return n;
 }
 

@@ -252,6 +252,9 @@ void cgroup_initialize(struct cgroup* cgroup, char* path,
     cgroup->set_controller_enabled = 0;
     cgroup->mem_controller_avalible = 1;
     cgroup->mem_controller_enabled = 1;
+    cgroup->io_controller_available = 1;
+    cgroup->io_controller_enabled = 1;
+    memset(cgroup->io_stat_table, 0, sizeof(cgroup->io_stat_table));
   } else {
     cgroup->parent = parent_cgroup;
 
@@ -287,10 +290,17 @@ void cgroup_initialize(struct cgroup* cgroup, char* path,
     else
       cgroup->mem_controller_avalible = 0;
 
+    /*Cgroup's io controller avalible only when it is enabled in the parent.*/
+    if (parent_cgroup->io_controller_enabled)
+      cgroup->io_controller_available = 1;
+    else
+      cgroup->io_controller_available = 0;
+
     cgroup->pid_controller_enabled = 0;
     cgroup->cpu_controller_enabled = 0;
     cgroup->set_controller_enabled = 0;
     cgroup->mem_controller_enabled = 0;
+    cgroup->io_controller_enabled = 0;
     cgroup->depth = cgroup->parent->depth + 1;
     unsafe_set_cgroup_dir_path(cgroup, path);
   }
@@ -1045,54 +1055,95 @@ void cgroup_remove_io_device(struct cgroup* cgroup_ptr,
   }
 }
 
-void set_cgroup_io_stat(struct vfs_file* f) {
-  if (f == (void*)0) panic("Invalid file handler (NULL), can't set io stats");
-
-  for (int i = 0; i < NDEV; i++)
-    f->io.devices_stats[i] = (cgroup_io_device_statistics_t*)0;
+void update_io_stat(struct cgroup* cgroup, short major, short minor, int size,
+                    char is_write) {
+  // This check is independent of the cgroup itself, so it's out of the while
+  // loop
+  if (major < 0 || minor < 0 || cgroup == 0 ||
+      major >= NELEM(cgroup->io_stat_table) ||
+      minor >= NELEM(cgroup->io_stat_table[0]))
+    return;
+  struct dev_stat* pstat;
+  // No need to lock cgtable.lock as a cgroup can't be deleted while containing
+  // processes/cgroups
+  while (cgroup != 0) {
+    acquire(&cgroup->lock_io_stat_table);
+    pstat = &(cgroup->io_stat_table[major][minor]);
+    if (is_write) {
+      pstat->wios++;
+      pstat->wbytes += size;
+    } else {
+      pstat->rios++;
+      pstat->rbytes += size;
+    }
+    release(&cgroup->lock_io_stat_table);
+    cgroup = cgroup->parent;
+  }
 }
 
-void get_cgroup_io_stat(struct vfs_file* f, struct cgroup* cgp) {
-  struct dev_stat device_stat = {0};
-  int dev_major = 0;
-  int dev_minor = 0;
-  int cnt = 0;
+int unsafe_enable_io_controller(struct cgroup* cgroup) {
+  // If cgroup has processes in it, controllers can't be enabled.
+  if (cgroup == 0 || cgroup->populated == 1) {
+    return RESULT_ERROR;
+  }
 
-  if (f == (void*)0) panic("Invalid file handler (NULL), can't get io stats");
+  // If controller is enabled do nothing.
+  if (cgroup->io_controller_enabled) {
+    return RESULT_SUCCESS;
+  }
 
-  if (cgp == (void*)0) panic("Invalid cgroup (NULL), can't get io stats");
+  if (cgroup->io_controller_available) {
+    // Set io controller to enabled.
+    cgroup->io_controller_enabled = 1;
+    // Set io controller to avalible in all child cgroups.
+    for (int i = 1; i < sizeof(cgtable.cgroups) / sizeof(cgtable.cgroups[0]);
+         i++)
+      if (cgtable.cgroups[i].parent == cgroup)
+        cgtable.cgroups[i].io_controller_available = 1;
+  }
 
-  for (int i = 0; i < NDEV; i++) {
-    /* Note: counting on i-nodes in this case is problematic.
-    The problem is that if the user closes
-    the inode then, it might be used by other file/device.
-    This will lead to failure (so we can't rely on inodes).
-    That's why io_stats was introduced.
-    */
+  return RESULT_SUCCESS;
+}
 
-    dev_major = cgp->io_stats[i].major;
-    dev_minor = cgp->io_stats[i].minor;
-    if (0 == dev_major || (cgp->io_stats[i].dev_name == (char*)0)) {
-      continue;
+int unsafe_disable_io_controller(struct cgroup* cgroup) {
+  if (cgroup == 0) {
+    return -1;
+  }
+
+  // If controller is disabled do nothing.
+  if (cgroup->io_controller_enabled == 0) {
+    return 0;
+  }
+
+  // Check that all child cgroups have io controller disabled. (cannot
+  // disable controller when children have it enabled)
+  for (int i = 1; i < sizeof(cgtable.cgroups) / sizeof(cgtable.cgroups[0]); i++)
+    if (cgtable.cgroups[i].parent == cgroup &&
+        cgtable.cgroups[i].io_controller_enabled) {
+      return -1;
     }
 
-    if (cnt >= cgp->used_devices) break;
+  // Set io controller to disabled.
+  cgroup->io_controller_enabled = 0;
 
-    /* get the stats of the IO device from its driver via minor/major nuimbers
-     */
-    devsw[dev_major].stat(dev_minor, &device_stat);
+  // Set io controller to unavalible in all child cgroups.
+  for (int i = 1; i < sizeof(cgtable.cgroups) / sizeof(cgtable.cgroups[0]); i++)
+    if (cgtable.cgroups[i].parent == cgroup)
+      cgtable.cgroups[i].io_controller_available = 0;
 
-    /* copy the stats to the cgroup structure of the cgroup interface (IO_STAT)
-       Note: The cgroup's io_stats are ordered via indexes
-    */
-    memmove((struct dev_stat*)&(cgp->io_stats[i].device_stats), &device_stat,
-            sizeof(struct dev_stat));
+  return 0;
+}
 
-    // set also the cgroup's io stats pointers in the file structure
-    f->io.devices_stats[cnt] = &(cgp->io_stats[i]);
+int enable_io_controller(struct cgroup* cgroup) {
+  acquire(&cgtable.lock);
+  int res = unsafe_enable_io_controller(cgroup);
+  release(&cgtable.lock);
+  return res;
+}
 
-    // clear just in case we have garbage here (we are reusing the struct)
-    memset(&device_stat, 0, sizeof(struct dev_stat));
-    cnt++;
-  }
+int disable_io_controller(struct cgroup* cgroup) {
+  acquire(&cgtable.lock);
+  int res = unsafe_disable_io_controller(cgroup);
+  release(&cgtable.lock);
+  return res;
 }
