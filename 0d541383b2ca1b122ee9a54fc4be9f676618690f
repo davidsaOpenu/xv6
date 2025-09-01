@@ -118,6 +118,74 @@
       "message": "LGTM",
       "revId": "0d541383b2ca1b122ee9a54fc4be9f676618690f",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a4d13c7d_2e637661",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-09-01T11:38:08Z",
+      "side": 1,
+      "message": "thanks for working on this. Several concerns and improvement suggestions.",
+      "revId": "0d541383b2ca1b122ee9a54fc4be9f676618690f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d31ffb3b_7b65037c",
+        "filename": "kernel/cgroup.c",
+        "patchSetId": 3
+      },
+      "lineNbr": 1080,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-09-01T11:38:08Z",
+      "side": 1,
+      "message": "potential concurency issue",
+      "revId": "0d541383b2ca1b122ee9a54fc4be9f676618690f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e2344b6c_415baca3",
+        "filename": "kernel/fs/cgfs.c",
+        "patchSetId": 3
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-09-01T11:38:08Z",
+      "side": 1,
+      "message": "its max(x,0)",
+      "revId": "0d541383b2ca1b122ee9a54fc4be9f676618690f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f36810fe_65ef09fa",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 3
+      },
+      "lineNbr": 2145,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-09-01T11:38:08Z",
+      "side": 1,
+      "message": "let\u0027s add to all the added tests a description. Smth like \n- Writes 10 bytes to a file, then reads them back\n- Writes 10 bytes to stdout\n- Disk should show +10 bytes read, +10 bytes written, +1 read operation, +1 write operation\n- Screen should show +10 bytes written, +10 write operations",
+      "revId": "0d541383b2ca1b122ee9a54fc4be9f676618690f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
