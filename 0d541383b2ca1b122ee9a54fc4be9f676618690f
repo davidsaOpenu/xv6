@@ -172,6 +172,24 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "97a1d09d_29da2753",
+        "filename": "kernel/cgroup.c",
+        "patchSetId": 3
+      },
+      "lineNbr": 1080,
+      "author": {
+        "id": 1038781
+      },
+      "writtenOn": "2025-09-02T06:37:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f1753c95_d69facad",
+      "revId": "0d541383b2ca1b122ee9a54fc4be9f676618690f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "e2344b6c_415baca3",
@@ -189,6 +207,24 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "b255fd3c_17b9580d",
+        "filename": "kernel/fs/cgfs.c",
+        "patchSetId": 3
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1038781
+      },
+      "writtenOn": "2025-09-02T06:37:02Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "e2344b6c_415baca3",
+      "revId": "0d541383b2ca1b122ee9a54fc4be9f676618690f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "f36810fe_65ef09fa",
@@ -202,6 +238,24 @@
       "writtenOn": "2025-09-01T11:38:08Z",
       "side": 1,
       "message": "let\u0027s add to all the added tests a description. Smth like \n- Writes 10 bytes to a file, then reads them back\n- Writes 10 bytes to stdout\n- Disk should show +10 bytes read, +10 bytes written, +1 read operation, +1 write operation\n- Screen should show +10 bytes written, +10 write operations",
+      "revId": "0d541383b2ca1b122ee9a54fc4be9f676618690f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "48a53fda_ca430596",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 3
+      },
+      "lineNbr": 2145,
+      "author": {
+        "id": 1038781
+      },
+      "writtenOn": "2025-09-02T06:37:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f36810fe_65ef09fa",
       "revId": "0d541383b2ca1b122ee9a54fc4be9f676618690f",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
