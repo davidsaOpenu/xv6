@@ -365,6 +365,12 @@ static int unsafe_cg_open_file(char* filename, struct cgroup* cgp, int omode) {
       f->mem.stat.pgmajfault = cgp->mem_stat_pgmajfault;
       f->mem.stat.kernel = get_total_memory() * PGSIZE;
       break;
+    case CGROUP_MAX_DESCENDANTS:
+      f->cgp->max_depth_value = cgp->max_depth_value;
+      break;
+    case CGROUP_MAX_DEPTH:
+      f->cgp->max_descendants_value = cgp->max_descendants_value;
+      break;
 
     case IO_STAT:
       if (cgp == cgroup_root()) return -1;
@@ -717,7 +723,7 @@ static int read_file_mem_failcnt(struct vfs_file* f, char* addr, int n) {
   copy_and_move_buffer(&pmem_failcnt_text, "\n", strlen("\n"));
 
   return copy_buffer_up_to_end(mem_failcnt_text + f->off,
-                               min(pmem_failcnt_text - mem_failcnt_text, n),
+                               min(at_least_zero(pmem_failcnt_text - mem_failcnt_text - f->off), n),
                                addr);
 }
 
@@ -834,9 +840,25 @@ static int read_file_cg_events(struct vfs_file* f, char* addr, int n) {
 }
 
 static int read_file_cg_max_descen(struct vfs_file* f, char* addr, int n) {
-  itoa(buf, f->cgp->max_descendants_value);
-  return copy_buffer_up_to_end_replace_end_with_newline(
-      buf, min(sizeof(buf), n), addr);
+  char dec_buf[MAX_DECS_SIZE] = {0};
+  char* dec_text = buf;
+  char * dec_textp = dec_text;
+
+  itoa(dec_buf, f->cgp->max_descendants_value);
+  copy_and_move_buffer(&dec_textp, dec_buf, strlen(dec_buf));
+  copy_and_move_buffer(&dec_textp, "\n", strlen("\n"));
+  return copy_buffer_up_to_end(dec_text + f->off, min(at_least_zero(dec_textp - dec_text - f->off), n), addr);
+}
+
+static int read_file_cg_max_depth(struct vfs_file* f, char* addr, int n) {
+  char depth_buf[MAX_DEPTH_SIZE] = {0};
+  char* depth_text = buf;
+  char * depth_textp = depth_text;
+
+  itoa(depth_buf, f->cgp->max_depth_value);
+  copy_and_move_buffer(&depth_textp, depth_buf, strlen(depth_buf));
+  copy_and_move_buffer(&depth_textp, "\n", strlen("\n"));
+  return copy_buffer_up_to_end(depth_text+ f->off, min(at_least_zero(depth_textp - depth_text - f->off), n), addr);
 }
 
 static int unsafe_cg_read_file(struct vfs_file* f, char* addr, int n) {
@@ -868,11 +890,7 @@ static int unsafe_cg_read_file(struct vfs_file* f, char* addr, int n) {
       break;
 
     case CGROUP_MAX_DEPTH:
-      memset(buf, '\0', MAX_DEPTH_SIZE);
-      itoa(buf, f->cgp->max_depth_value);
-      r = copy_buffer_up_to_end_replace_end_with_newline(
-          buf, min(sizeof(buf), n),  // NOLINT(build/include_what_you_use)
-          addr);
+      r = read_file_cg_max_depth(f, addr, n);
       break;
 
     case CGROUP_STAT:

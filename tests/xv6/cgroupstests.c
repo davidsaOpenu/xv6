@@ -119,6 +119,11 @@ char* read_file(const char* file, int print) {
     close_file(fd);
     return 0;
   }
+  char leftover[1];
+  if (read(fd, leftover, 1) > 0) {
+    printf(stdout, "\nReading of file %s left 1 or more unread bytes\n", file);
+    return 0;
+  }
 
   if (print) {
     printf(stdout, "Contents of %s: \n%s\n", file, buf);
