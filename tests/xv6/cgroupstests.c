@@ -611,6 +611,23 @@ TEST(test_fork_failure) {
   ASSERT_TRUE(disable_controller(PID_CNT));
 }
 
+TEST(test_pid_peak) {
+  // Ensure pid.peak is reset to 0
+  ASSERT_TRUE(disable_controller(PID_CNT));
+  ASSERT_TRUE(enable_controller(PID_CNT));
+  // Assert initial value of pid.peak is 0
+  ASSERT_FALSE(strcmp(read_file(TEST_1_PID_PEAK, 0), "0\n"));
+  // Move the current process to "/cgroup/test1" cgroup and remove it 
+  ASSERT_TRUE(move_proc(TEST_1_CGROUP_PROCS, getpid()));
+  ASSERT_FALSE(strcmp(read_file(TEST_1_PID_CURRENT, 0), "num_of_procs - 1\n"));
+  ASSERT_TRUE(move_proc(ROOT_CGROUP_PROCS, getpid()));
+
+  // Check pid.current is 0 and pid.peak is 1 
+  ASSERT_FALSE(strcmp(read_file(TEST_1_PID_PEAK, 0), "1\n"));
+  ASSERT_FALSE(strcmp(read_file(TEST_1_PID_CURRENT, 0), "num_of_procs - 0\n"));
+  ASSERT_TRUE(disable_controller(PID_CNT));
+}
+
 TEST(test_pid_current) {
   // Move the current process to "/cgroup/test1" cgroup.
   ASSERT_TRUE(move_proc(TEST_1_CGROUP_PROCS, getpid()));
@@ -2368,6 +2385,7 @@ int main(int argc, char* argv[]) {
   run_test(test_io_stat);
   run_test(test_fork_failure);
   run_test(test_cpu_stat);
+  run_test(test_pid_peak);
   run_test(test_pid_current);
   run_test(test_setting_cpu_id);
   // run_test(test_correct_cpu_running);

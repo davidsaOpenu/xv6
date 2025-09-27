@@ -57,6 +57,7 @@ struct vfs_file {
             char active;
             int max;
           } max;
+          int peak;
         } pid;
         // cpu_set
         union {

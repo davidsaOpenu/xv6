@@ -230,6 +230,8 @@ static cgroup_file_name_t get_file_name_constant(char* filename) {
     return PID_MAX;
   else if (strcmp(filename, CGFS_PID_CUR) == 0)
     return PID_CUR;
+  else if (strcmp(filename, CGFS_PID_PEAK) == 0) 
+    return PID_PEAK;
   else if (strcmp(filename, CGFS_SET_CPU) == 0)
     return SET_CPU;
   else if (strcmp(filename, CGFS_SET_FRZ) == 0)
@@ -331,6 +333,11 @@ static int unsafe_cg_open_file(char* filename, struct cgroup* cgp, int omode) {
       if (cgp == cgroup_root()) return -1;
       f->pid.max.active = cgp->pid_controller_enabled;
       f->pid.max.max = cgp->max_num_of_procs;
+      break;
+    
+    case PID_PEAK:
+      if (cgp == cgroup_root() || !cgp->pid_controller_enabled) return -1;
+      f->pid.peak = cgp->pid_peak;
       break;
 
     case SET_CPU:
@@ -635,6 +642,18 @@ static int read_file_pid_cur(struct vfs_file* f, char* addr, int n) {
       addr);
 }
 
+static int read_file_pid_peak(struct vfs_file* f, char* addr, int n) {
+  char pid_peak_buf[MAX_DECS_SIZE] = {0};
+  itoa(pid_peak_buf, f->pid.peak);
+  char* peak_text = buf;
+  char* peak_textp = peak_text;
+  copy_and_move_buffer(&peak_textp, pid_peak_buf, strlen(pid_peak_buf));
+  copy_and_move_buffer(&peak_textp, "\n", strlen("\n"));
+  return copy_buffer_up_to_end(
+      peak_text + f->off, min(at_least_zero(peak_textp - peak_text - f->off), n),
+      addr);
+}
+
 static int read_file_set_cpu(struct vfs_file* f, char* addr, int n) {
   char cpu_buf[11] = {0};
   char* cputext = buf;
@@ -925,7 +944,9 @@ static int unsafe_cg_read_file(struct vfs_file* f, char* addr, int n) {
     case PID_CUR:
       r = read_file_pid_cur(f, addr, n);
       break;
-
+    case PID_PEAK:
+      r = read_file_pid_peak(f, addr, n);
+      break;
     case SET_CPU:
       r = read_file_set_cpu(f, addr, n);
       break;
@@ -1013,6 +1034,7 @@ int unsafe_cg_read(cg_file_type type, struct vfs_file* f, char* addr, int n) {
 
       if (f->cgp->pid_controller_enabled) {
         copy_and_move_buffer_max_len(&bufp, CGFS_PID_MAX);
+        copy_and_move_buffer_max_len(&bufp, CGFS_PID_PEAK);
       }
 
       if (f->cgp->set_controller_enabled) {
