@@ -110,6 +110,9 @@ struct cgroup {
   /* Indicates whether cgroup is frozen. */
   int is_frozen;
 
+  /* Historical maximal value of num_of_procs */
+  unsigned pid_peak;
+
   /* The current amount of memory used by the group. */
   unsigned int current_mem;
   /* The current amount of memory used by the group in pages. */

@@ -422,6 +422,7 @@ result_code unsafe_cgroup_insert(struct cgroup* cgroup, struct proc* proc) {
   // ancestors.
   while (cgroup != 0) {
     cgroup->num_of_procs++;
+    cgroup->pid_peak = max(cgroup->num_of_procs, cgroup->pid_peak);
     cgroup->populated = 1;
     cgroup->current_mem += proc->sz;
     cgroup->current_page += PGROUNDUP(proc->sz) / PGSIZE;
@@ -689,8 +690,9 @@ result_code unsafe_enable_pid_controller(struct cgroup* cgroup) {
   }
 
   if (cgroup->pid_controller_avalible) {
-    // Set pid controller to enabled.
+    // Set pid controller to enabled and set initial values.
     cgroup->pid_controller_enabled = 1;
+    cgroup->pid_peak = cgroup->num_of_procs;
     // Set pid controller to avalible in all child cgroups.
     for (int i = 1; i < sizeof(cgtable.cgroups) / sizeof(cgtable.cgroups[0]);
          i++)

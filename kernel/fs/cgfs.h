@@ -19,6 +19,7 @@
 #define CGFS_CPU_STAT "cpu.stat"
 #define CGFS_PID_MAX "pid.max"
 #define CGFS_PID_CUR "pid.current"
+#define CGFS_PID_PEAK "pid.peak"
 #define CGFS_SET_CPU "cpuset.cpus"
 #define CGFS_SET_FRZ "cgroup.freeze"
 #define CGFS_MEM_CUR "memory.current"
@@ -48,6 +49,7 @@ typedef enum cgroup_file_name_e {
   CGROUP_STAT,
   CPU_STAT,
   PID_CUR,
+  PID_PEAK,
   MEM_CUR,
   MEM_STAT,
   IO_STAT,
