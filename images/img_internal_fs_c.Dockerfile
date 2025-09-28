@@ -1,7 +1,7 @@
 FROM scratch
 
-ADD test.txt /test.txt
-ADD user/_sh user/_pouch user/_ls user/_cat user/_echo /
+ADD *.txt /
+ADD user/sh user/pouch user/ls user/cat user/echo /
 
 # Squash all layers to a single layer
 FROM scratch

@@ -618,8 +618,8 @@ proc proc_cache_entry {argv} {
     expect "1"
 }
 
-# - Test tries to create 4 containers, in the last one we are expecting:
-# - 'Cannot find tty' because there are only 3 containers available
+    # - Test tries to create 4 containers, in the last one we are expecting:
+    # - 'Cannot find tty' because there are only 3 containers available
 # @argv - file name for logging
 proc pouch_to_many_cnts_test {argv} {
     set running [start_container $argv "1" "Pouch: c1 starting" "img_a"]
@@ -1159,7 +1159,7 @@ if 0 {
     set running [remove_pouch_images $argv]
 
     set running [test_all_pouch_build $argv]
-
+    
     set running [pidns_tests $argv]
     set running [test_internal_images $argv]
 }
