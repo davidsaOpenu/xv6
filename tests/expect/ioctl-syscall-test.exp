@@ -1,0 +1,7 @@
+# - ioctl syscall tests
+# - for details: ioctltests.c
+# @argv - file name for logging -- REMOVED
+proc ioctl_syscall_test {} {
+    send "ioctltests\n"
+    assert_on_exit_status
+}

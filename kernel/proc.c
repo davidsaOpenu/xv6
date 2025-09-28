@@ -138,7 +138,7 @@ found:
 //  Set up first user process.
 void userinit(void) {
   struct proc *p;
-  extern char _binary_initcode_start[], _binary_initcode_size[];
+  extern char _binary_build_initcode_start[], _binary_build_initcode_size[];
 
   // Initialize the root cgroup.
   cgroup_initialize(cgroup_root(), 0, 0);
@@ -147,7 +147,7 @@ void userinit(void) {
 
   initproc = p;
   if ((p->pgdir = setupkvm()) == 0) panic("userinit: out of memory?");
-  inituvm(p->pgdir, _binary_initcode_start, (int)_binary_initcode_size);
+  inituvm(p->pgdir, _binary_build_initcode_start, (int)_binary_build_initcode_size);
   p->sz = PGSIZE;
   memset(p->tf, 0, sizeof(*p->tf));
   p->tf->cs = (SEG_UCODE << 3) | DPL_USER;
