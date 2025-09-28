@@ -1,0 +1,68 @@
+
+# - xv6 cgroup tests
+proc cgroupstests {} {
+    #clean expect buffer
+    expect *
+
+    send "mkdir cgroup_tests_dir\n"
+    assert_on_exit_status
+    send "cd cgroup_tests_dir\n"
+    assert_on_exit_status
+
+    # The tests take some time to run
+    send "cgroupstests\n"
+    assert_on_exit_status
+
+    send "cd ..\n"
+    assert_on_exit_status
+    send "rm -r cgroup_tests_dir\n"
+    assert_on_exit_status
+}
+
+proc cgroup_io_states_test {} {
+    prepare_pouch_images
+
+    set running [start_container "temp" "Pouch: ctemp starting" "img_a"]
+    sleep 1
+    send "cat /cgroup/ctemp/io.stat\n"
+    expect -re {.*1:1\trbytes=0\twbytes=33\trios=0\twios=33\tdbytes=0\tdios=0.*}
+
+    send "pouch connect ctemp\n"
+    expect "tty0 connected"
+
+    sleep 1
+    send "cat /cgroup/ctemp/io.stat\n"
+    expect -re {.*1:1\trbytes=26\twbytes=33\trios=26\twios=33\tdbytes=0\tdios=0.*}
+
+    send "echo 12345678901234567890\n"
+    sleep 1
+    send "cat /cgroup/ctemp/io.stat\n"
+    expect -re {.*1:1\trbytes=78\twbytes=233\trios=78\twios=40\tdbytes=0\tdios=0.*}
+
+    set running [disconnect_container]
+    set running [destroy_container "temp" "Pouch: ctemp destroyed"]
+    set running [start_container "test" "Pouch: ctest starting" "img_a"]
+
+    sleep 1
+    send "cat /cgroup/ctest/io.stat\n"
+
+    expect -re {.*1:1\trbytes=95\twbytes=445\trios=95\twios=78\tdbytes=0\tdios=0.*}
+    set running [destroy_container "test" "Pouch: ctest destroyed"]
+}
+
+
+# - xv6 pidns tests
+proc pidns_tests {} {
+    send "mkdir pidns_test_dir\n"
+    assert_on_exit_status
+    send "cd pidns_test_dir\n"
+    assert_on_exit_status
+
+    send "pidns_tests\n"
+    assert_on_exit_status
+
+    send "cd ..\n"
+    assert_on_exit_status
+    send "rm -r pidns_test_dir\n"
+    assert_on_exit_status
+}

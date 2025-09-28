@@ -4,6 +4,7 @@
 #include "cgroup.h"
 #include "param.h"
 
+// Used to be called `bcache`
 struct {
   struct spinlock lock;
   struct buf buf[NBUF];
@@ -17,6 +18,7 @@ struct {
   uint is_cache_enabled;
 } bufs_cache;
 
+// Used to be called `binit`
 void buf_cache_init(void) {
   struct buf *b;
 
