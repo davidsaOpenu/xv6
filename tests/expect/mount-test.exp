@@ -1,0 +1,8 @@
+proc mounttest {} {
+    #set timeout 10
+    #send "mounttest\n"
+    #log_file -noappend [lindex $argv 0]
+    #expect "mounttest tests passed successfully"
+    #assert_on_exit_status
+    #set timeout 3
+}

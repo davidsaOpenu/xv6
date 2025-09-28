@@ -1,0 +1,45 @@
+
+proc cp_copy_dir_test {} {
+    #one file in dir
+    send "mkdir d1\n"
+    sleep 0.5
+    send "echo test > d1/f1\n"
+    sleep 0.5
+    send "mkdir d2\n"
+    sleep 0.5
+    send "cp d1 d2\n"
+    sleep 0.5
+    send "cat d2/f1\n"
+    expect "test"
+    sleep 0.5
+
+    #recursive dir test
+    send "mkdir d3\n"
+    sleep 0.5
+    send "mkdir d3/d4\n"
+    sleep 0.5
+    send "echo test > d3/d4/f1\n"
+    sleep 0.5
+    send "mkdir t1\n"
+    sleep 0.5
+    send "cp d3 t1\n"
+    sleep 0.5
+    send "cat t1/d4/f1\n"
+    expect "test"
+    sleep 0.5
+
+    #dir in root dir, extra slash
+    send "mkdir /a /b\n"
+    sleep 0.5
+    send "echo test > /a/c\n"
+    sleep 0.5
+    send "cp /a /b/\n"
+    sleep 0.5
+    send "cat /b/c\n"
+    sleep 0.5
+    expect "test"
+
+    #clean
+    send "rm -r d1 d2 d3 t1 a b\n"
+    assert_on_exit_status
+}

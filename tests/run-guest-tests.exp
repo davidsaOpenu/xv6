@@ -1,0 +1,51 @@
+#!/usr/bin/expect -f
+
+set root_path [file dirname [info script]]
+source [file join $root_path "expect/utility-functions/assert-on-exit-status.exp"]
+source [file join $root_path "expect/mount-test.exp"]
+source [file join $root_path "expect/ioctl-syscall-test.exp"]
+source [file join $root_path "expect/rm-recursive-test.exp"]
+source [file join $root_path "expect/cp-copy-file-test.exp"]
+source [file join $root_path "expect/cp-copy-dir-test.exp"]
+
+set ASCII_GREEN "\033\[0;32m";
+set ASCII_YELLOW "\033\[0;33m";
+set ASCII_RESET "\033\[0m";
+
+proc puts_green {str} {
+    global ASCII_GREEN ASCII_RESET
+    puts "$ASCII_GREEN"
+    puts -nonewline "$str"
+    puts "$ASCII_RESET"
+}
+
+proc puts_yellow {str} {
+    global ASCII_YELLOW ASCII_RESET
+    puts "$ASCII_YELLOW"
+    puts -nonewline "$str"
+    puts "$ASCII_RESET"
+}
+
+proc run_test {test_name args} {
+    puts_green "RUNNING: $test_name"
+    eval $test_name $args
+}
+
+proc bypass_test {test_name args} {
+    puts_yellow "BYPASS: $test_name"
+    eval $test_name $args
+}
+
+
+spawn pkill qemu
+spawn make qemu
+
+expect "$ "
+
+bypass_test     mounttest
+run_test        ioctl_syscall_test
+run_test        rm_recursive_test
+run_test        cp_copy_file_test
+run_test        cp_copy_dir_test
+
+puts_green ">> OK <<"
