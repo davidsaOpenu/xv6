@@ -173,6 +173,7 @@ static int statroottest(void) {
   if (pid == 0) {
     // in child, only mount
     if (mounta() != 0) {
+      printf(stderr, "[statroottest] child mounta() returned non-zero\n");
       return 1;
     }
     return 0;
@@ -180,12 +181,19 @@ static int statroottest(void) {
 
   int ret_val = child_exit_status(pid);  // get child exit status
   if (ret_val != 0) {
+    printf(stderr, "[statroottest] child exit status is non-zero\n");
     return 1;
   }
 
   struct stat st;
   stat("a", &st);
+
+  printf(stderr, "[statroottest] stat-ing 'a'\n");
+
   if (st.type != T_DIR || st.ino != 1 || st.size != BSIZE) {
+    printf(stderr, "[statroottest] FAIL! st.type=%d, st.ino=%d, st.size=%d\n",
+           st.type, st.ino, st.size);
+
     return 1;
   }
 
