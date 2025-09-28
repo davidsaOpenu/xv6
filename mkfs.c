@@ -138,6 +138,8 @@ int main(int argc, char *argv[]) {
   iappend(rootino, &de, sizeof(de));
 
   for (i = 3; i < argc; i++) {
+    printf("[MKFS] Adding '%s'\n", argv[i]);
+
     const char *full_path = argv[i];
     const char *base_name = strrchr(full_path, '/');
     if (!base_name)
