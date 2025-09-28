@@ -292,6 +292,7 @@ static pouch_status prepare_image_mount_path(const char* const container_name,
   }
   strcpy(image_mount_point, IMAGE_MOUNT_DIR);
   strcat(image_mount_point, container_name);
+
   return SUCCESS_CODE;
 }
 
@@ -309,7 +310,7 @@ static pouch_status prepare_old_root_mount_path(const char* const base_dir,
     return FAILED_TO_CREATE_OLD_ROOT_DIR;
   }
   if (strlen(base_dir) + strlen(old_root_relative_path) > MAX_PATH_LENGTH) {
-    perror("Old root path is tol long");
+    perror("Old root path is too long");
     return FAILED_TO_CREATE_OLD_ROOT_DIR;
   }
   strcpy(old_root_path, base_dir);
@@ -392,7 +393,10 @@ static pouch_status pouch_container_mount(
       }
       POUCH_LOG_DEBUG("Pouch: mounting %s to %s\n", cmount->src, dest);
       if (mount(cmount->src, dest, "bind") < 0) {
+        POUCH_LOG_DEBUG("pouch_container_mount: trying to unlink dest=%s\n",
+                        dest);
         unlink(dest);
+        POUCH_LOG_DEBUG("pouch_container_mount: unlink of dest=%s OK\n", dest);
         printf(stderr, "Pouch: failed to bind mount %s\n", cmount->src);
         ret = MOUNT_BIND_FAILED_ERROR_CODE;
         goto error;
@@ -406,6 +410,8 @@ static pouch_status pouch_container_mount(
   return ret;
 
 error:
+  POUCH_LOG_DEBUG("pouch_container_mount: got error\n");
+
   // Handle errors: iterate backwards, umount and unlink.
   for (; num_success > 0; num_success--, cmount--) {
     char dest[MAX_PATH_LENGTH];
@@ -467,6 +473,7 @@ static pouch_status pouch_container_start_child(
   pouch_status child_status = SUCCESS_CODE;
   int tty_attached = -1;
   char old_root_mount_point[MAX_PATH_LENGTH] = {0};
+
   // wait till the parent process finishes and releases the lock
   if (mutex_wait(start_running_child_mutex) != MUTEX_SUCCESS) {
     printf(stdout, "Pouch: failed to wait on parent mutex\n");
@@ -688,6 +695,7 @@ pouch_status _pouch_container_start(struct container_start_config* const info) {
   int tty_to_use = -1;
   char cg_cname[MAX_PATH_LENGTH] = {0};
   char image_path[MAX_PATH_LENGTH] = {0};
+
   mutex_t start_running_child_mutex = {0}, global_pouch_mutex = {0},
           allow_mount_cleanup_mutex = {0}, container_started_mutex = {0};
   pouch_status parent_status = SUCCESS_CODE;

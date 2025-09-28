@@ -28,12 +28,16 @@ echo "Running cpplint..."
 
 #########################################################################
 # install and run cpp style checker
+# shellcheck disable=SC1091 # Old Script - Keep things as they were
+# shellcheck disable=SC2086 # Old Script - Keep things as they were
 source $XV6_VENV/bin/activate
 # build/include_what_you_use relates to libc headers - see NOLINT() in files.
 # runtime/printf recommands to choose the right one out of libc s/n/printf/c.
 FILTERS=-legal/copyright,-readability/casting,-build/include_subdir,
 FILTERS+=-build/include_what_you_use,-build/header_guard,
 FILTERS+=-build/header_guard,-runtime/int,-readability/braces,-runtime/printf
+
+# shellcheck disable=SC2038 # Old Script - Keep things as they were
 find . -regex ".*\.[c|h]$" | xargs cpplint --filter=$FILTERS
 
 sleep 0.2
@@ -41,13 +45,19 @@ echo "Running bashate..."
 
 ########################################################################
 # install and run bashate
+
+# shellcheck disable=SC2086 # Old Script - Keep things as they were
 find . -iname "*.sh" -exec bashate {} \; > $XV6_VENV/bashate-out
+# shellcheck disable=SC2086 # Old Script - Keep things as they were
 cat $XV6_VENV/bashate-out
 
 # Grep returns 0 if the string was found and 1 otherwise.
 # ! negate the return value of grep to fail the tests if
 #  warnings/errors were found.
+
+# shellcheck disable=SC2086 # Old Script - Keep things as they were
 ! grep "warning(s) found" $XV6_VENV/bashate-out 1>/dev/null || exit 1
+# shellcheck disable=SC2086 # Old Script - Keep things as they were
 ! grep "error(s) found" $XV6_VENV/bashate-out 1>/dev/null || exit 1
 
 # Check whitespaces in .sh files
