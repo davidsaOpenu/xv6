@@ -1,0 +1,233 @@
+proc pouch_basic_tests { } {
+    prepare_pouch_images
+
+    # set running [pouch_start_test]
+    start_container "1" "Pouch: c1 starting" "img_a"
+    pid_check "PID: 2"
+
+
+    # set running [pouch_connect_test]
+
+    connect_container "1"
+    pid_check "PID: 1"
+
+    # set running [pouch_binaries_test]
+
+    send "echo test > testfile\n"
+    assert_on_exit_status
+
+    send "cat testfile\n"
+    sleep 0.5
+    expect "test"
+    expect "$ "
+
+    # set running [pouch_disconnect_test]
+
+    disconnect_container
+    pid_check "PID: 2"
+
+    # set running [pouch_destroy_test]
+    send "ls pconf/c1\n"
+    expect -re {c1\s+2\s+[0-9]+\s+[0-9]+}
+    destroy_container "1" "Pouch: c1 destroyed"
+
+    send "ls pconf/c1\n"
+    expect "ls: cannot open pconf/c1"
+}
+
+# - Stress test
+# - scenarios that may lead to pouch operations failures
+proc pouch_stress_test {} {
+    prepare_pouch_images
+
+    for {set x 0} {$x < 10} {incr x} {
+        set running [start_container "1" "Pouch: c1 starting" "img_a"]
+        sleep 0.5
+        set running [destroy_container "1" "Pouch: c1 destroyed"]
+        sleep 0.5
+    }
+}
+
+
+proc test_pouch_build_file_parsing { PouchFile } {
+    prepare_pouch_images
+
+    # create fileX.txt from 1 to 5:
+    for {set i 1} {$i <= 5} {incr i} {
+        send "echo hi$i > file$i.txt\n"
+        assert_on_exit_status
+    }
+
+    # set $tag to the prefix before *.Pouchfile:
+    set tag [lindex [split $PouchFile "."] 0]
+    send "pouch build --file $PouchFile --tag $tag\n"
+    expect "Built image to tag \"$tag\"."
+    assert_on_exit_status
+    # make sure image added to repo
+    pouch_make_sure_image_exists "$tag"
+
+    # and now, start a container with it, connect, disconnect and destroy
+    set running [start_container "$tag" "Pouch: c$tag starting" "$tag"]
+    set running [connect_container "$tag"]
+    send "ls\n"
+    assert_on_exit_status
+    # Make sure valid added a file to the container named $tag with Marker-$tag
+    send "cat $tag\n"
+    expect "Marker-$tag"
+    assert_on_exit_status
+    set running [disconnect_container]
+    set running [destroy_container "$tag" "Pouch: c$tag destroyed"]
+
+    # remove the image
+    send "rm images/$tag\n"
+    assert_on_exit_status
+}
+
+proc test_pouch_build_invalid_syntax {} {
+    # Should fail quickly (after image copy)
+    set valid_syntax_pouchfiles [list ValidSyn1.p ValidSyn2.p ValidSyn3.p \
+        ValidSyn4.p ValidSyn5.p ValidSyn6.p]
+    foreach elem $valid_syntax_pouchfiles {
+        send "pouch build --file $elem\n"
+        # This would need to be modified once build is implemnted properly.
+        expect "Error executing build from Pouchfile $elem"
+        assert_on_exit_status 1
+    }
+
+    # Should fail immediately -- revert timeout
+    set invalid_syntax_pouchfiles [list \
+        Invalid1.p Invalid2.p Invalid3.p \
+        Invalid4.p Invalid5.p Invalid6.p \
+        Invalid7.p Invalid8.p Invalid9.p \
+        Invalid10.p Invalid11.p Invalid12.p \
+        Invalid13.p]
+    foreach elem $invalid_syntax_pouchfiles {
+        send "pouch build --file $elem\n"
+        expect "Error parsing Pouchfile $elem"
+        assert_on_exit_status 1
+    }
+}
+
+# - Cgroup already exists test:
+# - check that container is not created if cgroup with give container's name already exists
+proc pouch_cgroup_already_exists { } {
+    prepare_pouch_images
+    send "mkdir /cgroup/c5\n"
+    assert_on_exit_status
+    set running [start_container "5" "cgroup already exists" "img_a" 1]
+}
+
+# - Test tries to create 4 containers, in the last one we are expecting:
+# - 'Cannot find tty' because there are only 3 containers available
+proc pouch_to_many_cnts_test { } {
+    prepare_pouch_images
+    set running [start_container "1" "Pouch: c1 starting" "img_a"]
+    set running [start_container "2" "Pouch: c2 starting" "img_b"]
+    set running [start_container "3" "Pouch: c3 starting" "img_c"]
+    set running [start_container "4" "Pouch: cannot create more containers" "img_a" 1]
+
+    set running [destroy_container "1" "Pouch: c1 destroyed"]
+    set running [destroy_container "2" "Pouch: c2 destroyed"]
+    set running [destroy_container "3" "Pouch: c3 destroyed"]
+}
+
+
+# - Display containers list, inside and outside of container
+proc pouch_list_test { } {
+    prepare_pouch_images
+    set running [start_container "1" "Pouch: c1 starting" "img_a"]
+    set running [start_container "2" "Pouch: c2 starting" "img_b"]
+    set running [start_container "3" "Pouch: c3 starting" "img_c"]
+
+    send "pouch list\n"
+    expect "Pouch containers:"
+    expect "1. c1 : started"
+    expect "2. c2 : started"
+    expect "3. c3 : started"
+
+    set running [connect_container "1"]
+    send "\n"
+
+    send "pouch list\n"
+    assert_on_exit_status 1
+
+    set running [disconnect_container]
+}
+
+
+# - Limit cgroup test:
+proc pouch_cgroup_limit_test { } {
+    prepare_pouch_images
+    set running [start_container "1" "Pouch: c1 starting" "img_a"]
+
+    sleep 1
+    send "pouch cgroup c1 cpu.max 10000,20000\n"
+
+    expect {
+       "Pouch: c1 cgroup applied"
+    }
+
+    send "cat /cgroup/c1/cpu.max\n"
+
+    expect {
+       -re ".*max - 10000.*period - 20000.*"
+    }
+}
+
+# - Disconnect outside:
+# - test error message in this scenario
+# - if running pouch 'disconnect outside' - print help for outside commands
+# - if giving a wrong cname outside - respond with correct error message
+proc pouch_disconnect_outside_container_test { } {
+
+    #check we are outside
+    set running [pid_check "PID: 2"]
+
+    send "pouch disconnect c6\n"
+    expect {
+       "Error: command disconnect not allowed in outside container."
+    }
+
+    assert_on_exit_status 1
+
+    send "pouch disconnect\n"
+    expect {
+       "Error: command disconnect not allowed in outside container."
+    }
+
+    assert_on_exit_status 1
+}
+
+# - Pouch info test:
+# - test error messages in different scenarios
+# - if running pouch info outside - should print help for outside commands
+# - if giving a wrong cname - should respond with correct error message
+proc pouch_info_container_test { } {
+
+    #check we are outside - epxects argument
+    set running [pid_check "PID: 2"]
+    send "pouch info\n"
+    expect {
+        "Error: Invalid number of arguments."
+    }
+    assert_on_exit_status 1
+
+    # now no container exists
+    sleep 2
+    send "pouch info c6\n"
+    expect "Pouch: c6 container not found"
+}
+
+proc test_internal_images { } {
+    # For each one of internal_fs_[a,b,c], mount it, check if it is mounted, unmount it, check if it is unmounted.
+    set internal_images [list a b c]
+    foreach elem $internal_images {
+        send "mkdir /m$elem\n"
+        assert_on_exit_status
+        send "mount internal_fs_$elem /m$elem\n"
+        assert_on_exit_status
+        send "ls /m$elem\n"
+        send "umount /m$elem\n"
+        assert_on_exit_status
+    }
+}
