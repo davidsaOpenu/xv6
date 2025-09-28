@@ -47,7 +47,7 @@ will need to install a cross-compiler gcc suite capable of producing
 x86 ELF binaries. See http://pdos.csail.mit.edu/6.828/2016/tools.html.
 Then run "make TOOLPREFIX=i386-jos-elf-". Now install the QEMU PC
 simulator and run "make qemu".
-If you'd like to dump instructions and symbols of objects and kernel, 
+If you'd like to dump instructions and symbols of objects and kernel,
 run the same "make" command with `DUMP_OBJ_AND_SYMS=1`.
 
 # xv6 Object file system

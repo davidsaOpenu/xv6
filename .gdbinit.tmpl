@@ -25,8 +25,7 @@ set output-radix 16
 echo + target remote localhost:1234\n
 target remote localhost:1234
 
-echo + symbol-file kernel/kernel.bin\n
-symbol-file kernel/kernel.bin
-directory kernel
+echo + symbol-file build/kernel.bin\n
+symbol-file build/kernel.bin
 
 b panic

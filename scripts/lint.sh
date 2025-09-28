@@ -28,27 +28,31 @@ echo "Running cpplint..."
 
 #########################################################################
 # install and run cpp style checker
-source $XV6_VENV/bin/activate
+# shellcheck disable=SC1091 # Old Script - Keep things as they were
+source "$XV6_VENV/bin/activate"
 # build/include_what_you_use relates to libc headers - see NOLINT() in files.
 # runtime/printf recommands to choose the right one out of libc s/n/printf/c.
 FILTERS=-legal/copyright,-readability/casting,-build/include_subdir,
 FILTERS+=-build/include_what_you_use,-build/header_guard,
 FILTERS+=-build/header_guard,-runtime/int,-readability/braces,-runtime/printf
-find . -regex ".*\.[c|h]$" | xargs cpplint --filter=$FILTERS
+
+find . -regex ".*\.[c|h]$" -print0 | xargs -0 cpplint --filter=$FILTERS
 
 sleep 0.2
 echo "Running bashate..."
 
 ########################################################################
 # install and run bashate
-find . -iname "*.sh" -exec bashate {} \; > $XV6_VENV/bashate-out
-cat $XV6_VENV/bashate-out
+
+find . -iname "*.sh" -exec bashate {} \; > "$XV6_VENV/bashate-out"
+cat "$XV6_VENV/bashate-out" || exit 1
 
 # Grep returns 0 if the string was found and 1 otherwise.
 # ! negate the return value of grep to fail the tests if
 #  warnings/errors were found.
-! grep "warning(s) found" $XV6_VENV/bashate-out 1>/dev/null || exit 1
-! grep "error(s) found" $XV6_VENV/bashate-out 1>/dev/null || exit 1
+
+! grep "warning(s) found" "$XV6_VENV/bashate-out" 1>/dev/null || exit 1
+! grep "error(s) found" "$XV6_VENV/bashate-out" 1>/dev/null || exit 1
 
 # Check whitespaces in .sh files
 # Second grep is a cheat for the return value together with "!" for set -euo.

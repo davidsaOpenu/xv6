@@ -185,7 +185,11 @@ static int statroottest(void) {
 
   struct stat st;
   stat("a", &st);
+
   if (st.type != T_DIR || st.ino != 1 || st.size != BSIZE) {
+    printf(stderr, "[statroottest] FAIL! st.type=%d, st.ino=%d, st.size=%d\n",
+           st.type, st.ino, st.size);
+
     return 1;
   }
 
