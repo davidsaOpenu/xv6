@@ -16,7 +16,7 @@
 #define LOGSIZE (MAXOPBLOCKS * 3)  // max data blocks in on-disk log
 #define NBUF 200                   // size of system disks block cache
 #define FSSIZE 3600                // size of file system in blocks
-#define INT_FSSIZE 160             // size of internal file systems in blocks
+#define INT_FSSIZE 180             // size of internal file systems in blocks
 #define NNAMESPACE 20              // maximum number of namespaces
 #define MAX_PATH_LENGTH 512        // maximum path length allowed
 #define MAX_CGROUP_FILE_NAME_LENGTH \
