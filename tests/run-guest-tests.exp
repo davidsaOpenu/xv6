@@ -1,0 +1,131 @@
+#!/usr/bin/expect -f
+
+set root_path [file dirname [info script]]
+source [file join $root_path "expect/utility-functions/assert-on-exit-status.exp"]
+source [file join $root_path "expect/utility-functions/pouch-utils.exp"]
+source [file join $root_path "expect/basic.exp"]
+source [file join $root_path "expect/cache.exp"]
+source [file join $root_path "expect/cgroups.exp"]
+source [file join $root_path "expect/fs.exp"]
+source [file join $root_path "expect/pouch.exp"]
+source [file join $root_path "expect/console.exp"]
+
+set ASCII_BOLD_RED "\033\[0;91m";
+set ASCII_BOLD_CYAN "\033\[0;96m";
+set ASCII_GREEN "\033\[0;32m";
+set ASCII_YELLOW "\033\[0;33m";
+set ASCII_RESET "\033\[0m";
+
+proc puts_green {str} {
+    global ASCII_GREEN ASCII_RESET
+    puts "$ASCII_GREEN"
+    puts -nonewline "$str"
+    puts "$ASCII_RESET"
+}
+
+proc puts_yellow {str} {
+    global ASCII_YELLOW ASCII_RESET
+    puts "$ASCII_YELLOW"
+    puts -nonewline "$str"
+    puts "$ASCII_RESET"
+}
+
+
+proc puts_bold_red {str} {
+    global ASCII_BOLD_RED ASCII_RESET
+    puts "$ASCII_BOLD_RED"
+    puts -nonewline "$str"
+    puts "$ASCII_RESET"
+}
+
+proc run_test {test_name args} {
+    puts_green "\[+\] RUNNING: $test_name"
+    eval $test_name $args
+}
+
+proc bypass_test {test_name args} {
+    puts_yellow "\[-\] BYPASS: $test_name"
+}
+
+# Cleanup, even if received a SIGINT
+proc cleanup {} {
+    global ASCII_BOLD_CYAN ASCII_RESET
+
+    puts -nonewline "$ASCII_BOLD_CYAN"
+    puts -nonewline {[*] CLEANUP}
+    puts "$ASCII_RESET"
+
+    catch { 
+        exec pkill -9 qemu
+    } result
+
+    if {$result ne ""} {
+        puts_bold_red "CLEANUP FAILED: '$result'";
+    }
+}
+
+
+trap {
+    puts_bold_red {[!] Caught SIGINT}
+    cleanup;
+    exit;
+} SIGINT
+
+spawn pkill qemu
+spawn make qemu
+expect "$ "
+
+# If no command line arguments were passed, run all of the tests regularly.
+# Otherwise, run the test that is specified in argv[0] (eval the function name)
+if {[llength $argv] == 0} {
+    # Basic
+    bypass_test     mounttest
+    run_test        ioctl_syscall_test
+    run_test        rm_recursive_test
+    run_test        cp_copy_file_test
+    run_test        cp_copy_dir_test
+    run_test        mount_bind_test
+    run_test        command_exit_status_test
+
+    # Console
+    # FIXME: Enable this test when fully merged new console features.
+    bypass_test     history_navigation_test
+
+
+    # Cache
+    run_test        proc_cache_entry
+
+    # Cgroups
+    run_test        cgroupstests
+    run_test     cgroup_io_states_test
+    run_test     pidns_tests
+
+    # FS
+    run_test     cp_simple_objfs_nativefs_copy_test
+    run_test     cp_recursive_objfs_nativefs_test
+
+    # Pouch
+    run_test     pouch_basic_tests
+    run_test     pouch_stress_test
+    run_test     pouch_cgroup_already_exists
+    run_test     pouch_to_many_cnts_test
+    run_test     pouch_to_many_cnts_test_remove
+    run_test     pouch_list_test
+    run_test     pouch_disconnect_outside_container_test
+    run_test     pouch_info_container_test
+    run_test     pouch_cgroup_limit_test
+    run_test     remove_pouch_images
+    run_test     test_all_pouch_build
+    run_test     test_internal_images
+    
+    puts_green ">> OK <<"
+
+} else {
+    set func_name [lindex $argv 0]
+    puts "RUNNING SINGLE TEST: $func_name"
+
+    eval "$func_name";
+
+}
+
+cleanup
