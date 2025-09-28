@@ -174,7 +174,7 @@ int create_and_write_file(const char* file, char* text) {
 
 // Test enabling controller according to given type.
 int enable_controller(int type) {
-  char buf[5] = {'+', 0};
+  char buf[5] = {'+', 0, 0, 0, 0};
   if (!is_valid_controller_type(type)) {
     return 0;
   }
@@ -1590,6 +1590,7 @@ TEST(test_mem_stat) {
     /**** 3 ****/
     char str[256];
     memset(str, 'a', 256);
+    str[255] = '\0'; // BUFFER OVERFLOW MITIGATION
 
     // Write to a new file 2 times.
     int fd;
