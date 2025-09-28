@@ -44,7 +44,7 @@ extern const struct device_ops default_device_ops;
 
 struct device* _get_new_device(enum device_type type);
 
-inline void* dev_private(struct device* dev) { return dev->private; }
+static inline void* dev_private(struct device* dev) { return dev->private; }
 
 void deviceput(struct device*);
 void deviceget(struct device*);
