@@ -1,0 +1,37 @@
+proc assert_on_exit_status {{code 0} {wait_for_last_exit 1}} {
+    if { $wait_for_last_exit } {
+        expect "$ "
+    }
+
+    sleep 0.5
+    send "echo $?\n"
+    sleep 0.5
+
+    # Default value
+    set result -1
+
+    expect {
+        -re "\\n(\\d+)" {
+            set result $expect_out(1,string)
+        }
+
+        timeout {
+            puts "FATAL: Timeout on asserting exit status (expected $code)"
+            exit 1
+        }
+    }
+
+    if { $result != $code } {
+        puts "TEST HAS FAILED! Exit: $result, Expected: $code"
+        exit 1
+    }
+
+    expect "$ "
+}
+
+proc pid_check { expect_str } {
+    send "pid\n"
+    expect {
+        expect_str
+    }
+}

@@ -1,0 +1,21 @@
+
+proc proc_cache_entry {} {
+    # Verify cache disable
+    send "echo 0 > /proc/cache\n"
+    send "cat /proc/cache\n"
+    expect "0"
+
+    # Verify cache enable
+    send "echo 1 > /proc/cache\n"
+    send "cat /proc/cache\n"
+    expect "1"
+
+    # Verify invalid values don't affect
+    send "echo 0000 > /proc/cache\n"
+    send "cat /proc/cache\n"
+    expect "1"
+
+    send "echo yyyy > /proc/cache\n"
+    send "cat /proc/cache\n"
+    expect "1"
+}
