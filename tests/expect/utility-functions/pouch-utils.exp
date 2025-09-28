@@ -1,0 +1,205 @@
+proc assert_no_pouch_images { } {
+    send "pouch images\n"
+    expect "No images available."
+    expect "$ "
+}
+
+proc assert_abc_pouch_images { } {
+    send "pouch images\n"
+    expect "Pouch images available:"
+    expect "img_a"
+    expect "img_b"
+    expect "img_c"
+    expect "$ "
+}
+
+proc prepare_pouch_images { } {
+    assert_no_pouch_images
+
+    # copy /internal_fs_[abc] to /images/img_[abc]:
+    foreach var {a b c} {
+        send "cp /internal_fs_$var /images/img_$var\n"
+        assert_on_exit_status
+    }
+
+    assert_abc_pouch_images
+}
+
+proc remove_pouch_images { } {
+    assert_abc_pouch_images
+    # remove /images/img_[abc]:
+    foreach var {a b c} {
+        send "rm /images/img_$var\n"
+        assert_on_exit_status
+    }
+    assert_no_pouch_images
+}
+
+# - wrapper for container start command
+# @id - int for specifiyng container name
+# @expect_str - the string to expect
+proc start_container { id expect_str {image_name "img_a"} { exit_code 0 } } {
+    send "pouch start c$id $image_name\n"
+    expect "$expect_str"
+    assert_on_exit_status $exit_code
+}
+
+# - wrapper for pouch connect command
+proc connect_container { id } {
+    send "pouch connect c$id\n"
+    # container can connect to any tty, checking here every one
+    expect -re {tty[012] connected}
+}
+
+
+# - wrapper for pouch disconnect command
+proc disconnect_container {} {
+    send "pouch disconnect\n"
+    expect {
+       "Console connected"
+    }
+    send "\n"
+    assert_on_exit_status
+}
+
+# - wrapper for pouch destroy command
+proc destroy_container { id expect_str } {
+    send "pouch destroy c$id\n"
+    sleep 1
+    expect "$expect_str"
+    assert_on_exit_status
+}
+
+# - pouch build image command line test, invalid arguments
+proc test_pouch_build_invalid_args {} {
+    # pouch build <invalid args> combinations, should fail.
+    send "pouch build add\n"
+    expect "Error: Unexpected argument add!"
+    assert_on_exit_status 1
+
+    send "pouch build --abb b\n"
+    expect "Error: Unexpected argument --abb!"
+    assert_on_exit_status 1
+
+    send "pouch build --tag\n"
+    expect "Error: Expected tag name after --tag"
+    assert_on_exit_status 1
+
+    send "pouch build --file a --tag\n"
+    expect "Error: Expected tag name after --tag"
+    assert_on_exit_status 1
+
+    send "pouch build --file --tag jkjk\n"
+    expect "Error: Unexpected argument jkjk!"
+    assert_on_exit_status 1
+
+    send "pouch build --file\n"
+    expect "Error: Expected file name after --file"
+    assert_on_exit_status 1
+
+    send "pouch build --file a --file b\n"
+    expect "Error: Specified more than one --file argument."
+    assert_on_exit_status 1
+
+    send "pouch build --file a --tag b --file b\n"
+    expect "Error: Specified more than one --file argument."
+    assert_on_exit_status 1
+
+    send "pouch build --tag a --file b --tag b\n"
+    expect "Error: Specified more than one --tag argument."
+    assert_on_exit_status 1
+}
+
+
+proc pouch_make_sure_image_exists {image_name} {
+    send "ls /images/$image_name\n"
+    assert_on_exit_status
+}
+
+# - pouch build image command line test, valid arguments
+proc test_pouch_build_valid_args {} {
+    send "echo IMPORT abc > Pouchfile\n"
+    assert_on_exit_status
+
+    send "pouch build\n"
+    expect "Building pouch image from \"Pouchfile\" to tag \"default\"..."
+    expect -re {Source image (.+) does not exist.}
+    set missing_image $expect_out(1,string)
+    assert_on_exit_status 1
+
+    # copy internal_fs_a to the missing image above.
+    send "cp internal_fs_a images/$missing_image\n"
+    assert_on_exit_status
+
+    # Try again, should succeed now.
+    send "pouch build\n"
+    expect "Building pouch image from \"Pouchfile\" to tag \"default\"..."
+    expect "Built image to tag \"default\"."
+    assert_on_exit_status
+
+    # Make sure image exists.
+    pouch_make_sure_image_exists "default"
+
+    send "pouch build --tag hello\n"
+    expect "Building pouch image from \"Pouchfile\" to tag \"hello\"..."
+    expect "Built image to tag \"hello\"."
+    assert_on_exit_status
+
+    pouch_make_sure_image_exists "hello"
+
+    send "echo IMPORT $missing_image > MyFile\n"
+    send "pouch build --file MyFile\n"
+    expect "Building pouch image from \"MyFile\" to tag \"default\"..."
+    expect "Target image default already exists."
+    assert_on_exit_status 1
+
+    # remove default and try again
+    send "rm images/default\n"
+    assert_on_exit_status
+    send "pouch build --file MyFile\n"
+    expect "Building pouch image from \"MyFile\" to tag \"default\"..."
+    expect "Built image to tag \"default\"."
+    assert_on_exit_status
+
+    pouch_make_sure_image_exists "default"
+
+    send "echo IMPORT $missing_image > MyPouchFile\n"
+    send "pouch build --file MyPouchFile --tag myimagetag\n"
+    expect "Building pouch image from \"MyPouchFile\" to tag \"myimagetag\"..."
+    expect "Built image to tag \"myimagetag\"."
+    assert_on_exit_status
+
+    pouch_make_sure_image_exists "myimagetag"
+
+    send "echo IMPORT $missing_image > My22PouchFile\n"
+    send "pouch build --tag my3imagetag --file My22PouchFile\n"
+    expect "Built image to tag \"my3imagetag\"."
+    assert_on_exit_status
+
+    pouch_make_sure_image_exists "my3imagetag"
+
+    # clean all images built
+    set all_images_to_remove [list default hello myimagetag my3imagetag $missing_image]
+    foreach image_name $all_images_to_remove {
+        send "rm images/$image_name\n"
+        assert_on_exit_status
+    }
+    # make sure no images are left
+    send "pouch images\n"
+    expect "No images available."
+    assert_on_exit_status
+}
+
+proc test_internal_images {} {
+    # For each one of internal_fs_[a,b,c], mount it, check if it is mounted, unmount it, check if it is unmounted.
+    set internal_images [list a b c]
+    foreach elem $internal_images {
+        send "mkdir /m$elem\n"
+        assert_on_exit_status
+        send "mount internal_fs_$elem /m$elem\n"
+        assert_on_exit_status
+        send "ls /m$elem\n"
+        send "umount /m$elem\n"
+        assert_on_exit_status
+    }
+}

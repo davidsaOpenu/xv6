@@ -179,7 +179,7 @@ int create_and_write_file(const char* file, char* text) {
 
 // Test enabling controller according to given type.
 int enable_controller(int type) {
-  char buf[5] = {'+', 0};
+  char buf[5] = {'+', 0, 0, 0, 0};
   if (!is_valid_controller_type(type)) {
     return 0;
   }
