@@ -1,0 +1,18 @@
+proc assert_on_exit_status {{code 0} {wait_for_last_exit 1}} {
+    # puts {[BYPASSED] assert_on_exit_status}
+
+    expect {
+        "$ "
+    }
+
+    send "echo $?\n"
+    sleep 0.3
+}
+
+proc pid_check { expect_str } {
+    send "pid\n"
+    set timeout 3
+    expect {
+        expect_str
+    }
+}
