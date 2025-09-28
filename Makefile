@@ -1,238 +1,333 @@
-MAKEFILE_DIRECTORY := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+# Modern makefile for openu-xv6.
+# Recursive make is harmful.
+#
+# Maintainers:
+#	Ron Shabi <ron@ronsh.net>
 
-xv6.img: kernel/bootblock kernel/kernel.bin fs.img | windows_debugging
-	dd if=/dev/zero of=xv6.img count=10000
-	dd if=kernel/bootblock of=xv6.img conv=notrunc
-	dd if=kernel/kernel.bin of=xv6.img seek=1 conv=notrunc
+# Build Directory
+B := build
 
-xv6memfs.img: kernel/bootblock kernel/kernelmemfs
-	dd if=/dev/zero of=xv6memfs.img count=10000
-	dd if=kernel/bootblock of=xv6memfs.img conv=notrunc
-	dd if=kernel/kernelmemfs of=xv6memfs.img seek=1 conv=notrunc
-
-include common.mk
-export
+# Toolchain prefix when cross compilation is wanted.
+PREFIX :=
 
 
-UPROGS=\
-	_cat\
-	_cp\
-	_echo\
-	_grep\
-	_init\
-	_kill\
-	_ln\
-	_ls\
-	_mkdir\
-	_rm\
-	_sh\
-	_stressfs\
-	_wc\
-	_zombie\
-	_mount\
-	_umount\
-	_timer\
-	_cpu\
-    pouch/_pouch\
-    _ctrl_grp\
-    _demo_pid_ns\
-    _demo_mount_ns
+CC 		:= 	$(PREFIX)gcc
+AS 		:= 	$(PREFIX)as
+LD 		:= 	$(PREFIX)ld 2>/dev/null
+AR 		:= 	$(PREFIX)ar
+OBJCOPY := 	$(PREFIX)objcopy
+OBJDUMP := 	$(PREFIX)objdump
+HOSTCC 	:= 	gcc
+PERL 	:= 	perl
+PYTHON3	:= 	python3
+PODMAN	:=  podman
+
+INCLUDE_DIRS 			:= -Iinclude -Ikernel
+INCLUDE_DIRS_USERLAND	:= $(INCLUDE_DIRS) -Iuser/lib
+
+CFLAGS 	:= 	-static -MD -m32 -mno-sse -std=gnu99 -Wall -Werror -g \
+			-Wstack-usage=4096 -fno-pic -fno-builtin \
+			-fno-strict-aliasing -fno-omit-frame-pointer \
+		  	-DHOST_CPU_TSC_FREQ=800000 \
+			-DXV6_TSC_FREQUENCY=800000 \
+		  	-DXV6_WAIT_FOR_DEBUGGER=0 \
+		  	-DSTORAGE_DEVICE_SIZE=327680 \
+		  	-fno-stack-protector \
+			-nostdinc \
+			-Wno-error=infinite-recursion \
+			-Wno-error=stack-usage=
+
+ASFLAGS 	:= --32 -gdwarf-2 $(INCLUDE_DIRS)
+
+LDFLAGS 	:= -m elf_i386
+
+IMG_FS	:= 	fs.img
+IMG_XV6	:= 	xv6.img
+CONTAINER_IMAGES := internal_fs_a internal_fs_b internal_fs_c
 
 
-# UPROGS now contains a list of all user programs that are built by the Makefile in the user directory.
-# Replace it's value by the very same list, after appending user/ prefix to each item:
-UPROGS_ABS=$(patsubst %, user/%, $(UPROGS))
+KERNEL  :=  kernel.bin
 
-UPROGS_TESTS=\
-	tests/xv6/_forktest\
-	tests/xv6/_mounttest\
-	tests/xv6/_usertests\
-	tests/xv6/_pidns_tests\
-	tests/xv6/_cgroupstests\
-	tests/xv6/_ioctltests\
+QEMU      	:= 	qemu-system-i386
+QEMU_CPUS 	:= 	cpus=2,cores=1
+QEMU_RAM  	:= 	512m
+QEMUFLAGS 	:= 	-drive file="$(B)/$(IMG_FS)",index=1,media=disk,format=raw \
+             	-drive file="$(B)/$(IMG_XV6)",index=0,media=disk,format=raw \
+			 	-smp $(QEMU_CPUS) \
+			 	-m $(QEMU_RAM) \
+			 	-nographic
+
+QEMU_GDB_FLAGS := -S -s
+
+KERNEL_OBJS := \
+	cgroup.o\
+	console.o\
+	cpu_account.o\
+	device/bio.o\
+	device/buf_cache.o\
+	device/device.o\
+	device/ide_device.o\
+	device/ide.o\
+	device/loop_device.o\
+	device/obj_cache.o\
+	device/obj_device.o\
+	device/obj_disk.o\
+	entry.o \
+	exec.o\
+	fs/cgfs.o\
+	fs/fs.o \
+	fs/native_fs.o\
+	fs/native_log.o\
+	fs/obj_fs.o\
+	fs/procfs.o\
+	fs/vfs_file.o\
+	fs/vfs_fs.o\
+	ioapic.o\
+	kalloc.o\
+	kbd.o\
+	klib.o\
+	kmount.o\
+	kvector.o\
+	lapic.o\
+	main.o\
+	mount_ns.o\
+	mp.o\
+	namespace.o\
+	picirq.o\
+	pid_ns.o\
+	pipe.o\
+	proc.o\
+	sleeplock.o\
+	spinlock.o\
+	steady_clock.o\
+	string.o\
+	swtch.o\
+	syscall.o\
+	sysfile.o\
+	sysmount.o\
+	sysnamespace.o\
+	sysproc.o\
+	trap.o\
+	trapasm.o\
+	uart.o\
+	udiv.o\
+	vectors.o \
+	vm.o\
+
+# Except for pouch
+USER_BINARIES :=  	cat cp cpu echo grep init kill ln ls mkdir mount rm sh \
+					stressfs timer umount wc zombie ctrl_grp demo_mount_ns \
+					demo_pid_ns
+
+POUCH_BINARY := $(B)/pouch/pouch
+
+TESTS_HOST := buf_cache_tests kvector_tests obj_fs_tests
+TESTS_GUEST := cgroupstests forktest ioctltests mounttest pidns_tests usertests
 
 
-TEST_ASSETS=
+KERNEL_OBJS 		:= 	$(addprefix $(B)/,$(KERNEL_OBJS))
+USER_BINARIES   	:=  $(addprefix $(B)/user/,$(USER_BINARIES))
+CONTAINER_IMAGES 	:=	$(addprefix $(B)/,$(CONTAINER_IMAGES))
+IMG_FS				:=  $(addprefix $(B)/,$(IMG_FS))
+IMG_XV6				:=  $(addprefix $(B)/,$(IMG_XV6))
+KERNEL				:=  $(addprefix $(B)/,$(KERNEL))
+MKFS 				:=	$(B)/mkfs
+TESTS_HOST 			:=  $(addprefix $(B)/tests/host/,$(TESTS_HOST))
+TESTS_GUEST			:=  $(addprefix $(B)/tests/guest/,$(TESTS_GUEST))
 
-# Add test pouchfiles to the list of test assets, if the TEST_POUCHFILES env is set to 1
-ifeq ($(TEST_POUCHFILES), 1)
-	TEST_ASSETS = $(wildcard tests/pouchfiles/*)
-endif
+.PHONY: all
+all: $(B) $(IMG_FS) $(IMG_XV6)
 
-INTERNAL_DEV=\
-	internal_fs_a \
-	internal_fs_b \
-	internal_fs_c
+.PHONY: host-tests guest-tests
+host-tests: $(B) $(TESTS_HOST)
+guest-tests: $(B) $(TESTS_GUEST)
 
-mkfs: mkfs.c
-	$(CC) -ggdb -Werror -Wall -o mkfs mkfs.c
+.PHONY: qemu
+qemu: $(IMG_FS) $(IMG_XV6)
+	$(QEMU) $(QEMUFLAGS)
 
-kernel/%:
-	$(MAKE) -C kernel
+qemu-gdb: $(IMG_FS) $(IMG_XV6)
+	$(QEMU) $(QEMU_GDB_FLAGS) $(QEMUFLAGS)
 
-user/%:
-	$(MAKE) -C user $*
+# Filesystems
+# ------------------------------------------------------------------------------
+$(IMG_FS): $(MKFS) $(USER_BINARIES) $(POUCH_BINARY) $(CONTAINER_IMAGES) $(TESTS_GUEST)
+	$(MKFS) $@ 0 $(USER_BINARIES) $(CONTAINER_IMAGES) $(TESTS_GUEST) $(POUCH_BINARY)
 
-user: $(UPROGS_ABS)
+$(IMG_XV6): $(KERNEL)
+	dd if=/dev/zero of=$@ count=10000
+	dd if=$(B)/bootblock of=$@ conv=notrunc
+	dd if=$(KERNEL) of=$@ seek=1 conv=notrunc
 
-tests/xv6/%:
-	$(MAKE) -C tests xv6/$*
-
-# if OCI_IMAGES_PREFIX is not set, set it to "latest":
-OCI_IMAGES_PREFIX ?= latest
-
-# Docker build & skopeo copy, create OCI images.
-# Docker daemon must be running and available from this context.
-# It also requires some user programs, since build is not implemented yet in xv6.
-images/img_internal_fs_%/index.json: images/build/img_internal_fs_%.Dockerfile $(UPROGS_ABS)
-	mkdir -p images/build/user
-	cp $(UPROGS_ABS) images/build/user
-	strip images/build/user/*
-# The prefix $(OCI_IMAGES_PREFIX) is used to avoid conflicts when building images for different Ubuntu versions on the same machine.
-# This can happen in the current CI model (same daemon, different jobs), and cause a race issue.
-	docker build -t xv6_internal_fs_$*:$(OCI_IMAGES_PREFIX) -f images/build/img_internal_fs_$*.Dockerfile images/build
-	mkdir -p images/img_internal_fs_$*
-	docker run --rm --mount type=bind,source="$(CURDIR)",target=/home/$(shell whoami)/xv6 \
-		-w /home/$(shell whoami)/xv6 \
-		-v /var/run/docker.sock:/var/run/docker.sock \
-		quay.io/skopeo/stable:latest \
-		copy docker-daemon:xv6_internal_fs_$*:$(OCI_IMAGES_PREFIX) oci:images/img_internal_fs_$*
-	rm -rf images/build/user
-
-# This is a dummy target to rebuild the OCI images for the internal fs.
-# You should run this target if you have made changes to the internal fs build.
-OCI_IMAGES = $(patsubst %, images/img_%/index.json, $(INTERNAL_DEV))
-build-oci: $(OCI_IMAGES)
-
-# internal_fs_%_img is a direcotry with the relevant OCI image to use for the internal fs build.
-internal_fs_%: mkfs images/img_internal_fs_%
-	mkdir -p $(CURDIR)/images/metadata
-	./images/oci_image_extractor.sh $(CURDIR)/images/extracted/$@ $(CURDIR)/images/img_$@
-	echo $@ >> $(CURDIR)/images/metadata/all_images
-	cd $(CURDIR)/images/extracted/$@ && find . -type f -exec ls -la {} \; > $(CURDIR)/images/metadata/img_$*.attr
-	./mkfs $@ 1 $$(find $(CURDIR)/images/extracted/$@ -type f) $(CURDIR)/images/metadata/img_$*.attr
+# Kernel
+# ------------------------------------------------------------------------------
+$(KERNEL): $(KERNEL_OBJS) $(B)/vectors.S kernel/kernel.ld $(B)/initcode $(B)/entryother $(B)/bootblock
+	$(LD) $(LDFLAGS) -T kernel/kernel.ld -o $(B)/kernel.bin $(KERNEL_OBJS) -b binary $(B)/initcode $(B)/entryother
 
 
-fs.img: user kernel/kernel.bin mkfs $(UPROGS_ABS) $(UPROGS_TESTS) $(INTERNAL_DEV) $(TEST_ASSETS)
-	./mkfs $@ 0 README $(UPROGS_ABS) $(INTERNAL_DEV) $(TEST_ASSETS) $(UPROGS_TESTS) $(CURDIR)/images/metadata/all_images
+$(B)/initcode: kernel/initcode.S
+	$(CC) $(CFLAGS) $(INCLUDE_DIRS) -nostdinc -o $(B)/initcode.o -c $<
+	$(LD) $(LDFLAGS) -N -e start -Ttext 0 -o $(B)/initcode.out $(B)/initcode.o
+	$(OBJCOPY) -O binary -j .text $(B)/initcode.out $(B)/initcode
 
-clean: windows_debugging_clean
-	$(MAKE) -C kernel clean
-	$(MAKE) -C user clean
-	$(MAKE) -C tests clean
-	rm -f $(INTERNAL_DEV) mkfs xv6.img xv6memfs.img fs.img
+$(B)/entryother: kernel/entryother.S
+	$(CC) $(CFLAGS) -fno-pic -nostdinc -I. -Ibuild/ -Ikernel/ -o $(B)/entryother.o -c $<
+	$(LD) $(LDFLAGS) -N -e start -Ttext 0x7000 -o $(B)/bootblockother.o $(B)/entryother.o
+	$(OBJCOPY) -O binary -j .text $(B)/bootblockother.o $(B)/entryother
 
-clean_oci:
-	rm -rf images/img_internal_fs_* images/extracted images/metadata
-	docker rmi -f $(shell docker images -q -f "reference=xv6_internal_fs_*:$(OCI_IMAGES_PREFIX)") > /dev/null 2>&1 || true
+$(B)/bootblock: kernel/bootasm.S kernel/bootmain.c
+	$(CC) $(CFLAGS) $(INCLUDE_DIRS) -fno-pic -O -nostdinc -Ikernel/ -o $(B)/bootmain.o -c kernel/bootmain.c
+	$(CC) $(CFLAGS) $(INCLUDE_DIRS) -fno-pic -nostdinc -Ikernel -o $(B)/bootasm.o -c kernel/bootasm.S
+	$(LD) $(LDFLAGS) -N -e start -Ttext 0x7C00 -o $(B)/bootblock.o $(B)/bootasm.o $(B)/bootmain.o
+	$(OBJCOPY) -O binary -j .text $(B)/bootblock.o $(B)/bootblock
+	./kernel/sign.pl $(B)/bootblock
 
-runoff:
-	$(MAKE) -C scripts runoff
+$(B)/vectors.S: kernel/vectors.pl
+	$(PERL) $< > $@
 
-# run in emulators
+$(B)/vectors.o: $(B)/vectors.S
+	cpp $(INCLUDE_DIRS)  $< > $(addsuffix .s,$@)
+	$(AS) $(ASFLAGS) $(INCLUDE_DIRS) -c -o $@ $(addsuffix .s,$@)
 
-bochs : fs.img xv6.img
-	if [ ! -e .bochsrc ]; then ln -s dot-bochsrc .bochsrc; fi
-	bochs -q
+$(B)/%.o: kernel/%.c
+	$(CC) $(CFLAGS) $(INCLUDE_DIRS) -c -o $@ $<
 
-# try to generate a unique GDB port
-GDBPORT = $(shell expr `id -u` % 5000 + 25000)
-# QEMU's gdb stub command line changed in 0.11
-QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
-	then echo "-gdb tcp::$(GDBPORT)"; \
-	else echo "-s -p $(GDBPORT)"; fi)
-ifndef CPUS
-CPUS := cpus=2,cores=1
-endif
-QEMUOPTS = -drive file=fs.img,index=1,media=disk,format=raw -drive file=xv6.img,index=0,media=disk,format=raw -smp $(CPUS) -m 512 $(QEMUEXTRA) -nographic
+$(B)/%.o: kernel/%.S
+	cpp $(INCLUDE_DIRS)  $< > $(addsuffix .s,$@)
+	$(AS) $(ASFLAGS) $(INCLUDE_DIRS) -c -o $@ $(addsuffix .s,$@)
 
-gdb: OFLAGS = -Og -ggdb
-gdb: fs.img xv6.img
+# Userland Binaries
+# ------------------------------------------------------------------------------
+USER_CFLAGS := $(CFLAGS) -nostdlib -nostdinc
 
-qemu: fs.img xv6.img
-	$(QEMU) -serial mon:stdio $(QEMUOPTS)
+$(B)/user/%: user/%.c $(B)/userlib/userlib.a
+	@echo -e "\033[35m[USERBUILD] Building $@\033[0m"
+	$(CC) $(USER_CFLAGS) $(INCLUDE_DIRS_USERLAND) \
+	-c -o $@.o $<
+	$(LD) -o $@ -T user/userspace.ld -N -e main -Ttext 0 $@.o $(abspath $(B)/userlib/userlib.a)
 
-qemu-memfs: xv6memfs.img
-	$(QEMU) -drive file=xv6memfs.img,index=0,media=disk,format=raw -smp $(CPUS) -m 256
+# Userland Library (userlib)
+# ------------------------------------------------------------------------------
+USERLIB_OBJS := mutex.o printf.o tty.o ulib.o umalloc.o usys.o
+USERLIB_OBJS := $(addprefix $(B)/userlib/,$(USERLIB_OBJS))
 
-qemu-nox: fs.img xv6.img
-	$(QEMU) -nographic $(QEMUOPTS)
+$(B)/userlib/userlib.a: $(USERLIB_OBJS) user/lib/user.h
+	$(AR) --target elf32-i386 rcs $@ $(filter %.o, $^)
 
-.gdbinit: .gdbinit.tmpl
-	sed "s/localhost:1234/localhost:$(GDBPORT)/" < $^ > $@
+$(B)/userlib/%.o: user/lib/%.c
+	$(CC) $(USER_CFLAGS) $(INCLUDE_DIRS_USERLAND) -o $@ -c $<
 
-qemu-gdb: gdb .gdbinit
-	@echo "*** Now run 'gdb'." 1>&2
-	$(QEMU) -serial mon:stdio $(QEMUOPTS) -S $(QEMUGDB)
+$(B)/userlib/%.o: user/lib/%.S
+	cpp $(INCLUDE_DIRS_USERLAND)  $< > $(addsuffix .s,$@)
+	$(AS) $(ASFLAGS) $(INCLUDE_DIRS_USERLAND) -c -o $@ $(addsuffix .s,$@)
 
-qemu-nox-gdb: gdb .gdbinit
-	@echo "*** Now run 'gdb'." 1>&2
-	$(QEMU) -nographic $(QEMUOPTS) -S $(QEMUGDB)
+# Pouch Executable
+# ------------------------------------------------------------------------------
+POUCH_OBJECTS := $(B)/pouch/pouch.o \
+				 $(B)/pouch/image.o \
+				 $(B)/pouch/container.o \
+				 $(B)/pouch/configs.o \
+				 $(B)/pouch/build.o \
+				 $(B)/pouch/util.o \
+				 $(B)/pouch/start.o
+				
+POUCH_INCLUDES := $(INCLUDE_DIRS_USERLAND) -Iuser
 
-# CUT HERE
-# prepare dist for students
-# after running make dist, probably want to
-# rename it to rev0 or rev1 or so on and then
-# check in that version.
+$(B)/pouch/%.o: user/pouch/%.c
+	@echo -e "\033[36m[POUCH] BUILDING POUCH OBJECT $@\033[0m"
+	$(CC) $(USER_CFLAGS) $(POUCH_INCLUDES) -o $@ -c $<  # PouchBuild
 
-EXTRA=\
-	mkfs.c ulib.c user.h cat.c cp.c echo.c grep.c kill.c ln.c ls.c mkdir.c rm.c\
-	stressfs.c wc.c zombie.c printf.c umalloc.c mount.c umount.c timer.c cpu.c\
-	mutex.c tests/xv6/forktest.c tests/xv6/mounttest.c tests/xv6/usertests.c\
-	tests/xv6/pidns_tests.c tests/xv6/cgroupstests.c tests/xv6/ioctltests.c\
-	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
-	.gdbinit.tmpl gdbutil\
+$(POUCH_BINARY): $(POUCH_OBJECTS) $(B)/userlib/userlib.a
+	@echo -e "\033[36m[POUCH] LINKING POUCH\033[0m"
+	$(LD) -o $@ -T user/userspace.ld -N -e main -Ttext 0 $^
 
-dist:
-	rm -rf dist
-	mkdir dist
-	for i in $(FILES); \
-	do \
-		grep -v PAGEBREAK $$i >dist/$$i; \
-	done
-	sed '/CUT HERE/,$$d' Makefile >dist/Makefile
-	echo >dist/runoff.spec
-	cp $(EXTRA) dist
+# Pouch Images
+# ------------------------------------------------------------------------------
+$(B)/internal_fs_a: $(B)/images/user images/img_internal_fs_a.Dockerfile images/hello.txt
+$(B)/internal_fs_b: $(B)/images/user images/img_internal_fs_b.Dockerfile images/test.txt
+$(B)/internal_fs_c: $(B)/images/user images/img_internal_fs_c.Dockerfile images/test.txt images/hello.txt
 
-dist-test:
-	rm -rf dist
-	$(MAKE) dist
-	rm -rf dist-test
-	mkdir dist-test
-	cp dist/* dist-test
-	cd dist-test; $(MAKE) print
-	cd dist-test; $(MAKE) bochs || true
-	cd dist-test; $(MAKE) qemu
+$(CONTAINER_IMAGES):
+	@echo ------------------BUILD POUCH IMAGE $(@F)------------------
+	$(PODMAN) build -t xv6__$(@F) -f $(filter %.Dockerfile,$^) $(B)/images
+	$(PODMAN) save localhost/xv6__$(@F) > $(B)/images/$(@F).tar
+	mkdir -p $(B)/images/$(@F)
+	tar xf $(B)/images/$(@F).tar -C $(B)/images/$(@F)
+	./scripts/podman-image-extractor.sh $(B)/images/$(@F).tar $(B)/images $(MKFS)
 
-# update this rule (change rev#) when it is time to
-# make a new revision.
-tar:
-	rm -rf /tmp/xv6
-	mkdir -p /tmp/xv6
-	cp dist/* dist/.gdbinit.tmpl /tmp/xv6
-	(cd /tmp; tar cf - xv6) | gzip >xv6-rev10.tar.gz  # the next one will be 10 (9/17)
+	# Copy artifact to buildroot for convenience
+	cp -v $(B)/images/$(@F)/build/$(@F) $(B)/$(@F:img_%=%)
 
-windows_debugging_mkdir:
-	@mkdir -p windows-debugging
+$(B)/images/user: $(USER_BINARIES) $(POUCH_BINARY)
+	mkdir -p $(B)/images/user
+	cp -v $^ $(B)/images/user
 
-windows_debugging: \
-	$(patsubst windows-debugging-templates/%, windows-debugging/%, $(shell find "windows-debugging-templates" -type f))
+# Host utilities
+# ------------------------------------------------------------------------------
+$(MKFS): mkfs.c
+	$(HOSTCC) -o $@ $<
 
-windows-debugging/%: windows-debugging-templates/% | windows_debugging_mkdir
-	@rm -f $@ && \
-	cp $< windows-debugging && \
-	sed -i 's@{{project_root}}@$(MAKEFILE_DIRECTORY)@g' $@
+# Tests
+# ------------------------------------------------------------------------------
+TESTCFLAGS := -m32 -static -Wno-builtin-declaration-mismatch -I. -Itests -Iinclude -Ikernel -Og -ggdb -DHOST_TESTS=1 -std=gnu99
 
-windows_debugging_clean:
-	@rm -rf windows-debugging
+TESTFRAMEWORK := tests/framework/test.h
 
-.PHONY: dist-test dist windows_debugging windows_debugging_mkdir windows_debugging_clean docs
+$(B)/tests/host/obj_fs_tests: 		$(B)/tests/host/obj_fs_tests.o \
+									$(B)/tests/host/device_obj_disk_ktbin.o \
+									$(B)/tests/host/device_obj_cache_ktbin.o \
+									$(B)/tests/host/device_buf_cache_ktbin.o \
+									$(B)/tests/host/kvector_ktbin.o \
+									$(B)/tests/host/device_ktbin.o \
+									$(B)/tests/host/common_mocks.o
 
-host-tests:
-	$(MAKE) -C tests/host
+$(B)/tests/host/kvector_tests: 		$(B)/tests/host/kvector_tests.o \
+									$(B)/tests/host/kvector_ktbin.o \
+									$(B)/tests/host/common_mocks.o
 
-host-tests-debug: OFLAGS = -Og -ggdb
-host-tests-debug: host-tests
+$(B)/tests/host/buf_cache_tests: 	$(B)/tests/host/buf_cache_tests.o \
+									$(B)/tests/host/device_buf_cache_ktbin.o \
+									$(B)/tests/host/common_mocks.o
 
-docs:
-	$(MAKE) -C docs
+$(TESTS_HOST):
+	$(HOSTCC) $(TESTCFLAGS) $^ -o $@
+
+$(B)/tests/host/%_tests.o: tests/host/%_tests.c $(TESTS_FRAMEWORK) tests/host/common_mocks.h
+	$(HOSTCC) $(TESTCFLAGS) -c -o $@ $<
+
+$(B)/tests/host/common_mocks.o: tests/host/common_mocks.c tests/host/common_mocks.h
+	$(HOSTCC) $(TESTCFLAGS) -c -o $@ $<
+
+$(B)/tests/host/device_%_ktbin.o: kernel/device/%.c
+	$(HOSTCC) $(TESTCFLAGS) -c -o $@ $<
+
+$(B)/tests/host/%_ktbin.o: kernel/%.c
+	$(HOSTCC) $(TESTCFLAGS) -c -o $@ $<
+
+# Guest Tests
+# ------------------------------------------------------------------------------
+GUEST_TEST_CFLAGS := $(CFLAGS) -Itests -Itests/xv6 -I. -nostdlib -nostdinc
+GUEST_LDFLAGS := -T user/userspace.ld -N -e main -Ttext 0
+
+
+$(B)/tests/guest/%: tests/xv6/%.c $(B)/userlib/userlib.a
+	$(CC) $(GUEST_TEST_CFLAGS) $(INCLUDE_DIRS) $< -c -o $@.o
+	$(LD) $(GUEST_LDFLAGS) $@.o $(B)/userlib/userlib.a -o $@
+
+$(B):
+	mkdir -p $(B)
+	mkdir -p $(B)/device
+	mkdir -p $(B)/fs
+	mkdir -p $(B)/user
+	mkdir -p $(B)/pouch
+	mkdir -p $(B)/userlib
+	mkdir -p $(B)/tests
+	mkdir -p $(B)/tests/host
+	mkdir -p $(B)/tests/guest
+
+	# Prepare for image building
+	cp -rv images $(B)/
+
+.PHONY: clean
+clean:
+	rm -rf "$(B)"
