@@ -27,7 +27,9 @@ windows-debugging/
 .idea/
 images/extracted/
 images/metadata/
-images/img_internal_fs_*/
 docs/source/_build/
 docs/virtdocs/
 **/__pycache__/
+tags
+build/
+compile_commands.json
