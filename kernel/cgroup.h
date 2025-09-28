@@ -644,7 +644,7 @@ int disable_io_controller(struct cgroup* cgroup);
  * @param cgroup pointer to cgroup
  * @return Returns 1 upon success, -1 upon failure
  */
-inline int cgroup_incr_mem_failcnt(struct cgroup* cgroup) {
+static inline int cgroup_incr_mem_failcnt(struct cgroup* cgroup) {
   // If no cgroup found, return error
   if (cgroup == 0) return -1;
 
