@@ -1,0 +1,32 @@
+
+proc cp_copy_file_test {} {
+    # log_file -noappend [lindex $argv 0]
+
+    #bad args test
+    send "cp f1\n"
+    expect "cp requires two arguments: source and target"
+    sleep 0.5
+
+    #source file doesn't exist
+    send "cp f1 f2\n"
+    expect "can't locate f1"
+    sleep 0.5
+
+    #target dir doesn't exist
+    send "echo test > f1\n"
+    sleep 0.5
+    send "cp f1 d1/f1\n"
+    expect "can't create d1/f1, make sure the entire path exists"
+
+    #test single file
+    sleep 0.5
+    send "cp f1 f2\n"
+    sleep 0.5
+    send "cat f2\n"
+    expect "test"
+    sleep 0.5
+
+    #clean
+    send "rm -r f1 f2\n"
+    assert_on_exit_status
+}

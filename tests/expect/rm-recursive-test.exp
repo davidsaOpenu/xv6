@@ -1,0 +1,29 @@
+
+# Test the 'rm' userspace utility with recursive flag
+proc rm_recursive_test {} {
+    # log_file -noappend [lindex $argv 0]
+
+    set depth 10
+    set initial_path "/d1"
+    set path "/"
+    for {set i 1} {$i <= $depth} {incr i} {
+        append path "/d${i}"
+        send "mkdir $path\n"
+        assert_on_exit_status
+    }
+
+    send "echo helloworld > $path/file.txt\n"
+    assert_on_exit_status
+
+    send "rm $initial_path\n"
+    expect "cannot unlink $initial_path"
+
+    send "cat $path/file.txt\n"
+    expect "helloworld"
+
+    send "rm -r $initial_path\n"
+    assert_on_exit_status
+
+    send "cat $path/file.txt\n"
+    expect "cat: cannot open $path/file.txt"
+}
