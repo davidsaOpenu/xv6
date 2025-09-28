@@ -413,7 +413,6 @@ const struct pouch_cli_command* pouch_cli_get_command_from_args(
 end:
   return best_match;
 }
-
 int main(int argc, const char* const argv[]) {
   enum pouch_exit_code exit_code = 0;
   pouch_status status = SUCCESS_CODE;

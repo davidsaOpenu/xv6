@@ -1,0 +1,84 @@
+proc assert_no_pouch_images { } {
+    send "pouch images\n"
+    expect "No images available."
+    expect "$ "
+}
+
+proc assert_abc_pouch_images { } {
+    send "pouch images\n"
+    expect "Pouch images available:"
+    expect "img_a"
+    expect "img_b"
+    expect "img_c"
+    expect "$ "
+}
+
+proc prepare_pouch_images { } {
+    # copy might take some time
+    set timeout 10
+    assert_no_pouch_images
+
+    # copy /internal_fs_[abc] to /images/img_[abc]:
+    foreach var {a b c} {
+        send "cp /internal_fs_$var /images/img_$var\n"
+        assert_on_exit_status
+    }
+
+    assert_abc_pouch_images
+    # restore timeout
+    set timeout 3
+}
+
+proc remove_pouch_images { } {
+    assert_abc_pouch_images
+    # remove /images/img_[abc]:
+    foreach var {a b c} {
+        send "rm /images/img_$var\n"
+        assert_on_exit_status
+    }
+    assert_no_pouch_images
+}
+
+# - wrapper for container start command
+# @id - int for specifiyng container name
+# @expect_str - the string to expect
+proc start_container { id expect_str {image_name "img_a"} { exit_code 0 } } {
+    send "pouch start c$id $image_name\n"
+    expect "$expect_str"
+    assert_on_exit_status $exit_code
+}
+
+# - wrapper for container start command
+# @id - int for specifiyng container name
+# @expect_str - the string to expect
+proc start_container { id expect_str {image_name "img_a"} { exit_code 0 } } {
+    send "pouch start c$id $image_name\n"
+    expect "$expect_str"
+    assert_on_exit_status $exit_code
+}
+
+# - wrapper for pouch connect command
+proc connect_container { id } {
+    send "pouch connect c$id\n"
+    # container can connect to any tty, checking here every one
+    expect -re {tty[012] connected}
+}
+
+
+# - wrapper for pouch disconnect command
+proc disconnect_container {} {
+    send "pouch disconnect\n"
+    expect {
+       "Console connected"
+    }
+    send "\n"
+    assert_on_exit_status
+}
+
+# - wrapper for pouch destroy command
+proc destroy_container { id expect_str } {
+    send "pouch destroy c$id\n"
+    sleep 1
+    expect "$expect_str"
+    assert_on_exit_status
+}
