@@ -97,6 +97,7 @@ int exec(char *path, char **argv) {
   // Update memory usage in cgroup and its ancestors
   do {
     cgroup->current_mem += sz - curproc->sz;
+    cgroup->mem_peak = max(cgroup->mem_peak, cgroup->current_mem);
   } while ((cgroup = cgroup->parent));
 
   // Commit to the user image.

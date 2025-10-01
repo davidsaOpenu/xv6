@@ -50,6 +50,7 @@ enum controller_types { CPU_CNT, PID_CNT, SET_CNT, MEM_CNT, IO_CNT };
 #define TEST_1_MEM_STAT "/cgroup/test1/memory.stat"
 #define TEST_1_IO_STAT "/cgroup/test1/io.stat"
 #define TEST_1_MEM_FAILCNT "/cgroup/test1/memory.failcnt"
+#define TEST_1_MEM_PEAK "/cgroup/test1/memory.peak"
 
 #define TEST_2_CGROUP_SUBTREE_CONTROL "/cgroup/test2/cgroup.subtree_control"
 #define TEST_2_MEM_MIN "/cgroup/test2/memory.min"

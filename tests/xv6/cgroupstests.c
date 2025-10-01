@@ -922,6 +922,41 @@ TEST(test_frozen_not_running) {
   }
 }
 
+TEST(test_mem_peak) {
+  // Ensure mem.peak is reset to 0
+  ASSERT_TRUE(disable_controller(MEM_CNT));
+  ASSERT_TRUE(enable_controller(MEM_CNT));
+  // Assert initial value of mem.peak is 0
+  ASSERT_FALSE(strcmp(read_file(TEST_1_MEM_PEAK, 0), "0\n"));
+  sbrk(100);
+  // Save current process memory size.
+  char initial_proc_mem[10];
+  strcpy(initial_proc_mem, read_file(TEST_PROC_MEM, 0));
+  strcat(initial_proc_mem, "\n");
+
+  // Move the current process to "/cgroup/test1" cgroup and remove it
+  ASSERT_TRUE(move_proc(TEST_1_CGROUP_PROCS, getpid()));
+  ASSERT_FALSE(strcmp(read_file(TEST_1_MEM_CURRENT, 0), initial_proc_mem));
+
+  // Reduce mem usage and expect to mem.peak > mem.current
+  sbrk(-100);
+  ASSERT_FALSE(strcmp(read_file(TEST_1_MEM_PEAK, 0), initial_proc_mem));
+  int current_mem = atoi(read_file(TEST_1_MEM_CURRENT, 0));
+  int peak_mem = atoi(read_file(TEST_1_MEM_PEAK, 0));
+  ASSERT_GT(peak_mem, current_mem);
+
+  // Should reset peak to current after writing to mem.peak
+  ASSERT_TRUE(write_file(TEST_1_MEM_PEAK, "1"));
+
+  current_mem = atoi(read_file(TEST_1_MEM_CURRENT, 0));
+  peak_mem = atoi(read_file(TEST_1_MEM_PEAK, 0));
+  ASSERT_EQ(peak_mem, current_mem);
+
+  // Clean
+  ASSERT_TRUE(move_proc(ROOT_CGROUP_PROCS, getpid()));
+  ASSERT_TRUE(disable_controller(MEM_CNT));
+}
+
 // In this following memory accounting tests we move only single process to
 // "/cgroup/test1" in order to simplify the testing.
 TEST(test_mem_current) {
@@ -2393,6 +2428,7 @@ int main(int argc, char* argv[]) {
   run_test(test_mem_stat);
   run_test(test_setting_freeze);
   run_test(test_frozen_not_running);
+  run_test(test_mem_peak);
   run_test(test_mem_current);
   run_test(test_correct_mem_account_of_growth_and_shrink);
   run_test(test_limiting_mem);
