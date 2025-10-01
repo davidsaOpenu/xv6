@@ -309,6 +309,7 @@ void cgroup_initialize(struct cgroup* cgroup, char* path,
   cgroup->num_of_procs = 0;
   cgroup->populated = 0;
   cgroup->current_mem = 0;
+  cgroup->mem_peak = 0;
   set_max_descendants_value(cgroup, MAX_DES_DEF);
   set_max_depth_value(cgroup, MAX_DEP_DEF);
   set_nr_descendants(cgroup, 0);
@@ -425,6 +426,7 @@ result_code unsafe_cgroup_insert(struct cgroup* cgroup, struct proc* proc) {
     cgroup->pid_peak = max(cgroup->num_of_procs, cgroup->pid_peak);
     cgroup->populated = 1;
     cgroup->current_mem += proc->sz;
+    cgroup->mem_peak = max(cgroup->mem_peak, cgroup->current_mem);
     cgroup->current_page += PGROUNDUP(proc->sz) / PGSIZE;
     cgroup = cgroup->parent;
   }
@@ -907,6 +909,7 @@ result_code unsafe_enable_mem_controller(struct cgroup* cgroup) {
   if (cgroup->mem_controller_avalible) {
     // Set memory controller to enabled.
     cgroup->mem_controller_enabled = 1;
+    cgroup->mem_peak = cgroup->current_mem;
     // Set memory controller to avalible in all child cgroups.
     for (int i = 1; i < sizeof(cgtable.cgroups) / sizeof(cgtable.cgroups[0]);
          i++)

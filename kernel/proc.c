@@ -222,6 +222,7 @@ int growproc(int n) {
   // Update memory usage in cgroup and its ancestors
   do {
     cgroup->current_mem += n;
+    cgroup->mem_peak = max(cgroup->mem_peak, cgroup->current_mem);
   } while ((cgroup = cgroup->parent));
 
   switchuvm(curproc);
