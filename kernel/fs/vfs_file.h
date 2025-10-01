@@ -99,6 +99,7 @@ struct vfs_file {
             char active;
             unsigned int cnt;
           } failcnt;
+          int peak;
         } mem;
       };
     };
