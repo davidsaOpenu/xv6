@@ -27,6 +27,7 @@
 #define CGFS_MEM_MIN "memory.min"
 #define CGFS_MEM_STAT "memory.stat"
 #define CGFS_MEM_FAILCNT "memory.failcnt"
+#define CGFS_MEM_PEAK "memory.peak"
 #define CGFS_IO_STAT "io.stat"
 
 typedef enum cgroup_file_name_e {
@@ -43,6 +44,7 @@ typedef enum cgroup_file_name_e {
   MEM_MAX,
   MEM_MIN,
   MEM_FAILCNT,
+  MEM_PEAK,
   NON_WRITABLE,
   CGROUP_CONTROLLERS,
   CGROUP_EVENTS,

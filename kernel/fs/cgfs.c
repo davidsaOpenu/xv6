@@ -248,6 +248,8 @@ static cgroup_file_name_t get_file_name_constant(char* filename) {
     return IO_STAT;
   else if (strcmp(filename, CGFS_MEM_FAILCNT) == 0)
     return MEM_FAILCNT;
+  else if (strcmp(filename, CGFS_MEM_PEAK) == 0)
+    return MEM_PEAK;
   return -1;
 }
 
@@ -389,14 +391,20 @@ static int unsafe_cg_open_file(char* filename, struct cgroup* cgp, int omode) {
         }
       }
       break;
-    // for any other type we do nothing (no special handling)
-    default:
-      break;
 
     case MEM_FAILCNT:
       if (cgp == cgroup_root()) return -1;
       f->mem.failcnt.active = cgp->mem_controller_enabled;
       f->mem.failcnt.cnt = cgp->mem_fail_cnt;
+      break;
+
+    case MEM_PEAK:
+      if (cgp == cgroup_root() || !cgp->mem_controller_enabled) return -1;
+      f->mem.peak = cgp->mem_peak;
+      break;
+
+    // for any other type we do nothing (no special handling)
+    default:
       break;
   }
 
@@ -747,6 +755,18 @@ static int read_file_mem_failcnt(struct vfs_file* f, char* addr, int n) {
       addr);
 }
 
+static int read_file_mem_peak(struct vfs_file* f, char* addr, int n) {
+  char mem_peak_buf[MAX_DECS_SIZE] = {0};
+  itoa(mem_peak_buf, f->mem.peak);
+  char* peak_text = buf;
+  char* peak_textp = peak_text;
+  copy_and_move_buffer(&peak_textp, mem_peak_buf, strlen(mem_peak_buf));
+  copy_and_move_buffer(&peak_textp, "\n", strlen("\n"));
+  return copy_buffer_up_to_end(
+      peak_text + f->off,
+      min(at_least_zero(peak_textp - peak_text - f->off), n), addr);
+}
+
 static int read_file_io_stat(struct vfs_file* f, char* addr, int n) {
   char* stattext = buf;
   char* stattextp = stattext;
@@ -977,6 +997,11 @@ static int unsafe_cg_read_file(struct vfs_file* f, char* addr, int n) {
 
     case MEM_FAILCNT:
       r = read_file_mem_failcnt(f, addr, n);
+      break;
+
+    case MEM_PEAK:
+      r = read_file_mem_peak(f, addr, n);
+      break;
 
     // for any other file type we do nothing (no special handling)
     default:
@@ -1398,6 +1423,11 @@ int unsafe_cg_write(struct vfs_file* f, char* addr, int n) {
     f->mem.failcnt.cnt = failcnt;
     f->cgp->mem_fail_cnt = failcnt;
 
+    r = n;
+  } else if (filename_const == MEM_PEAK && f->cgp->mem_controller_enabled) {
+    if (strlen(addr) > 0) {
+      f->cgp->mem_peak = f->cgp->current_mem;
+    }
     r = n;
   }
 
