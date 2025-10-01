@@ -139,6 +139,7 @@ struct cgroup {
   unsigned int protected_mem;
   unsigned int
       mem_fail_cnt; /* Counts how many maximum memory threshold reached */
+  unsigned int mem_peak;
   unsigned long long cpu_time;
   unsigned int cpu_period_time;
   unsigned int cpu_percent;
