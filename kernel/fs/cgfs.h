@@ -18,7 +18,7 @@
 #define CGFS_CPU_MAX "cpu.max"
 #define CGFS_CPU_STAT "cpu.stat"
 #define CGFS_PID_MAX "pid.max"
-#define CGFS_PID_CUR "pid.current"
+#define CGFS_PID_CUR "pids.current"
 #define CGFS_PID_PEAK "pid.peak"
 #define CGFS_SET_CPU "cpuset.cpus"
 #define CGFS_SET_FRZ "cgroup.freeze"
