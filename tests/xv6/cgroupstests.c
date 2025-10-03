@@ -424,6 +424,10 @@ TEST(test_deleting_cgroups) {
 }
 
 TEST(test_opening_closing_and_reading_cgroup_files) {
+  // Setup
+  ASSERT_TRUE(enable_controller(PID_CNT));
+
+  // Tests
   ASSERT_OPEN_CLOSE_READ(TEST_1_CGROUP_PROCS);
   ASSERT_OPEN_CLOSE_READ(TEST_1_CGROUP_CONTROLLERS);
   ASSERT_OPEN_CLOSE_READ(TEST_1_CGROUP_SUBTREE_CONTROL);
@@ -442,6 +446,9 @@ TEST(test_opening_closing_and_reading_cgroup_files) {
   ASSERT_OPEN_CLOSE_READ(TEST_1_MEM_MAX);
   ASSERT_OPEN_CLOSE_READ(TEST_1_MEM_MIN);
   ASSERT_OPEN_CLOSE_READ(TEST_1_MEM_STAT);
+
+  // Clean
+  ASSERT_TRUE(disable_controller(PID_CNT));
 }
 
 TEST(test_opening_and_closing_cgroup_files) {
@@ -619,16 +626,18 @@ TEST(test_pid_peak) {
   ASSERT_FALSE(strcmp(read_file(TEST_1_PID_PEAK, 0), "0\n"));
   // Move the current process to "/cgroup/test1" cgroup and remove it
   ASSERT_TRUE(move_proc(TEST_1_CGROUP_PROCS, getpid()));
-  ASSERT_FALSE(strcmp(read_file(TEST_1_PID_CURRENT, 0), "num_of_procs - 1\n"));
+  ASSERT_FALSE(strcmp(read_file(TEST_1_PID_CURRENT, 0), "1\n"));
   ASSERT_TRUE(move_proc(ROOT_CGROUP_PROCS, getpid()));
 
   // Check pid.current is 0 and pid.peak is 1
   ASSERT_FALSE(strcmp(read_file(TEST_1_PID_PEAK, 0), "1\n"));
-  ASSERT_FALSE(strcmp(read_file(TEST_1_PID_CURRENT, 0), "num_of_procs - 0\n"));
+  ASSERT_FALSE(strcmp(read_file(TEST_1_PID_CURRENT, 0), "0\n"));
   ASSERT_TRUE(disable_controller(PID_CNT));
 }
 
 TEST(test_pid_current) {
+  ASSERT_TRUE(enable_controller(PID_CNT));
+  ASSERT_FALSE(strcmp(read_file(TEST_1_PID_CURRENT, 0), "0\n"));
   // Move the current process to "/cgroup/test1" cgroup.
   ASSERT_TRUE(move_proc(TEST_1_CGROUP_PROCS, getpid()));
 
@@ -636,13 +645,43 @@ TEST(test_pid_current) {
   ASSERT_TRUE(is_pid_in_group(TEST_1_CGROUP_PROCS, getpid()));
 
   // Check pid.current changed to display 1
-  ASSERT_FALSE(strcmp(read_file(TEST_1_PID_CURRENT, 0), "num_of_procs - 1\n"));
+  ASSERT_FALSE(strcmp(read_file(TEST_1_PID_CURRENT, 0), "1\n"));
 
   // Return the process to root cgroup.
   ASSERT_TRUE(move_proc(ROOT_CGROUP_PROCS, getpid()));
 
-  // Check that the process we returned is really in root cgroup.
-  ASSERT_TRUE(is_pid_in_group(ROOT_CGROUP_PROCS, getpid()));
+  // Start multiple processes to cgroup and check that pids.current is updated
+  // correctly
+  int pids[PID_CURRENT_NUMBER_OF_PROCS] = {0};
+  for (int i = 0; i < PID_CURRENT_NUMBER_OF_PROCS; i++) {
+    int pid = fork();
+    if (pid == 0) {
+      // Child - run in endless loop
+      while (1) sleep(10);
+    } else if (pid > 0) {
+      // Father
+      pids[i] = pid;
+      ASSERT_TRUE(move_proc(TEST_1_CGROUP_PROCS, pid));
+      int pid_current_val = atoi(read_file(TEST_1_PID_CURRENT, 0));
+      ASSERT_EQ(pid_current_val, i + 1);
+    } else {
+      printf(stdout, "Fork failed in pids.current test\n");
+      ASSERT_TRUE(0);
+    }
+  }
+
+  // Kill the started processes
+  int pid_current_val;
+  for (int i = 0; i < PID_CURRENT_NUMBER_OF_PROCS; i++) {
+    kill(pids[i]);
+    wait(NULL);  // Prevent child process become zombie
+    pid_current_val = atoi(read_file(TEST_1_PID_CURRENT, 0));
+    ASSERT_EQ(pid_current_val, PID_CURRENT_NUMBER_OF_PROCS - 1 - i);
+  }
+
+  // Assure pids.current is 0 now
+  ASSERT_FALSE(strcmp(read_file(TEST_1_PID_CURRENT, 0), "0\n"));
+  ASSERT_TRUE(disable_controller(PID_CNT));
 }
 
 TEST(test_moving_process) {

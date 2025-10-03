@@ -337,6 +337,11 @@ static int unsafe_cg_open_file(char* filename, struct cgroup* cgp, int omode) {
       f->pid.max.max = cgp->max_num_of_procs;
       break;
 
+    case PID_CUR:
+      if (cgp == cgroup_root() || !cgp->pid_controller_enabled) return -1;
+      f->pid.current = cgp->num_of_procs;
+      break;
+
     case PID_PEAK:
       if (cgp == cgroup_root() || !cgp->pid_controller_enabled) return -1;
       f->pid.peak = cgp->pid_peak;
@@ -635,13 +640,11 @@ static int read_file_pid_max(struct vfs_file* f, char* addr, int n) {
 
 static int read_file_pid_cur(struct vfs_file* f, char* addr, int n) {
   char nr_of_procs_buf[MAX_DECS_SIZE] = {0};
-  itoa(nr_of_procs_buf, f->cgp->num_of_procs);
+  itoa(nr_of_procs_buf, f->pid.current);
 
   char* stattext = buf;
   char* stattextp = stattext;
 
-  copy_and_move_buffer(&stattextp, "num_of_procs - ",
-                       strlen("num_of_procs - "));
   copy_and_move_buffer(&stattextp, nr_of_procs_buf, strlen(nr_of_procs_buf));
   copy_and_move_buffer(&stattextp, "\n", strlen("\n"));
 
@@ -1058,6 +1061,7 @@ int unsafe_cg_read(cg_file_type type, struct vfs_file* f, char* addr, int n) {
       }
 
       if (f->cgp->pid_controller_enabled) {
+        copy_and_move_buffer_max_len(&bufp, CGFS_PID_CUR);
         copy_and_move_buffer_max_len(&bufp, CGFS_PID_MAX);
         copy_and_move_buffer_max_len(&bufp, CGFS_PID_PEAK);
       }
@@ -1522,8 +1526,7 @@ static int cg_file_size(struct vfs_file* f) {
             strlen("nr_of_procs - ") + intlen(f->cgp->num_of_procs) +
             strlen("\n");
   } else if (filename_const == PID_CUR) {
-    size +=
-        strlen("num_of_procs - ") + intlen(f->cgp->num_of_procs) + strlen("\n");
+    size += intlen(f->cgp->num_of_procs) + strlen("\n");
   } else if (filename_const == MEM_CUR) {
     size += strlen("cur_mem_in_bytes - ") + intlen(f->cgp->current_mem) +
             strlen("\n");
