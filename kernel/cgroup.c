@@ -695,6 +695,7 @@ result_code unsafe_enable_pid_controller(struct cgroup* cgroup) {
     // Set pid controller to enabled and set initial values.
     cgroup->pid_controller_enabled = 1;
     cgroup->pid_peak = cgroup->num_of_procs;
+    set_max_procs(cgroup, NPROC);
     // Set pid controller to avalible in all child cgroups.
     for (int i = 1; i < sizeof(cgtable.cgroups) / sizeof(cgtable.cgroups[0]);
          i++)

@@ -40,7 +40,7 @@ enum controller_types { CPU_CNT, PID_CNT, SET_CNT, MEM_CNT, IO_CNT };
 #define TEST_1_CPU_WEIGHT "/cgroup/test1/cpu.weight"
 #define TEST_1_CPU_STAT "/cgroup/test1/cpu.stat"
 #define TEST_1_PID_MAX "/cgroup/test1/pid.max"
-#define TEST_1_PID_CURRENT "/cgroup/test1/pid.current"
+#define TEST_1_PID_CURRENT "/cgroup/test1/pids.current"
 #define TEST_1_PID_PEAK "/cgroup/test1/pid.peak"
 #define TEST_1_SET_CPU "/cgroup/test1/cpuset.cpus"
 #define TEST_1_SET_FRZ "/cgroup/test1/cgroup.freeze"
