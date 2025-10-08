@@ -67,6 +67,24 @@
       "message": "What about \n\u003e Read the new pids.current file in an empty cgroup; it should return \u00270\u0027.",
       "revId": "c686f80e80a8e833277df95dc1b22c5525a441d4",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bada8de8_b4fe83f9",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 5
+      },
+      "lineNbr": 638,
+      "author": {
+        "id": 1038781
+      },
+      "writtenOn": "2025-10-08T06:52:03Z",
+      "side": 1,
+      "message": "We have it in line 682",
+      "parentUuid": "7f8cf5d1_b04424e2",
+      "revId": "c686f80e80a8e833277df95dc1b22c5525a441d4",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
