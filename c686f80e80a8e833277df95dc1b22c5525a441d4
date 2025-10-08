@@ -103,6 +103,24 @@
       "parentUuid": "bada8de8_b4fe83f9",
       "revId": "c686f80e80a8e833277df95dc1b22c5525a441d4",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "22c8cf29_02879d9b",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 5
+      },
+      "lineNbr": 638,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-10-08T06:59:45Z",
+      "side": 1,
+      "message": "According to \n\n```\nRead the new pids.current file in an empty cgroup; it should return \u00270\u0027.\n\nStart a single process (e.g., a simple shell script) within the cgroup and read pids.current. The output should be \u00271\u0027.\n\nStart multiple processes and verify the count in pids.current matches the number of processes.\n\nKill a process and re-read the file to ensure the count decreases correctly.\n\n```\n\nEnsuring that \n```\nRead the new pids.current file in an empty cgroup; it should return \u00270\u0027.\n```\n\nis required (at the beginning of the test)",
+      "parentUuid": "bada8de8_b4fe83f9",
+      "revId": "c686f80e80a8e833277df95dc1b22c5525a441d4",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
