@@ -54,7 +54,9 @@ enum controller_types { CPU_CNT, PID_CNT, SET_CNT, MEM_CNT, IO_CNT };
 
 #define TEST_2_CGROUP_SUBTREE_CONTROL "/cgroup/test2/cgroup.subtree_control"
 #define TEST_2_MEM_MIN "/cgroup/test2/memory.min"
+#define TEST_2_PID_CURRENT "/cgroup/test2/pids.current"
 #define ROOT_CGROUP_PROCS "/cgroup/cgroup.procs"
+#define TEST_2_CGROUP_PROCS "/cgroup/test2/cgroup.procs"
 
 #define TEST_TMP_CGROUP_SUBTREE_CONTROL "/cgroup/testtmp/cgroup.subtree_control"
 #define TEST_TMP_MEM_MIN "/cgroup/testtmp/memory.min"
