@@ -635,7 +635,7 @@ TEST(test_pid_peak) {
   ASSERT_TRUE(disable_controller(PID_CNT));
 }
 
-TEST(test_pid_current) {
+TEST(test_pids_current) {
   ASSERT_TRUE(enable_controller(PID_CNT));
   ASSERT_FALSE(strcmp(read_file(TEST_1_PID_CURRENT, 0), "0\n"));
   // Move the current process to "/cgroup/test1" cgroup.
@@ -681,6 +681,102 @@ TEST(test_pid_current) {
 
   // Assure pids.current is 0 now
   ASSERT_FALSE(strcmp(read_file(TEST_1_PID_CURRENT, 0), "0\n"));
+  ASSERT_TRUE(disable_controller(PID_CNT));
+}
+
+TEST(test_nested_pids_current) {
+  // Setup
+  ASSERT_TRUE(enable_controller(PID_CNT));
+
+  char nested_cgroup_path[MAX_PATH_LENGTH] = TEST_1 "/nested";
+  ASSERT_FALSE(mkdir(nested_cgroup_path));
+  strcat(nested_cgroup_path, "/nested");
+  ASSERT_FALSE(mkdir(nested_cgroup_path));
+  char nested_cgroup_procs[] = TEST_1
+      "/nested/nested"
+      "/cgroup.procs";
+  int current_pid = getpid();
+  ASSERT_TRUE(move_proc(nested_cgroup_procs, current_pid));
+  int child_pid = fork();
+  if (child_pid == 0) {
+    // Child
+    while (true) sleep(100);
+  } else if (child_pid > 0) {
+    // Check pid.current of parent is 2
+    int pid_current_of_parent = atoi(read_file(TEST_1_PID_CURRENT, 0));
+    ASSERT_EQ(pid_current_of_parent, 2);
+    ASSERT_FALSE(kill(child_pid));
+    wait(NULL);
+  } else {
+    printf(stdout, "Fork failed in nested pids.current test\n");
+    ASSERT_TRUE(0);
+  }
+
+  // Clean
+  ASSERT_TRUE(move_proc(ROOT_CGROUP_PROCS, current_pid));
+  ASSERT_FALSE(unlink(nested_cgroup_path));
+  ASSERT_FALSE(unlink(TEST_1 "/nested"));
+  ASSERT_TRUE(disable_controller(PID_CNT));
+}
+
+TEST(test_pids_current_after_migration) {
+  // Setup
+  ASSERT_TRUE(enable_controller(PID_CNT));
+  ASSERT_TRUE(write_file(TEST_2_CGROUP_SUBTREE_CONTROL, "+pid"));
+
+  // Move the current process to "/cgroup/test1" cgroup.
+  ASSERT_TRUE(move_proc(TEST_1_CGROUP_PROCS, getpid()));
+
+  // Check that the process we moved is really in "/cgroup/test1" cgroup.
+  ASSERT_TRUE(is_pid_in_group(TEST_1_CGROUP_PROCS, getpid()));
+
+  // Check pid.current changed to display 1
+  ASSERT_FALSE(strcmp(read_file(TEST_1_PID_CURRENT, 0), "1\n"));
+  ASSERT_FALSE(strcmp(read_file(TEST_2_PID_CURRENT, 0), "0\n"));
+
+  // Move the current process to "/cgroup/test2" cgroup.
+  ASSERT_TRUE(move_proc(TEST_2_CGROUP_PROCS, getpid()));
+
+  // Check that the process we moved is really in "/cgroup/test2" cgroup.
+  ASSERT_TRUE(is_pid_in_group(TEST_2_CGROUP_PROCS, getpid()));
+
+  // Check pid.current of test1 is back to 0
+  ASSERT_FALSE(strcmp(read_file(TEST_1_PID_CURRENT, 0), "0\n"));
+
+  // Check pid.current of test2 is now 1
+  ASSERT_FALSE(strcmp(read_file(TEST_2_PID_CURRENT, 0), "1\n"));
+
+  // Return the process to root cgroup.
+  ASSERT_TRUE(move_proc(ROOT_CGROUP_PROCS, getpid()));
+  // Check pid.current of test2 is back to 0
+  ASSERT_FALSE(strcmp(read_file(TEST_2_PID_CURRENT, 0), "0\n"));
+
+  // Clean
+  ASSERT_TRUE(write_file(TEST_2_CGROUP_SUBTREE_CONTROL, "-pid"));
+  ASSERT_TRUE(disable_controller(PID_CNT));
+}
+
+TEST(test_pids_current_multiple_readers) {
+  // Setup
+  ASSERT_TRUE(enable_controller(PID_CNT));
+  char pid_current[4] = {0};
+  int fd1 = open_file(TEST_1_PID_CURRENT);
+  int fd2 = open_file(TEST_1_PID_CURRENT);
+
+  int read_n = read(fd1, pid_current, 4);
+  ASSERT_GE(read_n, 2);
+  int pid_current1 = atoi(pid_current);
+  // Move the current process to "/cgroup/test1" cgroup.
+  ASSERT_TRUE(move_proc(TEST_1_CGROUP_PROCS, getpid()));
+  read_n = read(fd2, pid_current, 4);
+  ASSERT_GE(read_n, 2);
+  int pid_current2 = atoi(pid_current);
+
+  ASSERT_EQ(pid_current1, 0);
+  ASSERT_EQ(pid_current1, pid_current2);
+
+  // Clean
+  ASSERT_TRUE(move_proc(ROOT_CGROUP_PROCS, getpid()));
   ASSERT_TRUE(disable_controller(PID_CNT));
 }
 
@@ -2467,7 +2563,10 @@ int main(int argc, char* argv[]) {
   run_test(test_fork_failure);
   run_test(test_cpu_stat);
   run_test(test_pid_peak);
-  run_test(test_pid_current);
+  run_test(test_pids_current);
+  run_test(test_nested_pids_current);
+  run_test(test_pids_current_after_migration);
+  run_test(test_pids_current_multiple_readers);
   run_test(test_setting_cpu_id);
   // run_test(test_correct_cpu_running);
   run_test(test_no_run);
