@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "29a6dd7d_da6c7433",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 2
+      },
+      "lineNbr": 699,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-10-13T14:57:51Z",
+      "side": 1,
+      "message": "Create nested cgroups, add processes to child cgroups, verify parent\u0027s pids.current includes all descendant.\n\nnote: nested cgroups and processes in plural",
+      "revId": "b755f0367af08b206c619863d582bfaf832316fa",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "aa326b07_fbc74803",
+        "filename": "tests/xv6/cgroupstests.c",
+        "patchSetId": 2
+      },
+      "lineNbr": 721,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-10-13T14:57:51Z",
+      "side": 1,
+      "message": "fot other tests in https://trello.com/c/O1eRmUrV/337-additional-tests-for-pidscurrent-and-possible-bug-fixes\n\nalso please address nested cgroups testing",
+      "revId": "b755f0367af08b206c619863d582bfaf832316fa",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
