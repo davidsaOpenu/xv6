@@ -36,6 +36,21 @@ int proc_pid(struct proc *proc) {
   return get_pid_for_ns(proc, myproc()->nsproxy->pid_ns);
 }
 
+struct proc *proc_by_pid(int pid) {
+  struct proc *ret = 0;
+  acquire(&ptable.lock);
+  struct pid_ns *pid_ns = myproc()->nsproxy->pid_ns;
+  for (struct proc *proc_iter = ptable.proc; proc_iter < &ptable.proc[NPROC];
+       ++proc_iter) {
+    if (get_pid_for_ns(proc_iter, pid_ns) == pid) {
+      ret = proc_iter;
+      break;
+    }
+  }
+  release(&ptable.lock);
+  return ret;
+}
+
 static struct proc *initproc;
 
 extern void forkret(void);
@@ -783,9 +798,12 @@ int cgroup_move_proc(struct cgroup *cgroup, int pid) {
 }
 
 struct cgroup *proc_get_cgroup(void) {
+  return proc_get_cgroup_by_proc(myproc());
+}
+
+struct cgroup *proc_get_cgroup_by_proc(struct proc *p) {
   struct cgroup *cg = 0;
-  struct proc *proc = myproc();
-  if (proc) cg = proc->cgroup;
+  if (p) cg = p->cgroup;
   return cg;
 }
 

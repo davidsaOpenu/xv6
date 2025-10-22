@@ -90,6 +90,14 @@ struct proc {
 int proc_pid(struct proc *proc);
 
 /**
+ * Returns the proc with the the passed pid.
+ *
+ * @param pid pid of the process to return
+ * @return Pointer to the proc
+ */
+struct proc *proc_by_pid(int pid);
+
+/**
  * Locks the process table.
  */
 void proc_lock();
@@ -105,6 +113,14 @@ void proc_unlock();
  * @return Pointer to a cgroup this process is associated with
  */
 struct cgroup *proc_get_cgroup(void);
+
+/**
+ * Returns the cgroup associated with the accepted proc.
+ *
+ * @param proc the process to probe
+ * @return Pointer to the cgroup
+ */
+struct cgroup *proc_get_cgroup_by_proc(struct proc *p);
 
 /**
  * Update number of memory pages to protect for cgroup after dealloc memory .
