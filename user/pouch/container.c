@@ -550,6 +550,10 @@ static pouch_status pouch_container_start_child(
              tty_fd);
       goto child_error;
     }
+    if ((child_status = reset_std_fds(tty_fd)) != SUCCESS_CODE) {
+      printf(stderr, "reset standard fds to tty failed\n");
+      goto child_error;
+    }
     tty_attached = tty_fd;
   } else {
     ASSERT(!config->daemonize);

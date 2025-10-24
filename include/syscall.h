@@ -28,8 +28,9 @@
 #define SYS_unshare 24
 #define SYS_usleep 25
 #define SYS_ioctl 26
-#define SYS_getppid 27
-#define SYS_getcpu 28
-#define SYS_pivot_root 29
+#define SYS_ioctl_pid 27
+#define SYS_getppid 28
+#define SYS_getcpu 29
+#define SYS_pivot_root 30
 
 #endif /* XV6_SYSCALL_H */

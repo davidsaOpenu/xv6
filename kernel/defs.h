@@ -41,8 +41,8 @@ void consoleintr(int (*)(void));
 void panic(char*) __attribute__((noreturn));
 void tty_disconnect(struct vfs_inode* ip);
 void tty_connect(struct vfs_inode* ip);
-void tty_attach(struct vfs_inode* ip);
-void tty_detach(struct vfs_inode* ip);
+void tty_attach(struct vfs_inode* ip, struct proc* p);
+void tty_detach(struct vfs_inode* ip, struct proc* p);
 int tty_gets(struct vfs_inode* ip, int command);
 
 // device.c

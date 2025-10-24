@@ -94,6 +94,7 @@ extern int sys_umount(void);
 extern int sys_unshare(void);
 extern int sys_usleep(void);
 extern int sys_ioctl(void);
+extern int sys_ioctl_pid(void);
 extern int sys_getppid(void);
 extern int sys_getcpu(void);
 extern int sys_pivot_root(void);
@@ -125,6 +126,7 @@ static int (*syscalls[])(void) = {
     [SYS_unshare] sys_unshare,
     [SYS_usleep] sys_usleep,
     [SYS_ioctl] sys_ioctl,
+    [SYS_ioctl_pid] sys_ioctl_pid,
     [SYS_getppid] sys_getppid,
     [SYS_getcpu] sys_getcpu,
     [SYS_pivot_root] sys_pivot_root,

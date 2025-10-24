@@ -38,6 +38,7 @@ int sleep(int);
 int usleep(unsigned int);
 int uptime(void);
 int ioctl(int fd, unsigned long request, ...);
+int ioctl_pid(int fd, unsigned long request, ...);
 int getppid(void);
 int getcpu(void);
 
@@ -73,6 +74,9 @@ bool isalnum(char c);
 
 int attach_tty(int tty_fd);
 int detach_tty(int tty_fd);
+int attach_tty_pid(int tty_fd, int pid);
+int detach_tty_pid(int tty_fd, int pid);
+int reset_std_fds(int tty_fd);
 int connect_tty(int tty_fd);
 int is_attached_tty(int tty_fd);
 int disconnect_tty(int tty_fd);

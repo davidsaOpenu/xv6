@@ -88,6 +88,74 @@ fail:
   return -1;
 }
 
+/* Verify ioctl syscall attach/detatch with pid.
+   verify TTYGETS/TTY_SETS operations on attaching and detatching a tty device
+
+   EXAMPLE: if given tty is not attached, TTY_GET/DEV_ATTACH will return "0"
+   but TTY_GET/DEV_DETATCH will return "1", when we attach the given tty
+   using TTY_SET/DEV_ATTACH : TTY_GET/DEV_ATTACH will return "1" and
+   TTY_GET/DEV_DETATCH will return "0". TTYSETS return "0" on operation success.
+*/
+int ioctl_pid_attach_detach_test() {
+  int tty_fd;
+  const char tty_name[] = DEV_DIR "tty0";
+
+  if ((tty_fd = open(tty_name, O_RDWR)) < 0) {
+    printf(stderr, "failed to open %s\n", tty_name);
+    return -1;
+  }
+
+  int pid = fork();
+  if (pid == 0) {  // Child
+    // Sleep long enough to let the father attach/detach to an alive child
+    sleep(10);
+    exit(0);
+  } else {  // Father
+    // pre condition, verify tty is not attached
+    if (ioctl(tty_fd, TTYGETS, DEV_ATTACH) != 0) {
+      printf(stderr, "step 1. %s atach precondition failed  \n", tty_name);
+      goto fail;
+    }
+
+    // test - attach tty in father to child
+    if (ioctl(tty_fd, TTYSETS, DEV_ATTACH, pid) < 0) {
+      printf(stderr, "step 2. %s failed TTYSETS & DEV_ATTACH \n", tty_name);
+      goto fail;
+    }
+
+    int status = ioctl(tty_fd, TTYGETS, DEV_ATTACH);
+
+    if (status == 0) {
+      printf(stderr, "step 3. %s failed TTYGETS & DEV_ATTACH, expected: >0 \n",
+             tty_name);
+      goto fail;
+    } else if (status == -1) {
+      printf(stderr, "step 3. ioctl failed");
+      goto fail;
+    } else if (status == 1) {
+      if (ioctl(tty_fd, TTYSETS, DEV_DETACH, pid) == 0) {
+        printf(stderr, "%s detached \n", tty_name);
+      } else {
+        printf(stderr, "step 3. %s detach failed \n", tty_name);
+        goto fail;
+      }
+
+      status = ioctl(tty_fd, TTYGETS, DEV_DETACH);
+
+      if (status == 0) {
+        close(tty_fd);
+        return 0;
+      } else if (status == -1) {
+        printf(stderr, "step 3. ioctl GETS & DETACH failed");
+        goto fail;
+      }
+    }
+  }
+fail:
+  close(tty_fd);
+  return -1;
+}
+
 /* Verify ioctl syscall connect/disconnect
    verify TTYGETS/TTY_SETS operations on connecting and disconnecting a tty
    device
@@ -233,6 +301,8 @@ int main() {
 
   // ioctl SCENARIO TESTS
   if (ioctl_attach_detach_test() < 0) exit(1);
+
+  if (ioctl_pid_attach_detach_test() < 0) exit(1);
 
   if (ioctl_connect_disconnect_test() < 0) exit(1);
 
