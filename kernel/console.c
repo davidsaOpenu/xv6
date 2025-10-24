@@ -392,15 +392,15 @@ void tty_connect(struct vfs_inode *ip) {
   wakeup(&tty_table[ip->minor]);
 }
 
-void tty_attach(struct vfs_inode *ip) {
+void tty_attach(struct vfs_inode *ip, struct proc *p) {
   tty_table[ip->minor].flags |= DEV_ATTACH;
   initlock(&(tty_table[ip->minor].lock), "tty");
 
   /* add the tty device to the current cgroup devices list */
-  cgroup_add_io_device(proc_get_cgroup(), ip);
+  cgroup_add_io_device(proc_get_cgroup_by_proc(p), ip);
 }
 
-void tty_detach(struct vfs_inode *ip) {
+void tty_detach(struct vfs_inode *ip, struct proc *p) {
   tty_table[ip->minor].flags &= ~(DEV_ATTACH);
   /* Note: We don't clear the tty's stats because the tty exist it is just
   detached from the cgroup. Any reuse of the tty (new cgroup created) will use
@@ -408,7 +408,7 @@ void tty_detach(struct vfs_inode *ip) {
   */
 
   /* remove the tty device from the current cgroup devices list */
-  cgroup_remove_io_device(proc_get_cgroup(), ip);
+  cgroup_remove_io_device(proc_get_cgroup_by_proc(p), ip);
 }
 
 int tty_gets(struct vfs_inode *ip, int command) {

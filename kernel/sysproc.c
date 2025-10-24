@@ -96,7 +96,7 @@ int sys_usleep(void) {
   return 0;
 }
 
-int sys_ioctl(void) {
+static int handle_ioctl(int pid) {
   int fd = -1;
   int request = -1;
   int command;
@@ -105,6 +105,8 @@ int sys_ioctl(void) {
   struct vfs_file *f;
   struct vfs_inode *ip;
 
+  struct proc *p;
+
   if (argfd(0, &fd, &f) < 0 || argint(1, &request) < 0 ||
       argint(2, &command) < 0)
     return -1;
@@ -112,6 +114,12 @@ int sys_ioctl(void) {
   if (!(command & DEV_CONNECT) && !(command & DEV_DISCONNECT) &&
       !(command & DEV_DETACH) && !(command & DEV_ATTACH)) {
     return -1;
+  }
+
+  if (pid < 0) {
+    p = myproc();
+  } else {
+    p = proc_by_pid(pid);
   }
 
   ip = f->ip;
@@ -166,11 +174,11 @@ int sys_ioctl(void) {
       }
 
       if ((command & DEV_ATTACH)) {
-        tty_attach(ip);
+        tty_attach(ip, p);
       }
 
       if ((command & DEV_DETACH)) {
-        tty_detach(ip);
+        tty_detach(ip, p);
       }
       break;
     case TTYGETS:
@@ -184,6 +192,14 @@ int sys_ioctl(void) {
 
   ip->i_op->iunlock(ip);
   return 0;
+}
+
+int sys_ioctl(void) { return handle_ioctl(-1); }
+
+int sys_ioctl_pid(void) {
+  int pid;
+  if (argint(3, &pid) < 0) return -1;
+  return handle_ioctl(pid);
 }
 
 // return how many clock tick interrupts have occurred

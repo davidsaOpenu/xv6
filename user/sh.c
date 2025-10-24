@@ -289,6 +289,11 @@ int runinternal(struct cmd **pcmd) {
         close(tty_fd);
         return RUN_INTERNAL_CMD_OK;
       }
+      if (reset_std_fds(tty_fd) < 0) {
+        printf(stderr, "reset standard fds to tty failed\n");
+        close(tty_fd);
+        return RUN_INTERNAL_CMD_OK;
+      }
 
       ioctl(tty_fd, TTYSETS, DEV_CONNECT);
       close(tty_fd);
