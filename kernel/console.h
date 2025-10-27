@@ -42,6 +42,7 @@ typedef struct tty {
   uint ttywrite_operations_counter;
   uint tty_bytes_read;
   uint tty_bytes_written;
+  cmd_history history;
 } tty;
 
 #endif
