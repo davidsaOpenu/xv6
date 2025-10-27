@@ -1064,6 +1064,145 @@ proc test_all_pouch_build {argv} {
     set running [remove_pouch_images $argv]
 }
 
+set PREV "\x10"  ;# Ctrl+P
+set NEXT "\x0E"  ;# Ctrl+N
+set SHORTPAUSE 0.5
+
+# - History navigation and filtering test
+# - Verify that Ctrl+P and Ctrl+N scroll through command
+#   history correctly and handle edge cases properly.
+# - Test cases:
+#   1. Scroll on an empty history
+#   2. Empty/whitespace commands are not added to history
+#   3. Basic backward navigation through history
+#   4. Scroll past the oldest entry (should do nothing)
+#   5. Basic forward navigation through history
+#   6. Scroll forward from most recent entry gives fresh prompt
+#   7. Scroll forward from fresh prompt (should do nothing)
+#   8. Overflow
+# @argv - file name for logging
+proc history_navigation_test {argv} {
+    global PREV NEXT SHORTPAUSE
+    log_file -noappend [lindex $argv 0]
+
+    # Try navigate back on an empty history
+    # Should do nothing
+    send $PREV
+    sleep $SHORTPAUSE
+    # Don't expect anything - nothing should happen,
+    # just sleep to verify it doesn't crash
+
+    # Try navigate forward on an empty history
+    # Should do nothing
+    send $NEXT
+    sleep $SHORTPAUSE
+    # Don't expect anything - nothing should happen,
+    # just sleep to verify it doesn't crash
+
+    # Fill history with 10 entries (CMD_HISTORY_SIZE = 10)
+    for {set i 1} {$i <= 10} {incr i} {
+        send "echo cmd$i\n"
+        expect "cmd$i"
+        expect "$ "
+    }
+
+    # Try adding empty commands
+    send "\n"
+    expect "$ "
+    send "   \n"
+    expect "$ "
+    send "\t\t\n"
+    expect "$ "
+    send " \t \t \n"
+    expect "$ "
+
+    # Navigate back - should only see "echo cmd10" (no empty commands)
+    send $PREV
+    sleep $SHORTPAUSE
+    expect "echo cmd10"
+
+    # Navigate back through all entries
+    # Should get cmd10, cmd9, ..., cmd1
+    for {set i 9} {$i >= 1} {incr i -1} {
+        send $PREV
+        sleep $SHORTPAUSE
+        expect "echo cmd$i"
+    }
+
+    # Try navigate past the oldest entry
+    # Should stay at "echo test1" (no change)
+    send $PREV
+    sleep $SHORTPAUSE
+    # Don't expect anything - the command is already visible from before,
+    # just sleep to verify it doesn't crash
+
+    # Navigate forward through all entries
+    for {set i 2} {$i <= 10} {incr i} {
+        send $NEXT
+        sleep $SHORTPAUSE
+        expect "echo cmd$i"
+    }
+
+    # Navigate forward to a fresh prompt
+    # Should clear to fresh prompt
+    send $NEXT
+    sleep $SHORTPAUSE
+    expect -re "(\b \b){10}"  ;# "echo cmd10" is 10 chars
+    # Don't expect anything - clearing the prompt doesn't write new
+    # output to consume, just sleep to verify it doesn't crash
+
+    # Try navigate forward on a fresh prompt
+    # Should do nothing (stay at prompt)
+    send $NEXT
+    sleep $SHORTPAUSE
+    # Don't expect anything - the command is already visible from before,
+    # just sleep to verify it doesn't crash
+
+    # Add 5 more entries to trigger overflow
+    # This should overwrite cmd1, cmd2, cmd3, cmd4, cmd5
+    for {set i 11} {$i <= 15} {incr i} {
+        send "echo cmd$i\n"
+        expect "cmd$i"
+        expect "$ "
+    }
+
+    # Navigate back - should now see cmd15, cmd14, ..., cmd6
+    # (cmd1-cmd5 should be gone, overwritten)
+    for {set i 15} {$i >= 6} {incr i -1} {
+        send $PREV
+        sleep $SHORTPAUSE
+        expect "echo cmd$i"
+    }
+
+    # Try navigate past the oldest entry
+    # Should stay at "echo test1" (no change)
+    send $PREV
+    sleep $SHORTPAUSE
+    # Don't expect anything - the command is already visible from before,
+    # just sleep to verify it doesn't crash
+
+    # Navigate forward to fresh prompt
+    for {set i 7} {$i <= 15} {incr i} {
+        send $NEXT
+        sleep $SHORTPAUSE
+        expect "echo cmd$i"
+    }
+
+    # Navigate forward to a fresh prompt
+    # Should clear to fresh prompt
+    send $NEXT
+    sleep $SHORTPAUSE
+    expect -re "(\b \b){10}"  ;# "echo cmd15" is 10 chars
+    # Don't expect anything - clearing the prompt doesn't write new
+    # output to consume, just sleep to verify it doesn't crash
+
+    # Try navigate forward on a fresh prompt
+    # Should do nothing (stay at prompt)
+    send $NEXT
+    sleep $SHORTPAUSE
+    # Don't expect anything - the command is already visible from before,
+    # just sleep to verify it doesn't crash
+}
 
 #-------------------------------------------------------------------------
 #-MAIN--------------------------------------------------------------------
@@ -1112,6 +1251,8 @@ set running [umount_bind_mount_test $argv]
 set running [pouch_basic_tests $argv]
 set running [command_exit_status_test $argv]
 set running [proc_cache_entry $argv]
+
+set running [history_navigation_test $argv]
 
 # scenario tests
 set running [cp_simple_objfs_nativefs_copy_test $argv]
