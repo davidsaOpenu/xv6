@@ -17,6 +17,24 @@ typedef struct device_lock {
   int locking;
 } device_lock;
 
+#define INPUT_BUF_SIZE_BYTES 128
+
+#define CMD_HISTORY_SIZE 10
+
+// Append-only circular buffer of commands history
+typedef struct {
+  char data[CMD_HISTORY_SIZE][INPUT_BUF_SIZE_BYTES];
+
+  // Next index to write at
+  int write_idx;
+
+  // Number of entries, cannot decrease
+  int count;
+
+  // Persistent cursor for history navigation
+  int cursor;
+} cmd_history;
+
 typedef struct tty {
   int flags;
   struct spinlock lock;

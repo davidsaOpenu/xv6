@@ -183,13 +183,90 @@ void consputc(int c) {
   cgaputc(c);
 }
 
-#define INPUT_BUF 128
 struct {
-  char buf[INPUT_BUF];
+  char buf[INPUT_BUF_SIZE_BYTES];
   uint r;  // Read index
   uint w;  // Write index
   uint e;  // Edit index
 } input;
+
+static inline int cmd_history_circular_inc(int idx) {
+  return (idx + 1) % CMD_HISTORY_SIZE;
+}
+
+static inline int cmd_history_circular_dec(int idx) {
+  return (idx - 1 + CMD_HISTORY_SIZE) % CMD_HISTORY_SIZE;
+}
+
+static inline int cmd_history_empty(cmd_history *hist) { return !hist->count; }
+
+#define CURSOR_EMPTY_PROMPT -1
+
+// Initializes the command history structure
+__attribute__((unused)) static void cmd_history_init(cmd_history *hist) {
+  hist->write_idx = 0;
+  hist->count = 0;
+  hist->cursor = CURSOR_EMPTY_PROMPT;  // Represents a fresh prompt
+}
+
+// Appends a command to history
+__attribute__((unused)) static void cmd_history_append(cmd_history *hist,
+                                                       char *cmd, int size) {
+  if (!cmd || !size) return;
+
+  // Copy command to history (limit to INPUT_BUF_SIZE_BYTES - 1 for null
+  // terminator)
+  int copy_size =
+      size < INPUT_BUF_SIZE_BYTES - 1 ? size : INPUT_BUF_SIZE_BYTES - 1;
+  for (int i = 0; i < copy_size; i++) hist->data[hist->write_idx][i] = cmd[i];
+  hist->data[hist->write_idx][copy_size] = '\0';
+
+  hist->write_idx = cmd_history_circular_inc(hist->write_idx);
+
+  // Increment count by 1 until it reaches the maximum then keep it
+  hist->count = hist->count + (1 * (hist->count != CMD_HISTORY_SIZE));
+
+  // Reset cursor upon a write
+  hist->cursor = CURSOR_EMPTY_PROMPT;
+}
+
+// Moves cursor forward and retrieves the entry (returns null if at a fresh
+// prompt)
+__attribute__((unused)) static char *cmd_history_next(cmd_history *hist) {
+  // Check we are not at a fresh prompt
+  if (cmd_history_empty(hist) || hist->cursor == CURSOR_EMPTY_PROMPT)
+    return NULL;
+
+  // If at the most recent entry, move to a fresh prompt
+  if (hist->cursor == cmd_history_circular_dec(hist->write_idx)) {
+    hist->cursor = CURSOR_EMPTY_PROMPT;
+    return NULL;
+  }
+
+  // Move cursor forward
+  hist->cursor = cmd_history_circular_inc(hist->cursor);
+
+  return hist->data[hist->cursor];
+}
+
+// Moves cursor backward and retrieves the entry (returns null if at the bottom)
+__attribute__((unused)) static char *cmd_history_prev(cmd_history *hist) {
+  // 0 if write_idx hasn't wrapped around, write_idx otherwise
+  int bottom_idx = hist->write_idx * (hist->count == CMD_HISTORY_SIZE);
+
+  // Check we are not at the history bottom
+  if (cmd_history_empty(hist) || hist->cursor == bottom_idx) return NULL;
+
+  if (hist->cursor == CURSOR_EMPTY_PROMPT) {
+    // If at a fresh prompt, move to the most recent entry
+    hist->cursor = cmd_history_circular_dec(hist->write_idx);
+  } else {
+    // Move the cursor backward
+    hist->cursor = cmd_history_circular_dec(hist->cursor);
+  }
+
+  return hist->data[hist->cursor];
+}
 
 #define C(x) ((x) - '@')  // Control-x
 
@@ -205,7 +282,7 @@ void consoleintr(int (*getc)(void)) {
         break;
       case C('U'):  // Kill line.
         while (input.e != input.w &&
-               input.buf[(input.e - 1) % INPUT_BUF] != '\n') {
+               input.buf[(input.e - 1) % INPUT_BUF_SIZE_BYTES] != '\n') {
           input.e--;
           consputc(BACKSPACE);
         }
@@ -218,11 +295,12 @@ void consoleintr(int (*getc)(void)) {
         }
         break;
       default:
-        if (c != 0 && input.e - input.r < INPUT_BUF) {
+        if (c != 0 && input.e - input.r < INPUT_BUF_SIZE_BYTES) {
           c = (c == '\r') ? '\n' : c;
-          input.buf[input.e++ % INPUT_BUF] = c;
+          input.buf[input.e++ % INPUT_BUF_SIZE_BYTES] = c;
           consputc(c);
-          if (c == '\n' || c == C('D') || input.e == input.r + INPUT_BUF) {
+          if (c == '\n' || c == C('D') ||
+              input.e == input.r + INPUT_BUF_SIZE_BYTES) {
             input.w = input.e;
             wakeup(&input.r);
           }
@@ -264,7 +342,7 @@ int consoleread(struct vfs_inode *ip, int n, vector *dstvector) {
       }
       sleep(&input.r, &cons.lock);
     }
-    c = input.buf[input.r++ % INPUT_BUF];
+    c = input.buf[input.r++ % INPUT_BUF_SIZE_BYTES];
     if (c == C('D')) {  // EOF
       if (n < target) {
         // Save ^D for next time, to make sure
