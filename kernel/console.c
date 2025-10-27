@@ -203,16 +203,26 @@ static inline int cmd_history_empty(cmd_history *hist) { return !hist->count; }
 #define CURSOR_EMPTY_PROMPT -1
 
 // Initializes the command history structure
-__attribute__((unused)) static void cmd_history_init(cmd_history *hist) {
+static void cmd_history_init(cmd_history *hist) {
   hist->write_idx = 0;
   hist->count = 0;
   hist->cursor = CURSOR_EMPTY_PROMPT;  // Represents a fresh prompt
 }
 
 // Appends a command to history
-__attribute__((unused)) static void cmd_history_append(cmd_history *hist,
-                                                       char *cmd, int size) {
+static void cmd_history_append(cmd_history *hist, char *cmd, int size) {
   if (!cmd || !size) return;
+
+  // Skip if the command is empty
+  int is_empty = 1;
+  for (int i = 0; i < size; i++) {
+    if (cmd[i] != ' ' && cmd[i] != '\t') {
+      is_empty = 0;
+      break;
+    }
+  }
+  if (is_empty)
+    return;
 
   // Copy command to history (limit to INPUT_BUF_SIZE_BYTES - 1 for null
   // terminator)
@@ -232,7 +242,7 @@ __attribute__((unused)) static void cmd_history_append(cmd_history *hist,
 
 // Moves cursor forward and retrieves the entry (returns null if at a fresh
 // prompt)
-__attribute__((unused)) static char *cmd_history_next(cmd_history *hist) {
+static char *cmd_history_next(cmd_history *hist) {
   // Check we are not at a fresh prompt
   if (cmd_history_empty(hist) || hist->cursor == CURSOR_EMPTY_PROMPT)
     return NULL;
@@ -250,7 +260,7 @@ __attribute__((unused)) static char *cmd_history_next(cmd_history *hist) {
 }
 
 // Moves cursor backward and retrieves the entry (returns null if at the bottom)
-__attribute__((unused)) static char *cmd_history_prev(cmd_history *hist) {
+static char *cmd_history_prev(cmd_history *hist) {
   // 0 if write_idx hasn't wrapped around, write_idx otherwise
   int bottom_idx = hist->write_idx * (hist->count == CMD_HISTORY_SIZE);
 
@@ -270,13 +280,60 @@ __attribute__((unused)) static char *cmd_history_prev(cmd_history *hist) {
 
 #define C(x) ((x) - '@')  // Control-x
 
+static tty *get_active_tty(void) {
+  for (int i = 0; i < MAX_TTY; i++) {
+    if (tty_table[i].flags & DEV_CONNECT) return &tty_table[i];
+  }
+  // Not reachable, must be one tty connected
+  return NULL;
+}
+
+static void clear_input_line(void) {
+  while (input.e > input.w &&
+         input.buf[(input.e - 1) % INPUT_BUF_SIZE_BYTES] != '\n') {
+    input.e--;
+    consputc(BACKSPACE);
+  }
+}
+
+static void write_to_input(char *cmd) {
+  if (!cmd) return;
+
+  // Clear previous command line
+  clear_input_line();
+
+  // Calculate how much space we have left
+  int copy_size = INPUT_BUF_SIZE_BYTES - (input.e - input.r);
+
+  // Copy the command to the internal buffer and the display
+  for (int i = 0; i < copy_size && cmd[i] != '\0' && cmd[i] != '\n'; i++) {
+    input.buf[input.e++ % INPUT_BUF_SIZE_BYTES] = cmd[i];
+    consputc(cmd[i]);
+  }
+}
+
 void consoleintr(int (*getc)(void)) {
   int c, doprocdump = 0;
 
   acquire(&cons.lock);
   while ((c = getc()) >= 0) {
     switch (c) {
-      case C('P'):  // Process listing.
+      case C('P'):  // Ctrl+P - Previous history entry (scroll up)
+      {
+        tty *active_tty = get_active_tty();
+        char *entry = cmd_history_prev(&active_tty->history);
+        if (entry) write_to_input(entry);
+      } break;
+      case C('N'):  // Ctrl+N - Next history entry (more recent)
+      {
+        tty *active_tty = get_active_tty();
+        char *entry = cmd_history_next(&active_tty->history);
+        if (entry)
+          write_to_input(entry);
+        else
+          clear_input_line();
+      } break;
+      case C('L'):  // Process listing.
         // procdump() locks cons.lock indirectly; invoke later
         doprocdump = 1;
         break;
@@ -301,6 +358,22 @@ void consoleintr(int (*getc)(void)) {
           consputc(c);
           if (c == '\n' || c == C('D') ||
               input.e == input.r + INPUT_BUF_SIZE_BYTES) {
+            // Save command to history before processing
+            if (c == '\n') {
+              tty *active_tty = get_active_tty();
+
+              // Extract the command from input buffer (excluding the newline)
+              // and limit to INPUT_BUF_SIZE_BYTES - 1 for null terminator
+              char cmd[INPUT_BUF_SIZE_BYTES];
+              int size = 0;
+              for (int i = input.w;
+                   i < input.e - 1 && size < INPUT_BUF_SIZE_BYTES - 1; ++i)
+                cmd[size++] = input.buf[i % INPUT_BUF_SIZE_BYTES];
+              cmd[size] = '\0';
+
+              cmd_history_append(&active_tty->history, cmd, size);
+            }
+
             input.w = input.e;
             wakeup(&input.r);
           }
@@ -428,6 +501,9 @@ void consoleinit(void) {
   tty_table[CONSOLE_MINOR].flags |= DEV_ATTACH;
   initlock(&tty_table[CONSOLE_MINOR].lock, "ttyconsole");
 
+  // Initialize history for console
+  cmd_history_init(&tty_table[CONSOLE_MINOR].history);
+
   cons.locking = 1;
 
   ioapicenable(IRQ_KBD, 0);
@@ -442,6 +518,9 @@ void ttyinit(void) {
     tty_table[i].tty_bytes_written = 0;
     tty_table[i].ttyread_operations_counter = 0;
     tty_table[i].ttywrite_operations_counter = 0;
+
+    // Initialize history for each tty
+    cmd_history_init(&tty_table[i].history);
   }
 }
 
