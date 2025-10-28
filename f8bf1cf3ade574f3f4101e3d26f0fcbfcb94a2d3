@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e23b6644_63b016f7",
+        "filename": ".gitignore",
+        "patchSetId": 18
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-10-28T15:49:10Z",
+      "side": 0,
+      "message": "no need to have images/buiild instead?",
+      "revId": "f8bf1cf3ade574f3f4101e3d26f0fcbfcb94a2d3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
