@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5b4e7e3b_12bf4eaf",
+        "filename": "include/syscall.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-10-29T09:16:50Z",
+      "side": 1,
+      "message": "#define SYS_ioctl_pid 27\n#define SYS_getppid 28\n#define SYS_getcpu 29\n#define SYS_pivot_root 30\n\nhave no tests. SYS_ioctl_pid is questanable.",
+      "revId": "df4938607bff4117f821d0cc71a41b04e7d1694e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
