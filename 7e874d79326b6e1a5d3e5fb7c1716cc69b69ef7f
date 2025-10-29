@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "72466c31_73934f2c",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-10-29T09:06:39Z",
+      "side": 1,
+      "message": "please rebase on top on master HEAD. The change is not related to ioct -\u003e no need in relation chain",
+      "revId": "7e874d79326b6e1a5d3e5fb7c1716cc69b69ef7f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
