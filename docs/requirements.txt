@@ -7,3 +7,4 @@ reno>=2.5.0
 sphinxemoji
 myst-parser
 sphinxcontrib-spelling
+sphinxcontrib-mermaid

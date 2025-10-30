@@ -29,11 +29,23 @@ extensions = ['myst_parser',
               'sphinx.ext.todo',
               'sphinx.ext.viewcode',
               'sphinxemoji.sphinxemoji',
-              'reno.sphinxext', 
-              'sphinxcontrib.spelling']
+              'reno.sphinxext',
+              'sphinxcontrib.spelling',
+              'sphinxcontrib.mermaid']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
+
+myst_enable_extensions = [
+    "colon_fence",
+    "substitution",
+    "deflist",
+    "attrs_block",
+    "attrs_inline",
+]
+
+# Add this to handle mermaid blocks
+myst_fence_as_directive = ["mermaid"]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
