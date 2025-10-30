@@ -1,15 +1,19 @@
 # Namespaces
 
 ## PID Namespaces
+
 ### Introduction
-PID namespaces facilitate creation of an independent set of process IDs (PIDs) separated from other namespaces in such a manner that processes inside the child PID namespace are visible from the parent PID namespace but not vice versa. 
+
+PID namespaces facilitate creation of an independent set of process IDs (PIDs) separated from other namespaces in such a manner that processes inside the child PID namespace are visible from the parent PID namespace but not vice versa.
 
 In order to put a newly created process in a separate pid namespace the system call `unshare` must be called prior to the fork. A parameter passed to the `unshare` system call  that indicates a PID namespace segregation is going to happen is a PID_NS. I.e., the `unshare` system call puts a calling process in the state of a namespace separation that will happen for the child process upon the actual call to the fork. The child forked after the call to `unshare`(PID_NS) function gets PID=1 in a newly created PID namespace and all it’s descendants will belong to that namespace. PID namespaces in xv6 do not support nesting.
 
 If a process in a PID namespace is voluntarily or involuntarily terminated while having live descendants, they will be reparented to the process with PID=1. If the process with PID=1 dies, every other process in the pid namespace will be forcibly terminated and the namespace will be cleaned up.
 
 ### Usage example
+
 Creating a new PID namespace is fairly easy as it can be observed from the practical use example below:
+
 ```c
 // The `unshare` system call is used to create a new namespace for the child process.
 if(unshare(PID_NS) != 0){
@@ -31,19 +35,25 @@ else
 ```
 
 Compiling and running the code snippet from above will result in the following output:
-```
+
+```bash
 $ ./a
 Parent’s perspective on the child. PID=4
 New namespace. PID=1
 ```
+
 This output demonstrates that the parent process sees the child process with PID=4, while the child process sees itself with PID=1. This is due to the fact that the child process is in a separate PID namespace, hence, the hierarchy of PIDs is different for the parent and the child, and because it has just been created (`unshare(PID_NS)`), it has PID=1 as the first process in the new namespace.
 
-
 ## Mount Namespaces
+
 ### Introduction
+
 Mount namespaces facilitate an isolation of mount points. In order to achieve a mount point segregation the `unshare` system call with MOUNT_NS parameter must be called by the process that is inclined to have a separate (hidden from other processes) view on mount points. Descendants of that process are going to inherit that separated view preserving a mount point segregation.
+
 ### Usage example
+
 Let’s see how new mount namespace is created from the practical use example below:
+
 ```c
 static void createNwrite(char *path, char *str, int strlen) {
   int fd = 0;
@@ -144,18 +154,20 @@ int main() {
 }
 ```
 
-Compiling and running the code snippet from above will create a mount namespace for a child process by `unshare()`-ing it from the global mount namespace (`unshare(MOUNT_NS)`). 
-Upon the namespace creation, the child process mounts the `internal_fs_a`, a device with a pre-formatted file system on it, on the `dirA` mount point. The parent process mounts the `internal_fs_b` device on `dirB` respectively. 
+Compiling and running the code snippet from above will create a mount namespace for a child process by `unshare()`-ing it from the global mount namespace (`unshare(MOUNT_NS)`).
+Upon the namespace creation, the child process mounts the `internal_fs_a`, a device with a pre-formatted file system on it, on the `dirA` mount point. The parent process mounts the `internal_fs_b` device on `dirB` respectively.
 
 At this stage the root directory contains `dirA` and `dirB` sub-directories. But only the child process is able to see the `file.txt` that was created on the `internal_fs_a` filesystem, while only the parent process is able to access the `file.txt` that was created on the `internal_fs_b`!
 
 After the call to `unshare` we would have:
 In the parent process -- the global (root) mount namespace, we will have the following structure:
+
 * `/` --- disk mounted
   * `dirA`
   * `dirB` -- `internal_fs_b` mounted
 
 But in the child process -- the new mount namespace, we will have the following structure:
+
 * `/` --- disk mounted
   * `dirA` -- `internal_fs_a` mounted
   * `dirB`
@@ -165,6 +177,7 @@ But in the child process -- the new mount namespace, we will have the following 
 3. The same goes in the other direction, but with the `internal_fs_a` filesystem: the child process sees the `internal_fs_a` filesystem, but the parent process doesn't.
 
 ### Pivot root
+
 The pivot_root system call has been implemented as part of the xv6 mount namespaces mechanism, and it is similar to the Linux `pivot_root` system call, as explained in the [pivot_root(2) man page](https://man7.org/linux/man-pages/man2/pivot_root.2.html). In a nutshell, the purpose of the `pivot_root` syscall is to swap the filesystem root ("/") of a mount namespace to point at a new mount, different that the previous root mount, and put the old root in a mount point under the new one, as demonstrated in the following picture:
 
 ![pivot_root](../images/pivot-root.svg)
