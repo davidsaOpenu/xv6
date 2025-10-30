@@ -16,6 +16,24 @@
       "message": "Empty commands ignored ✗ - Not tested (all test commands are non-empty \"echo cmdN\")\n\nArrow keys vs Ctrl+P/N - Story specifies arrow keys, implementation uses Ctrl+P (previous) and Ctrl+N (next)\n\nNot covered - Story 7 is about search functionality (history_search), which isn\u0027t tested here at all.",
       "revId": "ea85991416efb87f29d8dc11390689f65323c5b8",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "665a5811_a365cd4a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-10-30T09:50:19Z",
+      "side": 1,
+      "message": "also you may find it useful to look at https://review.gerrithub.io/c/davidsaOpenu/xv6/+/1173523 \n(related to scolling with up and down arrows)",
+      "parentUuid": "91fc960c_781eabcb",
+      "revId": "ea85991416efb87f29d8dc11390689f65323c5b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }

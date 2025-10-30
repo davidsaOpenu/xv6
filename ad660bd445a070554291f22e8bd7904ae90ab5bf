@@ -16,6 +16,24 @@
       "message": "Lgtm",
       "revId": "ad660bd445a070554291f22e8bd7904ae90ab5bf",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f5448360_002d430d",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-10-30T09:50:19Z",
+      "side": 1,
+      "message": "I gave +1 for the direction but the change is not ready for merge.",
+      "parentUuid": "9c2f03f2_7783bd76",
+      "revId": "ad660bd445a070554291f22e8bd7904ae90ab5bf",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
