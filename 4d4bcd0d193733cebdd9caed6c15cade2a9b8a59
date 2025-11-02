@@ -18,6 +18,24 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "02036a2b_7fcc0091",
+        "filename": ".gdbinit.tmpl",
+        "patchSetId": 18
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-02T07:16:03Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "69875a77_cc2d5e7d",
+      "revId": "4d4bcd0d193733cebdd9caed6c15cade2a9b8a59",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "50d3c35f_5e2fa7ce",
@@ -35,6 +53,24 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "9b7998e5_459d14b7",
+        "filename": "Makefile",
+        "patchSetId": 18
+      },
+      "lineNbr": 4,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-02T07:16:03Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "50d3c35f_5e2fa7ce",
+      "revId": "4d4bcd0d193733cebdd9caed6c15cade2a9b8a59",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "bf2f8c13_8f97ca51",
@@ -48,6 +84,30 @@
       "writtenOn": "2025-10-28T15:49:10Z",
       "side": 1,
       "message": "nit. maybe worth changing to Containerfile",
+      "range": {
+        "startLine": 247,
+        "startChar": 62,
+        "endLine": 247,
+        "endChar": 72
+      },
+      "revId": "4d4bcd0d193733cebdd9caed6c15cade2a9b8a59",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e97b4888_975d62de",
+        "filename": "Makefile",
+        "patchSetId": 18
+      },
+      "lineNbr": 247,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-02T07:16:03Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "bf2f8c13_8f97ca51",
       "range": {
         "startLine": 247,
         "startChar": 62,
@@ -92,6 +152,24 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "d83d58ec_17d3f5ee",
+        "filename": "podman-ci.sh",
+        "patchSetId": 18
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-02T07:16:03Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f6b74e4e_985b27ce",
+      "revId": "4d4bcd0d193733cebdd9caed6c15cade2a9b8a59",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "2ba536f6_d79f4e04",
@@ -105,6 +183,24 @@
       "writtenOn": "2025-10-28T15:49:10Z",
       "side": 1,
       "message": "tox linting is not running anymore?",
+      "revId": "4d4bcd0d193733cebdd9caed6c15cade2a9b8a59",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "821e562f_12a9cf75",
+        "filename": "tests/expect/cgroups.exp",
+        "patchSetId": 18
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-02T07:16:03Z",
+      "side": 1,
+      "message": "we need to invoke linter.sh from podman-ci.sh (or better to rename it to podman.sh?)",
+      "parentUuid": "2ba536f6_d79f4e04",
       "revId": "4d4bcd0d193733cebdd9caed6c15cade2a9b8a59",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
@@ -126,6 +222,24 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "98ecff3d_3eb74057",
+        "filename": "tests/runtests.exp",
+        "patchSetId": 18
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-02T07:16:03Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "cb8ae1db_22b5c659",
+      "revId": "4d4bcd0d193733cebdd9caed6c15cade2a9b8a59",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "79ebebcc_93c36d13",
@@ -143,6 +257,24 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "ced8f2ac_8d1d2ae2",
+        "filename": "tests/runtests.old.exp",
+        "patchSetId": 18
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-02T07:16:03Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "79ebebcc_93c36d13",
+      "revId": "4d4bcd0d193733cebdd9caed6c15cade2a9b8a59",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "e68a1e6d_8e9e2ec5",
@@ -156,6 +288,24 @@
       "writtenOn": "2025-10-28T15:49:10Z",
       "side": 1,
       "message": "5 instead of 2.7?!",
+      "revId": "4d4bcd0d193733cebdd9caed6c15cade2a9b8a59",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c5560463_beff460d",
+        "filename": "tests/xv6/usertests.c",
+        "patchSetId": 18
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-02T07:16:03Z",
+      "side": 1,
+      "message": "Marked as resolved.",
+      "parentUuid": "e68a1e6d_8e9e2ec5",
       "revId": "4d4bcd0d193733cebdd9caed6c15cade2a9b8a59",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
