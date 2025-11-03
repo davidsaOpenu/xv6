@@ -52,6 +52,24 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "1e73ab8b_bd77237d",
+        "filename": "infra/bootstrap.sh",
+        "patchSetId": 20
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-03T07:17:52Z",
+      "side": 1,
+      "message": "Partialy reloved. Added new comment.",
+      "parentUuid": "41a57fc1_4da58a5a",
+      "revId": "c10d5fdf22f7ad9a048672b7bbd4092dfcc4c5e1",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "7a78766b_69575fa6",
