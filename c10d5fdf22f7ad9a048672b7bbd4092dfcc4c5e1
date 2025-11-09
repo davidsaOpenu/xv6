@@ -89,6 +89,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "153bf00f_0fd398f5",
+        "filename": "podman-ci.sh",
+        "patchSetId": 20
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-09T20:25:01Z",
+      "side": 1,
+      "message": "linter.sh is not called from the bootstrap.sh (every time ci runs)",
+      "parentUuid": "7a78766b_69575fa6",
+      "revId": "c10d5fdf22f7ad9a048672b7bbd4092dfcc4c5e1",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "e26f9cc2_824daaa1",
         "filename": "tests/xv6/usertests.c",
         "patchSetId": 20
@@ -100,6 +118,30 @@
       "writtenOn": "2025-11-02T07:16:03Z",
       "side": 1,
       "message": "let\u0027s see if \n#define NATIVEFS_CACHE_TEST_FACTOR (20)\n#define OBJFS_CACHE_TEST_FACTOR (5) \ncan be increased even more.",
+      "range": {
+        "startLine": 27,
+        "startChar": 0,
+        "endLine": 28,
+        "endChar": 35
+      },
+      "revId": "c10d5fdf22f7ad9a048672b7bbd4092dfcc4c5e1",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a6164095_6d00c5f8",
+        "filename": "tests/xv6/usertests.c",
+        "patchSetId": 20
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-09T20:25:01Z",
+      "side": 1,
+      "message": "So just 20 and 5 or have not addressed the quiestion yet?",
+      "parentUuid": "e26f9cc2_824daaa1",
       "range": {
         "startLine": 27,
         "startChar": 0,

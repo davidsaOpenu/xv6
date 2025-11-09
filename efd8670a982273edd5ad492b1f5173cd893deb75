@@ -1,0 +1,359 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "65f4dd19_31977852",
+        "filename": "infra/bootstrap.sh",
+        "patchSetId": 31
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-09T20:25:01Z",
+      "side": 1,
+      "message": "also you have splitted tests into \n\n\ntests/expect/basic.exp \n\ntests/expect/console.exp \n\ntests/expect/pouch.exp \n\ntests/expect/utility-functions/assert-on-exit-status.exp \n\ntests/expect/utility-functions/pouch-utils.exp \n\ntests/run-guest-tests.exp \n\nbetter to call them from the boostrap.sh",
+      "revId": "efd8670a982273edd5ad492b1f5173cd893deb75",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "03612ad7_3af74397",
+        "filename": "kernel/asm.h",
+        "patchSetId": 31
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-09T20:25:01Z",
+      "side": 1,
+      "message": "any need in this change?",
+      "range": {
+        "startLine": 14,
+        "startChar": 0,
+        "endLine": 17,
+        "endChar": 61
+      },
+      "revId": "efd8670a982273edd5ad492b1f5173cd893deb75",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "906a482a_c2c43f21",
+        "filename": "kernel/device/buf_cache.c",
+        "patchSetId": 31
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-09T20:25:01Z",
+      "side": 1,
+      "message": "seems irrelevant",
+      "revId": "efd8670a982273edd5ad492b1f5173cd893deb75",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5d8d2502_7d72d1c9",
+        "filename": "kernel/device/buf_cache.c",
+        "patchSetId": 31
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-09T20:25:01Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "efd8670a982273edd5ad492b1f5173cd893deb75",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1cf616a5_0dfdb025",
+        "filename": "kernel/main.c",
+        "patchSetId": 31
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-09T20:25:01Z",
+      "side": 1,
+      "message": "any need in this change?",
+      "range": {
+        "startLine": 77,
+        "startChar": 0,
+        "endLine": 78,
+        "endChar": 38
+      },
+      "revId": "efd8670a982273edd5ad492b1f5173cd893deb75",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "19c7222b_86ae96b2",
+        "filename": "kernel/main.c",
+        "patchSetId": 31
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-09T20:25:01Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "efd8670a982273edd5ad492b1f5173cd893deb75",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5d3ba9cc_678d8818",
+        "filename": "kernel/memlayout.h",
+        "patchSetId": 31
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-09T20:25:01Z",
+      "side": 1,
+      "message": "any need in those changes?",
+      "range": {
+        "startLine": 17,
+        "startChar": 0,
+        "endLine": 19,
+        "endChar": 0
+      },
+      "revId": "efd8670a982273edd5ad492b1f5173cd893deb75",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "970ca59d_c3301e1e",
+        "filename": "kernel/mmu.h",
+        "patchSetId": 31
+      },
+      "lineNbr": 103,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-09T20:25:01Z",
+      "side": 1,
+      "message": "seems like a style change - unrelated to the commit message",
+      "range": {
+        "startLine": 76,
+        "startChar": 0,
+        "endLine": 103,
+        "endChar": 38
+      },
+      "revId": "efd8670a982273edd5ad492b1f5173cd893deb75",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b393a6df_e2acdbb3",
+        "filename": "mkfs.c",
+        "patchSetId": 31
+      },
+      "lineNbr": 141,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-09T20:25:01Z",
+      "side": 1,
+      "message": "empty lines and deug leftovers",
+      "revId": "efd8670a982273edd5ad492b1f5173cd893deb75",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "86cfc9dd_b59fa63d",
+        "filename": "scripts/build-test.sh",
+        "patchSetId": 31
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-09T20:25:01Z",
+      "side": 1,
+      "message": "tail -5 \"$LOG_FILE\" | grep -c \"ALL TESTS PASSED\"\nNo need to disable checks",
+      "range": {
+        "startLine": 28,
+        "startChar": 0,
+        "endLine": 29,
+        "endChar": 61
+      },
+      "revId": "efd8670a982273edd5ad492b1f5173cd893deb75",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ce4c7837_8c050bce",
+        "filename": "scripts/build-test.sh",
+        "patchSetId": 31
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-09T20:25:01Z",
+      "side": 1,
+      "message": "just replace $lines to  \"$lines\". No need to disable checks",
+      "range": {
+        "startLine": 31,
+        "startChar": 0,
+        "endLine": 31,
+        "endChar": 67
+      },
+      "revId": "efd8670a982273edd5ad492b1f5173cd893deb75",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e964696f_6cc3de94",
+        "filename": "scripts/build-test.sh",
+        "patchSetId": 31
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-09T20:25:01Z",
+      "side": 1,
+      "message": "same",
+      "range": {
+        "startLine": 46,
+        "startChar": 0,
+        "endLine": 55,
+        "endChar": 2
+      },
+      "revId": "efd8670a982273edd5ad492b1f5173cd893deb75",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "540f59ee_b57d6fe0",
+        "filename": "tests/run-guest-tests.exp",
+        "patchSetId": 31
+      },
+      "lineNbr": 112,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-09T20:25:01Z",
+      "side": 1,
+      "message": "duplication (see bootsrtap.sh)",
+      "range": {
+        "startLine": 85,
+        "startChar": 0,
+        "endLine": 112,
+        "endChar": 37
+      },
+      "revId": "efd8670a982273edd5ad492b1f5173cd893deb75",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "dd98313a_ffcd2013",
+        "filename": "tests/xv6/mounttest.c",
+        "patchSetId": 31
+      },
+      "lineNbr": 176,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-09T20:25:01Z",
+      "side": 1,
+      "message": "debug leftovers",
+      "range": {
+        "startLine": 176,
+        "startChar": 0,
+        "endLine": 176,
+        "endChar": 74
+      },
+      "revId": "efd8670a982273edd5ad492b1f5173cd893deb75",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fd44663c_666b03fb",
+        "filename": "tests/xv6/mounttest.c",
+        "patchSetId": 31
+      },
+      "lineNbr": 184,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-09T20:25:01Z",
+      "side": 1,
+      "message": "debug leftovers",
+      "range": {
+        "startLine": 184,
+        "startChar": 0,
+        "endLine": 184,
+        "endChar": 69
+      },
+      "revId": "efd8670a982273edd5ad492b1f5173cd893deb75",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "817020d0_79ed84dc",
+        "filename": "tests/xv6/mounttest.c",
+        "patchSetId": 31
+      },
+      "lineNbr": 195,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-09T20:25:01Z",
+      "side": 1,
+      "message": "debug leftovers",
+      "range": {
+        "startLine": 191,
+        "startChar": 0,
+        "endLine": 195,
+        "endChar": 37
+      },
+      "revId": "efd8670a982273edd5ad492b1f5173cd893deb75",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6a866dbf_8eef15fb",
+        "filename": "user/pouch/container.c",
+        "patchSetId": 31
+      },
+      "lineNbr": 295,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-09T20:25:01Z",
+      "side": 1,
+      "message": "no need to in changes in thise file (empy lines and debug lefotovers)",
+      "revId": "efd8670a982273edd5ad492b1f5173cd893deb75",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}

@@ -16,6 +16,24 @@
       "message": "we need to run \n\nprepare_pouch_images\ntest_all_pouch_build\numount_bind_mount_test\nhistory_navigation_test\ntest_all_pouch_build\n\nas well",
       "revId": "4d69150c408f1cc9c63d6d778a5099736c8ef6c2",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "854a2ad0_5bc86baf",
+        "filename": "infra/bootstrap.sh",
+        "patchSetId": 24
+      },
+      "lineNbr": 88,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-11-09T20:25:01Z",
+      "side": 1,
+      "message": "test_all_pouch_build not on the list",
+      "parentUuid": "9cce86c3_1114c427",
+      "revId": "4d69150c408f1cc9c63d6d778a5099736c8ef6c2",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
