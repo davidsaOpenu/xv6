@@ -16,6 +16,29 @@
       "message": "recheck",
       "revId": "ba4cf9b930ca9976ecadf1c7d63d6da057dc5dd4",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "53db868f_1587788a",
+        "filename": "infra/bootstrap.sh",
+        "patchSetId": 32
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-12-03T14:23:13Z",
+      "side": 1,
+      "message": "C\u0026P from \nhttp://192.114.0.189/jenkins/job/xv6-24.04-vm/190/console\n\n\nthe script was supposed to fail\n\n18:36:17  [  EXPECT]\tmy.ls                                                            2 13 1030\n18:36:17  [  EXPECT]\tPOUCH:DEBUG:Command ls executed with exit code 0\n18:36:17  [  EXPECT]\t\u003e\u003e Step 99/104: RUN ls \u003e my.ls \n18:36:17  [  EXPECT]\tPOUCH:DEBUG:Executing command: ls \u003e my.ls \n18:36:17  [  EXPECT]\tPOUCH:DEBUG:Command ls \u003e my.ls  executed with exit code 0\n18:36:17  [  EXPECT]\t\u003e\u003e Step 100/104: RUN cat my.ls\n18:36:17  [  EXPECT]\tPOUCH:DEBUG:Executing command: cat my.ls\n18:36:17  [  EXPECT]\t.                                                                1 1 1024\n18:36:17  [  EXPECT]\t..                                                               1 1 1024\n18:36:17  [  EXPECT]\tcat                                                              2 2 6056\n18:36:17  [  EXPECT]\techo                                                             2 3 6076\n18:36:17  [  EXPECT]\thello.txt                                                        2 4 6\n18:36:17  [  EXPECT]\tls                                                               2 5 7432\n18:36:17  [  EXPECT]\tpouch                                                            2 6 38100\n18:36:17  [  EXPECT]\tsh                                                               2 7 15580\n18:36:17  [  EXPECT]\t.build                                                           1 1 1120\n18:36:17  [  EXPECT]\t.mutex                                                           1 78 96\n18:36:17  [  EXPECT]\tValid4                                                           2 10 14\n18:36:17  [  EXPECT]\tfile1.txt                                                        2 11 4\n18:36:17  [  EXPECT]\tfile2.txt                                                        2 12 4\n18:36:17  [  EXPECT]\tmy.ls                                                            2 13 1030\n18:36:17  [  EXPECT]\tPOUCH:DEBUG:Command cat my.ls executed with exit code 0\n18:36:17  [  EXPECT]\t\u003e\u003e Step 101/104: RUN ls \u003e my.ls ; cat my.ls \n18:36:17  [  EXPECT]\tPOUCH:DEBUG:Executing command: ls \u003e my.ls ; cat my.ls \n18:36:17  [  EXPECT]\t.                                                                1 1 1024\n18:36:17  [  EXPECT]\t..                                                               1 1 1024\n18:36:17  [  EXPECT]\tcat                                                              2 2 6056\n18:36:17  [  EXPECT]\techo                                                             2 3 6076\n18:36:17  [  EXPECT]\thello.txt                                                        2 4 6\n18:36:17  [  EXPECT]\tls                                                               2 5 7432\n18:36:17  [  EXPECT]\tpouch                                                            2 6 38100\n18:36:17  [  EXPECT]\tsh                                                               2 7 15580\n18:36:17  [  EXPECT]\t.build                                                           1 1 1120\n18:36:17  [  EXPECT]\t.mutex                                                           1 78 96\n18:36:17  [  EXPECT]\tValid4                                                           2 10 14\n18:36:17  [  EXPECT]\tfile1.txt                                                        2 11 4\n18:36:17  [  EXPECT]\tfile2.txt                                                        2 12 4\n18:36:17  [  EXPECT]\tmy.ls                                                            2 13 1030\n18:36:17  [  EXPECT]\tPOUCH:DEBUG:Command ls \u003e my.ls ; cat my.ls  executed with exit code 0\n18:36:17  [  EXPECT]\t\u003e\u003e Step 102/104: RUN ls\n18:36:17  [  EXPECT]\tPOUCH:DEBUG:Executing command: ls\nCancelling nested steps due to timeout\n22:06:18  [  EXPECT]\t.     Sending interrupt signal to process\n22:06:23  qemu-system-x86_64: terminating on signal 15 from pid 4200 (jenkins: /usr/bin/java)\n22:06:23  Connection to localhost closed by remote host.\n22:06:23  [*] CI: Build completed\n22:06:23  \n22:06:23  real\t219m25.621s\n22:06:23  user\t0m0.021s\n22:06:23  sys\t0m0.006s\n22:06:23  [*] CI Done, bye bye!",
+      "range": {
+        "startLine": 67,
+        "startChar": 0,
+        "endLine": 68,
+        "endChar": 10
+      },
+      "revId": "ba4cf9b930ca9976ecadf1c7d63d6da057dc5dd4",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
