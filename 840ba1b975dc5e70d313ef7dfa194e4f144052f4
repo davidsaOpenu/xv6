@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2e64cb79_f0867dd9",
+        "filename": "infra/bootstrap.sh",
+        "patchSetId": 35
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-12-09T18:57:24Z",
+      "side": 1,
+      "message": "let\u0027s use \n\nset -euo pipefail\n\ntrap \u0027echo \"[ERROR] command failed at $BASH_COMMAND\"; exit 1\u0027 ERR\n\n\nand remove \n\nexit_if_error",
+      "range": {
+        "startLine": 3,
+        "startChar": 0,
+        "endLine": 3,
+        "endChar": 15
+      },
+      "revId": "840ba1b975dc5e70d313ef7dfa194e4f144052f4",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b410a243_7b8b23a9",
+        "filename": "podman.sh",
+        "patchSetId": 35
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-12-09T18:57:24Z",
+      "side": 1,
+      "message": "let\u0027s use \n\nset -euo pipefail\n\ntrap \u0027echo \"[ERROR] command failed at $BASH_COMMAND\"; exit 1\u0027 ERR\n\n\nand remove \n\nexit_if_error",
+      "range": {
+        "startLine": 3,
+        "startChar": 0,
+        "endLine": 3,
+        "endChar": 15
+      },
+      "revId": "840ba1b975dc5e70d313ef7dfa194e4f144052f4",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a1b9119b_c01a9ae4",
+        "filename": "tests/expect/utility-functions/assert-on-exit-status.exp",
+        "patchSetId": 35
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-12-09T18:57:24Z",
+      "side": 1,
+      "message": "tox has not catched it?",
+      "range": {
+        "startLine": 2,
+        "startChar": 31,
+        "endLine": 2,
+        "endChar": 33
+      },
+      "revId": "840ba1b975dc5e70d313ef7dfa194e4f144052f4",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ecd08667_42f0fa77",
+        "filename": "tests/run-guest-tests.exp",
+        "patchSetId": 35
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2025-12-09T18:57:24Z",
+      "side": 1,
+      "message": "same here: tox has not cached those whitespaces?",
+      "range": {
+        "startLine": 45,
+        "startChar": 0,
+        "endLine": 50,
+        "endChar": 4
+      },
+      "revId": "840ba1b975dc5e70d313ef7dfa194e4f144052f4",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
