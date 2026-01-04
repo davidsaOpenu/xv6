@@ -16,6 +16,24 @@
       "message": "no need to have images/buiild instead?",
       "revId": "f8bf1cf3ade574f3f4101e3d26f0fcbfcb94a2d3",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "06a1ef03_1d1addd0",
+        "filename": ".gitignore",
+        "patchSetId": 18
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2026-01-04T14:55:32Z",
+      "side": 0,
+      "message": "Done",
+      "parentUuid": "e23b6644_63b016f7",
+      "revId": "f8bf1cf3ade574f3f4101e3d26f0fcbfcb94a2d3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }

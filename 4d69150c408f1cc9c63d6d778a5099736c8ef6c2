@@ -34,6 +34,24 @@
       "parentUuid": "9cce86c3_1114c427",
       "revId": "4d69150c408f1cc9c63d6d778a5099736c8ef6c2",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "fe9c88bf_8cf450bc",
+        "filename": "infra/bootstrap.sh",
+        "patchSetId": 24
+      },
+      "lineNbr": 88,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2026-01-04T14:55:32Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "854a2ad0_5bc86baf",
+      "revId": "4d69150c408f1cc9c63d6d778a5099736c8ef6c2",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }

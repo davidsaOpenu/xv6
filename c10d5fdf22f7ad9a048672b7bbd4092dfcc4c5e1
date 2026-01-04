@@ -105,6 +105,24 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "917ef797_face7e21",
+        "filename": "podman-ci.sh",
+        "patchSetId": 20
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2026-01-04T14:55:32Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "153bf00f_0fd398f5",
+      "revId": "c10d5fdf22f7ad9a048672b7bbd4092dfcc4c5e1",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "e26f9cc2_824daaa1",
@@ -142,6 +160,30 @@
       "side": 1,
       "message": "So just 20 and 5 or have not addressed the quiestion yet?",
       "parentUuid": "e26f9cc2_824daaa1",
+      "range": {
+        "startLine": 27,
+        "startChar": 0,
+        "endLine": 28,
+        "endChar": 35
+      },
+      "revId": "c10d5fdf22f7ad9a048672b7bbd4092dfcc4c5e1",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d6a4d810_08ccb9ff",
+        "filename": "tests/xv6/usertests.c",
+        "patchSetId": 20
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1007990
+      },
+      "writtenOn": "2026-01-04T14:55:32Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a6164095_6d00c5f8",
       "range": {
         "startLine": 27,
         "startChar": 0,
